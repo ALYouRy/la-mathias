@@ -214,6 +214,40 @@ button{font:inherit;color:inherit}
 .sbtns{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .sbtns .btn{font-size:14.5px;padding:11px 14px}
 .btn.danger{background:rgba(255,77,79,.14);color:#ff6b6d;box-shadow:none;border:1px solid rgba(255,77,79,.4)}
+/* 2.5 : carte de synchro */
+.syc{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px 13px 18px}
+.syc h2{margin:0 0 3px}
+.syc small{display:block;font-size:13px;color:var(--fg-2);font-weight:600}
+.syc.old small{color:var(--warn)}
+.syc .btn{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:10px 14px;font-size:14.5px}
+.syc .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+/* 2.5 : scanner à plusieurs codes */
+.scan .frame{transition:border-color .2s}
+.scan .frame.ok{border-color:var(--good)}
+.scan .prog{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 100px);display:flex;gap:9px}
+.scan .prog i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);transition:background .3s,transform .3s}
+.scan .prog i.ok{background:var(--good);transform:scale(1.25)}
+/* 2.5 : conso réelle (pleins) */
+.rc .fu .r b{font-size:28px}
+.rc .verdict{margin:12px 0 4px;padding:8px 11px;border-radius:12px;background:var(--surface-2);font-size:13px;line-height:1.45;color:var(--fg-2)}
+.rc .verdict b{color:var(--fg)}
+.rc .det b small{display:block;font-size:11.5px;font-weight:600;color:var(--fg-3);text-align:right}
+.rc .det .odd b{color:var(--warn)}
+.rc h3{margin:14px 0 2px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
+.tg{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;font-size:10.5px;font-weight:700;vertical-align:1px;background:var(--surface-2);color:var(--fg-2)}
+.tg.c{background:rgba(52,209,122,.14);color:var(--good)}
+/* 2.5 : animations des onglets */
+#main.anim>*{animation:tabIn .45s cubic-bezier(.2,.8,.2,1) both}
+#main.anim>*:nth-child(2){animation-delay:.06s}#main.anim>*:nth-child(3){animation-delay:.12s}
+#main.anim>*:nth-child(4){animation-delay:.18s}#main.anim>*:nth-child(5){animation-delay:.24s}
+#main.anim>*:nth-child(n+6){animation-delay:.3s}
+@keyframes tabIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+#main.anim .ch rect{transform-box:fill-box;transform-origin:50% 100%;animation:barUp .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes barUp{from{transform:scaleY(0)}}
+.bar i{transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.tabs button[aria-selected="true"] svg{animation:tabPop .35s cubic-bezier(.3,1.6,.4,1)}
+@keyframes tabPop{50%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){#main.anim>*,#main.anim .ch rect,.tabs svg{animation:none!important}.bar i{transition:none}}
 </style>
 </head>
 <body>
@@ -250,7 +284,7 @@ button{font:inherit;color:inherit}
 <button type="button" role="tab" data-t="trips"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/></svg>Trajets</button>
 <button type="button" role="tab" data-t="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Réglages</button>
 </nav>
-<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><button type="button" class="btn ghost" id="sclose">Annuler</button></div>
+<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><button type="button" class="btn ghost" id="sclose">Annuler</button></div>
 <canvas id="scv" hidden></canvas>
 
 <script src="car-model.js"></script>
@@ -263,7 +297,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.4';
+var APP_V='2.5.1';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -277,7 +311,7 @@ function updCheck(){
 }
 setTimeout(updCheck,1500);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)updCheck()});
-var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last'};
+var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true};
 var SET=Object.assign({},SDEF);try{Object.assign(SET,JSON.parse(localStorage.getItem(SETK)||'{}'))}catch(e){}
 if(!SET.islOffMig){SET.islOffMig=1;SET.isl=false;try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
 function setSave(){try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
@@ -295,6 +329,26 @@ function f2(v){return v.toFixed(2).replace('.',',')}
 function fi(v){return Math.round(v).toLocaleString('fr-FR')}
 function dur(s){s=Math.round(s);var h=Math.floor(s/3600),m=Math.round((s%3600)/60);return h?h+' h '+(m<10?'0':'')+m:m+' min'}
 function eState(e){return e>=75?'ok':e>=50?'warn':'bad'}
+/* ---------- 2.5 : animations des onglets (chiffres qui défilent, jauges qui se remplissent) ---------- */
+var ANIM=false;
+var FMT={i:fi,'1':f1,'2':f2,n:function(v){return String(Math.round(v))}};
+function cu(v,f){return '<span class="cu" data-v="'+v+'" data-f="'+f+'">'+FMT[f](v)+'</span>'}
+function reduced(){try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+function countUp(){
+  var els=document.querySelectorAll('#main .cu');if(!els.length)return;
+  var t0=performance.now();
+  function step(t){var k=Math.min(1,(t-t0)/800),e=1-Math.pow(1-k,3);
+    Array.prototype.forEach.call(els,function(el){el.textContent=FMT[el.getAttribute('data-f')](+el.getAttribute('data-v')*e)});
+    if(k<1)requestAnimationFrame(step)}
+  requestAnimationFrame(step);
+}
+function barsUp(){Array.prototype.forEach.call(document.querySelectorAll('#main .bar i'),function(i){var tg=i.style.transform;i.style.transition='none';i.style.transform='scaleX(0)';void i.offsetWidth;i.style.transition='';i.style.transform=tg})}
+function animMain(){
+  var m=$('#main');
+  if(ANIM&&SET.anim&&!reduced()){m.classList.remove('anim');void m.offsetWidth;m.classList.add('anim');countUp();barsUp()}
+  else m.classList.remove('anim');
+  ANIM=false;
+}
 /* ---------- « Dynamic Island » : la pastille noire sort de l'île de l'iPhone, puis y rentre ---------- */
 var ISL={q:[],busy:false,timer:null};
 var ICO={car:'<path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8l2 5v3a1 1 0 0 1-1 1h-1M6 17H5a1 1 0 0 1-1-1"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
@@ -371,7 +425,17 @@ function sampleDb(){
   }
   var lm=new Date(now.getFullYear(),now.getMonth()-1,1);
   for(var q=1;q<=26;q+=2){var tt=new Date(lm.getFullYear(),lm.getMonth(),q,17,30).getTime();var ds=18+(q*5)%20;d.trips[tt]={t0:tt,dur:ds*100,dist:ds,fuel:ds*0.068,vmax:90,hard:1,accel:1,over:0,idle:300,eco:74,rpm:2200}}
-  d.fills[now.getTime()-6*864e5]={t:now.getTime()-6*864e5,litres:38.5,full:true};
+  /* pleins fictifs : la vraie conso sort ~6 % au-dessus de l'estimation OBD */
+  var fl=[[new Date(lm.getFullYear(),lm.getMonth(),1,7,0),1],[new Date(lm.getFullYear(),lm.getMonth(),14,7,0),1],[new Date(lm.getFullYear(),lm.getMonth(),20,7,0),0],[new Date(now.getFullYear(),now.getMonth(),1,7,0),1]];
+  if(day>=3)fl.push([new Date(now.getFullYear(),now.getMonth(),Math.max(2,day-3),7,0),1]);
+  var prevT=0,part=0;
+  fl.forEach(function(x){
+    var t=x[0].getTime();if(t>Date.now())return;
+    var obd=0;Object.keys(d.trips).forEach(function(k){var r=d.trips[k];if(r.t0>=prevT&&r.t0<t)obd+=r.fuel});
+    var li=!prevT?36:x[1]?Math.max(1,obd*1.06-part):5;
+    li=Math.round(li*10)/10;d.fills[t]={t:t,litres:li,full:!!x[1]};
+    if(x[1]){prevT=t;part=0}else part+=li;
+  });
   return d;
 }
 function data(){return sample?sampleDb():db}
@@ -388,6 +452,52 @@ function month(y,m){
   var F=Object.keys(D.fills).map(function(k){return D.fills[k]}).filter(function(f){var t=new Date(f.t);return t.getFullYear()===y&&t.getMonth()===m});
   o.fills=F.length;o.fillL=F.reduce(function(a,f){return a+(f.litres||0)},0);
   return o;
+}
+/* ---------- 2.5 : conso réelle, entre deux pleins complets ----------
+   conso réelle = litres mis après le 1er plein complet, jusqu'au 2e inclus (pleins partiels compris)
+                  ÷ km des trajets faits entre les deux × 100 */
+function fillStats(){
+  var D=data(),F=Object.keys(D.fills||{}).map(function(k){return D.fills[k]}).sort(function(a,b){return a.t-b.t}),L=list(),I=[],full=[];
+  F.forEach(function(f,i){if(f.full)full.push(i)});
+  for(var k=1;k<full.length;k++){
+    var ia=full[k-1],ib=full[k],a=F[ia],b=F[ib],lit=0,ok=true,np=0;
+    for(var j=ia+1;j<=ib;j++){if(F[j].litres==null){ok=false;break}lit+=F[j].litres;if(!F[j].full)np++}
+    if(!ok||lit<=0)continue;
+    var km=0,obd=0,n=0;
+    L.forEach(function(r){if(r.t0>=a.t&&r.t0<b.t){km+=r.dist;obd+=r.fuel;n++}});
+    if(km<30)continue;
+    var real=lit/km*100;
+    I.push({a:a.t,b:b.t,km:km,lit:lit,obd:obd,n:n,np:np,real:real,obdC:obd>0?obd/km*100:null,odd:real<3||real>15});
+  }
+  return {F:F,I:I.reverse()};
+}
+var SD=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short'});
+function realCard(){
+  var R=fillStats(),F=R.F,I=R.I,h='<div class="card rc"><h2>Conso réelle · pleins</h2>';
+  if(!F.length)return h+'<p class="note" style="margin-top:0">Les pleins enregistrés par l’autoradio apparaîtront ici après une synchro. Avec deux pleins complets, l’appli calcule ta vraie consommation.</p></div>';
+  var G=I.filter(function(x){return !x.odd}),tk=0,tl=0,to=0;
+  G.forEach(function(x){tk+=x.km;tl+=x.lit;to+=x.obd});
+  if(G.length){
+    var real=tl/tk*100,obd=to>0?to/tk*100:null;
+    h+='<div class="fu"><div><b>'+cu(real,'1')+'</b><small>L/100 réels<span class="tg c">calcul</span></small></div><div class="r"><b>'+(obd!=null?cu(obd,'1'):'–')+'</b><small>L/100 autoradio<span class="tg">estimation</span></small></div></div>';
+    if(obd!=null){
+      var pc=Math.round((real-obd)/obd*100);
+      h+='<div class="verdict">'+(Math.abs(pc)<=2?'L’estimation de l’autoradio est <b>très juste</b> (écart de '+(pc>0?'+':pc<0?'−':'')+Math.abs(pc)+' %).':'L’autoradio <b>'+(pc>0?'sous-estime':'surestime')+'</b> ta conso de <b>'+Math.abs(pc)+' %</b>. Les coûts affichés sont donc un peu '+(pc>0?'en dessous':'au-dessus')+' de la réalité.')+'<br>Sur '+G.length+' période'+(G.length>1?'s':'')+' entre pleins, '+fi(tk)+' km et '+f1(tl)+' L.</div>';
+    }
+    h+='<h3>Entre deux pleins complets</h3><div class="det">';
+    I.slice(0,6).forEach(function(x){
+      var pc=x.obdC?Math.round((x.real-x.obdC)/x.obdC*100):null;
+      h+='<div'+(x.odd?' class="odd"':'')+'><span>'+SD.format(new Date(x.a))+' → '+SD.format(new Date(x.b))+'<br><small>'+fi(x.km)+' km · '+f1(x.lit)+' L'+(x.np?' · '+x.np+' plein'+(x.np>1?'s':'')+' partiel'+(x.np>1?'s':''):'')+'</small></span><b>'+f1(x.real)+' L/100'+(x.odd?'<small>valeur à vérifier</small>':x.obdC?'<small>autoradio '+f1(x.obdC)+(pc!=null?' · '+(pc>0?'+':pc<0?'−':'±')+Math.abs(pc)+' %':'')+'</small>':'')+'</b></div>';
+    });
+    h+='</div>';
+  }else{
+    var nf=F.filter(function(f){return f.full}).length;
+    h+='<p class="note" style="margin-top:0">'+(nf<2?'Il faut <b>deux pleins complets</b> pour calculer ta vraie conso (pour l’instant : '+nf+').':'Pas encore assez de km entre deux pleins complets (30 km minimum), ou des litres manquants.')+'</p>';
+  }
+  h+='<h3>Derniers pleins</h3><div class="det">';
+  F.slice().reverse().slice(0,5).forEach(function(f){h+='<div><span>'+cap(DF.format(new Date(f.t)))+'</span><b>'+(f.litres!=null?f1(f.litres)+' L':'– L')+' · '+(f.full?'complet':'partiel')+'</b></div>'});
+  h+='</div><p class="note">Conso réelle calculée : litres mis ÷ km parcourus entre deux pleins complets. Elle n’est juste que si tous les trajets de la période ont été synchronisés et si les litres ont été saisis sur l’autoradio.</p></div>';
+  return h;
 }
 function cmp(a,b,better){
   if(a==null||b==null||!b)return '';
@@ -409,10 +519,15 @@ function render(){
     h='<div class="card empty"><b>Aucune donnée pour l’instant</b><p>Les trajets arrivent depuis l’autoradio, par QR code.</p><ol><li>Sur l’autoradio : écran <b>Trajets</b> › <b>Envoyer vers l’iPhone</b>.</li><li>Ici : touche <b>Scanner le QR de l’autoradio</b> et vise le code.</li><li>S’il y a plusieurs codes, scanne-les l’un après l’autre.</li></ol><button type="button" class="btn" id="scan2" style="margin:0 6px 8px">Scanner le QR de l’autoradio</button><button type="button" class="btn ghost" id="demo">Voir un exemple</button><button type="button" class="btn ghost" id="sopen" style="margin:0 6px 8px">Réglages</button></div>';
     $('#main').innerHTML=h;$('#demo').onclick=function(){sample=true;render();island({icon:'car',tone:'info',title:'Mode exemple',sub:'Données fictives pour découvrir l’appli',ms:2400})};$('#scan2').onclick=scan;var so=$('#sopen');if(so)so.onclick=function(){TAB='set';render()};return;
   }
+  /* synchro en un toucher (2.5) */
+  if(S){
+    var old=!sample&&Date.now()-S.t>6*3600e3;
+    h+='<div class="card syc'+(old?' old':'')+'"><div><h2>Synchro</h2><small>'+(sample?'Mode exemple':'Dernière '+ago(S.t)+(old?' · pense à synchroniser':''))+'</small></div><button type="button" class="btn'+(old||sample?'':' ghost')+'" id="syncb"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"/></svg>Synchroniser</button></div>';
+  }
   /* réservoir */
   if(S&&S.rem!=null){
     var pct=Math.max(0,Math.min(1,S.rem/(S.tank||50))),st=pct<.09?'bad':pct<SET.low/100?'warn':'';
-    h+='<div class="card"><h2>Réservoir</h2><div class="fu"><div><b>'+(S.range!=null?fi(Math.round(S.range/5)*5):'–')+'</b><small>km d’autonomie · '+(S.measured?'mesurée':'estimée')+'</small></div><div class="r"><b>'+f1(S.rem)+'</b><small>litres restants</small></div></div><div class="bar" data-s="'+st+'"><i style="transform:scaleX('+pct.toFixed(3)+')"></i></div><p class="note">Valeurs au moment de la dernière synchro ('+ago(S.t)+').</p></div>';
+    h+='<div class="card"><h2>Réservoir</h2><div class="fu"><div><b>'+(S.range!=null?cu(Math.round(S.range/5)*5,'i'):'–')+'</b><small>km d’autonomie · '+(S.measured?'mesurée':'estimée')+'</small></div><div class="r"><b>'+cu(S.rem,'1')+'</b><small>litres restants</small></div></div><div class="bar" data-s="'+st+'"><i style="transform:scaleX('+pct.toFixed(3)+')"></i></div><p class="note">Valeurs au moment de la dernière synchro ('+ago(S.t)+').</p></div>';
   }
   /* dernier trajet (onglet Voiture) */
   if(L.length){
@@ -440,10 +555,10 @@ function render(){
   h+='<div class="card"><div class="mh"><button type="button" id="mp">‹</button><b>'+cap(MF.format(d))+'</b><button type="button" id="mn"'+(mOff===0?' disabled':'')+'>›</button></div>';
   if(!c)h+='<p class="note" style="padding:8px 0">Aucun trajet ce mois-ci.</p>';
   else{
-    h+='<div class="g4"><div><b>'+fi(c.km)+'<u>km</u></b><small>Distance</small>'+cmp(c.km,p&&p.km,0)+'</div>'+
-      '<div><b>'+(c.cons!=null?f1(c.cons):'–')+'<u>L/100</u></b><small>Conso moyenne</small>'+cmp(c.cons,p&&p.cons,-1)+'</div>'+
-      '<div><b>'+fi(c.cost)+'<u>€</u></b><small>Carburant · '+f1(c.fuel)+' L</small>'+cmp(c.cost,p&&p.cost,-1)+'</div>'+
-      '<div><b>'+c.eco+'<u>/100</u></b><small>Score éco</small>'+cmp(c.eco,p&&p.eco,1)+'</div></div>';
+    h+='<div class="g4"><div><b>'+cu(c.km,'i')+'<u>km</u></b><small>Distance</small>'+cmp(c.km,p&&p.km,0)+'</div>'+
+      '<div><b>'+(c.cons!=null?cu(c.cons,'1'):'–')+'<u>L/100</u></b><small>Conso moyenne</small>'+cmp(c.cons,p&&p.cons,-1)+'</div>'+
+      '<div><b>'+cu(c.cost,'i')+'<u>€</u></b><small>Carburant · '+f1(c.fuel)+' L</small>'+cmp(c.cost,p&&p.cost,-1)+'</div>'+
+      '<div><b>'+cu(c.eco,'n')+'<u>/100</u></b><small>Score éco</small>'+cmp(c.eco,p&&p.eco,1)+'</div></div>';
     h+='<div class="sub"><span><b>'+c.n+'</b> trajet'+(c.n>1?'s':'')+'</span><span><b>'+dur(c.dur)+'</b> au volant</span></div>';
     var mx=Math.max.apply(null,c.days.concat([1])),bw=100/c.days.length,svg='',best=0,bi=0;
     c.days.forEach(function(v,i){var hh=v>0?Math.max(3,v/mx*54):2,x=i*bw+bw*.18,w=bw*.64;svg+='<rect class="'+(v>0?'':'z')+'" x="'+x.toFixed(2)+'" y="'+(56-hh).toFixed(1)+'" width="'+w.toFixed(2)+'" height="'+hh.toFixed(1)+'" rx="1"/>';if(v>best){best=v;bi=i}});
@@ -454,6 +569,7 @@ function render(){
     h+='<p class="note">Carburant et coût estimés à partir de l’OBD.</p>';
   }
   h+='</div>';
+  h+=realCard();
   T.bilan=h;h='';
   T.fav=favCard(L)||'<div class="card empty"><b>Pas encore de favoris</b><p>Sur l’autoradio, écran <b>Trajets</b> › <b>Trajets favoris</b> : donne un nom à tes trajets habituels (Maison → Travail…). Ils apparaîtront ici à la prochaine synchro.</p></div>';
   /* trajets */
@@ -470,11 +586,12 @@ function render(){
   T.trips='<div class="ttl">'+L.length+' trajet'+(L.length>1?'s':'')+'</div>'+h;
   T.set=setHtml(D,L);
   if(!T[TAB])TAB='car';
-  $('#main').innerHTML=T[TAB];setApply();if(TAB==='set')setWire();
+  $('#main').innerHTML=T[TAB];setApply();if(TAB==='set')setWire();animMain();
+  var sb=$('#syncb');if(sb)sb.onclick=scan;
   $('#tabs').classList.remove('hide');
   Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.setAttribute('aria-selected',b.getAttribute('data-t')===TAB?'true':'false')});
   if(TAB==='car'&&SET.car3d)show3d(S);else $('#car3d').classList.add('hide');
-  var mp=$('#mp'),mn=$('#mn');if(mp)mp.onclick=function(){if(mOff<24){mOff++;render()}};if(mn)mn.onclick=function(){if(mOff>0){mOff--;render()}};
+  var mp=$('#mp'),mn=$('#mn');if(mp)mp.onclick=function(){if(mOff<24){mOff++;ANIM=true;render()}};if(mn)mn.onclick=function(){if(mOff>0){mOff--;ANIM=true;render()}};
   Array.prototype.forEach.call(document.querySelectorAll('.tr'),function(b){b.onclick=function(){b.classList.toggle('open')}});
   var wp=$('#wipe');if(wp)wp.onclick=function(){if(sample){sample=false;render();return}if(window.confirm('Effacer les trajets enregistrés sur ce téléphone ?')){db={trips:{},fills:{},snap:null,favs:{}};save();render()}};
 }
@@ -490,6 +607,7 @@ function setHtml(D,L){
     '<div class="srow"><div class="sl">Couleur de l’appli</div><div class="seg">'+sw+'</div></div>'+
     segRow('txt','Taille du texte','',[['s','Petit'],['m','Normal'],['l','Grand'],['xl','Très grand']])+
     segRow('car3d','Voiture en 3D','Dans l’onglet Voiture, avec le bouton du verrou.',ONOFF)+
+    segRow('anim','Animations des onglets','Les chiffres défilent, la jauge et le graphique se remplissent.',ONOFF)+
     segRow('startTab','Onglet à l’ouverture','',[['last','Dernier utilisé'],['car','Voiture'],['bilan','Bilan'],['trips','Trajets']])+'</div>';
   h+='<div class="card sgc"><h2>Animation de démarrage</h2>'+
     segRow('splash','Style','',[['3d','Voiture 3D'],['neon','Néon'],['off','Aucune']])+
@@ -573,7 +691,7 @@ function favCard(L){
       cmp=p.join(' · ');
     }
     var lcn=last.dist>.5&&last.fuel>0?f1(last.fuel/last.dist*100)+' L/100 · ':'';
-    h+='<div class="fv"><div class="t1"><div><b>'+esc(F[id])+'</b><small>'+T.length+' trajet'+(T.length>1?'s':'')+' · '+f1(km/T.length)+' km</small></div><div class="c"><b>'+(ac!=null?f1(ac):'–')+'<u>L/100</u></b></div></div>'+
+    h+='<div class="fv"><div class="t1"><div><b>'+esc(F[id])+'</b><small>'+T.length+' trajet'+(T.length>1?'s':'')+' · '+f1(km/T.length)+' km</small></div><div class="c"><b>'+(ac!=null?cu(ac,'1'):'–')+'<u>L/100</u></b></div></div>'+
       '<div class="ls">Dernier, '+dayLabel(new Date(last.t0)).toLowerCase()+' : <b>'+lcn+dur(last.dur)+'</b>'+(cmp?'<br>'+cmp:'')+'</div>'+
       '<div class="g"><span><b>'+(bc!=null?f1(bc):'–')+'</b>meilleure conso</span><span><b>'+dur(du/T.length)+'</b>temps moyen</span><span><b>'+dur(bd)+'</b>plus rapide</span></div></div>';
   });
@@ -584,10 +702,15 @@ function dayLabel(d){var t=new Date();t.setHours(0,0,0,0);var x=new Date(d);x.se
 
 /* ---------- scanner ---------- */
 var stream=null,running=false;
-function stopScan(){running=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}$('#scan').classList.add('hide')}
+/* 2.5 : le scanner reste ouvert tant que tous les codes d'une synchro n'ont pas été lus */
+var SC={done:{},total:0,added:0,last:'',any:false};
+function scLeft(){var n=0;for(var i=1;i<=SC.total;i++)if(!SC.done[i])n++;return n}
+function progDraw(){var p=$('#sprog'),h='';if(SC.total>1)for(var i=1;i<=SC.total;i++)h+='<i'+(SC.done[i]?' class="ok"':'')+'></i>';p.innerHTML=h}
+function stopScan(){running=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}$('#scan').classList.add('hide');if(SC.any){SC.any=false;ANIM=true;render()}}
 function scan(){
   if(typeof jsQR!=='function'){toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500);return}
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('La caméra n’est pas disponible ici. Ouvre l’appli depuis l’écran d’accueil ou dans Safari.',4500);return}
+  SC={done:{},total:0,added:0,last:'',any:false};progDraw();
   $('#scan').classList.remove('hide');$('#smsg').textContent='Vise le QR code affiché sur l’autoradio';
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){
     stream=s;var v=$('#vid');v.srcObject=s;v.setAttribute('playsinline','');v.play();running=true;tick();
@@ -600,14 +723,22 @@ function tick(){
     var cv=$('#scv'),w=Math.min(720,v.videoWidth),h=Math.round(v.videoHeight*w/v.videoWidth);
     cv.width=w;cv.height=h;var cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(v,0,0,w,h);
     var img=cx.getImageData(0,0,w,h),code=jsQR(img.data,w,h,{inversionAttempts:'dontInvert'});
-    if(code&&code.data){
+    if(code&&code.data&&code.data!==SC.last){
+      SC.last=code.data;
       if(code.data.indexOf('#s=')<0){$('#smsg').textContent='Ce QR code ne vient pas du tableau de bord de La Mathias.'}
       else{
         try{
-          var r=importFromUrl(code.data);stopScan();render();
-          island({fallback:1,icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total+(r.page<r.total?' · scanne le suivant':' · terminé'):'Synchronisation terminée',right:r.total>1?r.page+'/'+r.total:'',ms:3600});
-          return;
-        }catch(e){$('#smsg').textContent='Code illisible, réessaie.'}
+          var r=importFromUrl(code.data);
+          SC.any=true;SC.added+=r.added;SC.total=Math.max(1,r.total||1);SC.done[r.page||1]=1;progDraw();
+          var fr=$('#sfr');fr.classList.add('ok');setTimeout(function(){fr.classList.remove('ok')},600);
+          var left=scLeft();
+          if(!left){
+            var tot=SC.total,add=SC.added;stopScan();
+            island({fallback:1,icon:'check',pop:true,tone:'good',title:add?add+' trajet'+(add>1?'s':'')+' importé'+(add>1?'s':''):'Tout est à jour',sub:tot>1?tot+' codes scannés · synchro terminée':'Synchronisation terminée',right:tot>1?tot+'/'+tot:'',ms:3600});
+            return;
+          }
+          $('#smsg').textContent='Code '+(r.page||1)+' sur '+SC.total+' lu ✓ · affiche le suivant sur l’autoradio ('+left+' restant'+(left>1?'s':'')+')';
+        }catch(e){SC.last='';$('#smsg').textContent='Code illisible, réessaie.'}
       }
     }
   }
@@ -621,9 +752,9 @@ lockDraw();
 $('#scanb').onclick=scan;
 Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){
   var t=b.getAttribute('data-t');if(t===TAB){window.scrollTo({top:0,behavior:'smooth'});return}
-  TAB=t;try{localStorage.setItem('sandero-phone-tab',t)}catch(e){}window.scrollTo(0,0);render();
+  TAB=t;try{localStorage.setItem('sandero-phone-tab',t)}catch(e){}window.scrollTo(0,0);ANIM=true;render();
 }});
-$('#sclose').onclick=stopScan;
+$('#sclose').onclick=function(){var part=SC.any&&scLeft()>0,d=SC.total-scLeft(),t=SC.total;stopScan();if(part)toast('Synchro partielle : '+d+' code'+(d>1?'s':'')+' sur '+t+'. Relance-la pour finir.',4000)};
 
 /* ---------- démarrage ---------- */
 load();
@@ -653,7 +784,7 @@ function welcomeIsland(){
   if(snap&&snap.plate)document.getElementById('spplt').textContent=snap.plate;else if(!snap)document.getElementById('sppl').style.display='none';
   var done=false,cv=document.getElementById('car-gl'),home=cv.parentNode,next=cv.nextSibling;
   function putBack(){cv.classList.remove('cvfly');cv.style.left=cv.style.top=cv.style.width=cv.style.height='';if(cv.parentNode!==home)home.insertBefore(cv,next)}
-  function end(){if(done)return;done=true;var was3d=sp&&sp.classList.contains('sp3d');putBack();if(sp&&sp.parentNode)sp.parentNode.removeChild(sp);sp=null;try{render()}catch(e){}setTimeout(welcomeIsland,was3d?1500:300);if(was3d&&SET.flash&&window.Car3D&&window.Car3D.flash)setTimeout(function(){window.Car3D.flash()},120)}
+  function end(){if(done)return;done=true;var was3d=sp&&sp.classList.contains('sp3d');putBack();if(sp&&sp.parentNode)sp.parentNode.removeChild(sp);sp=null;ANIM=true;try{render()}catch(e){}setTimeout(welcomeIsland,was3d?1500:300);if(was3d&&SET.flash&&window.Car3D&&window.Car3D.flash)setTimeout(function(){window.Car3D.flash()},120)}
   function neon(){if(!sp)return;sp.classList.remove('sp3d');putBack();sp.classList.remove('wait');setTimeout(end,3200)}
   sp.addEventListener('click',function(){if(!sp||done)return;sp.classList.add('skip');sp.classList.remove('wait');setTimeout(end,320)});
   sp.addEventListener('animationend',function(e){if(e.target===sp&&(e.animationName==='spOut'||e.animationName==='spBg'))end()});
