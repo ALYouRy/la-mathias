@@ -430,6 +430,34 @@ button{font:inherit;color:inherit}
 @keyframes mtIn{from{transform:scaleX(0)}}
 .mtv{text-align:right;font-size:12px;color:var(--fg-2)}.mtv b{display:inline;font-size:15px;color:var(--fg)}
 @media (prefers-reduced-motion:reduce){#main.anim .mtr em{animation:none}}
+/* 2.16 : fantôme, stations, prochain plein, perso/pro */
+.ghc{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:5;min-width:210px;padding:8px 14px;border-radius:14px;background:rgba(7,5,26,.88);border:1px solid rgba(255,63,208,.55);box-shadow:0 0 18px rgba(255,63,208,.3);text-align:center}
+.ghc b{display:block;font-size:12.5px;color:#ff8ce6}.ghc small{display:block;font-size:11px;color:var(--fg-3)}
+.ghc em{display:block;margin-top:3px;font-style:normal;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}.ghc em.g{color:var(--good)}.ghc em.b{color:var(--warn)}
+.mapv:not(.spotm) .mleg{top:auto;bottom:62px}
+.nf{display:flex;gap:10px;align-items:flex-start;margin:4px 0 2px;padding:9px 11px;border-radius:12px;background:var(--surface-2);font-size:13px;color:var(--fg-2)}
+.nf svg{flex:0 0 auto;width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+.nf b{color:var(--fg)}.nf small{display:block;margin-top:2px;font-size:11px;color:var(--fg-3)}
+.fpc .det b{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:16px}
+.fpgo{font-size:11.5px;font-weight:700;color:var(--accent);text-decoration:none}
+.fpbest{display:inline-block;margin:0 0 3px;padding:1px 7px;border-radius:6px;background:rgba(52,209,122,.15);color:var(--good);font-size:10.5px;font-style:normal;font-weight:800}
+.pps{align-items:center}.pps .seg{margin:0;flex-wrap:nowrap}.pps .seg button{min-width:64px;padding:6px 10px}
+.ptag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;background:rgba(255,159,10,.16);color:#ff9f0a;font-size:10.5px;font-weight:800;letter-spacing:.04em}
+/* 2.16 : carnet d'entretien */
+.mtc2 .det .mte{cursor:pointer}
+.mtph{display:inline-block;margin-left:4px;padding:0 6px;border-radius:6px;background:rgba(var(--accent-rgb),.14);color:var(--accent);font-size:10px;font-style:normal;font-weight:800;vertical-align:1px}
+.mtb2{flex-direction:row!important}.mtb2 .btn{flex:1}
+.sheet{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;flex-direction:column;animation:mvIn .3s cubic-bezier(.2,.8,.2,1)}
+.sh-hd{display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 16px 10px;border-bottom:1px solid var(--line)}
+.sh-hd b{font-size:19px;font-weight:750}
+.sh-c{flex:1;overflow:auto;padding:14px 16px calc(env(safe-area-inset-bottom) + 24px);-webkit-overflow-scrolling:touch}
+.mtrow{cursor:pointer}.mtrow .t1 span{font-weight:750}
+.mtf .seg button{flex:0 0 auto}
+.mtf textarea{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:9px 12px;color:var(--fg);font:inherit;font-size:16px;resize:vertical}
+.mtf input[type=date]{min-height:40px}
+.mtf .sin input{min-width:0}
+.mtphv img{display:block;max-width:100%;max-height:260px;margin:10px 0 0;border-radius:12px;border:1px solid var(--line)}
+.mtphx{margin-top:6px;border:0;background:none;color:#ff6b6d;font-weight:700;padding:4px 0}
 </style>
 </head>
 <body>
@@ -470,8 +498,9 @@ button{font:inherit;color:inherit}
 </nav>
 <div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><button type="button" class="btn ghost" id="sclose">Annuler</button></div>
 <canvas id="scv" hidden></canvas>
+<div class="sheet hide" id="sheet" role="dialog" aria-label="Carnet d’entretien"></div>
 <div class="wrap hide" id="wrap" role="dialog" aria-label="Ton année"></div>
-<div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div class="mapw"><div id="mapc"></div><button type="button" class="rpl hide" id="rpl"></button><div class="mleg hide" id="mleg"></div></div><div class="prof hide" id="prof"><div class="prof-l" id="profl"></div><svg id="profs" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-label="Profil du trajet : fais glisser le doigt"></svg><div class="prof-x"><span>0 km</span><span id="profk"></span><span id="profx"></span></div></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
+<div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div class="mapw"><div id="mapc"></div><button type="button" class="rpl hide" id="rpl"></button><div class="ghc hide" id="ghc"></div><div class="mleg hide" id="mleg"></div></div><div class="prof hide" id="prof"><div class="prof-l" id="profl"></div><svg id="profs" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-label="Profil du trajet : fais glisser le doigt"></svg><div class="prof-x"><span>0 km</span><span id="profk"></span><span id="profx"></span></div></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
 
 <script src="car-model.js"></script>
 <script src="car3d.js"></script>
@@ -480,10 +509,10 @@ button{font:inherit;color:inherit}
 (function(){
 'use strict';
 var KEY='sandero-phone-1';
-var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{}};
+var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.15';
+var APP_V='2.16';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -497,16 +526,44 @@ function updCheck(){
 }
 setTimeout(updCheck,1500);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)updCheck()});
-var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon',routeMode:'conso',map3d:false};
+var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon',routeMode:'conso',map3d:false,fuel:'e10',priceSrc:'radio'};
 var SET=Object.assign({},SDEF);try{Object.assign(SET,JSON.parse(localStorage.getItem(SETK)||'{}'))}catch(e){}
 if(!SET.work||typeof SET.work!=='object')SET.work={};
 if(!SET.islOffMig){SET.islOffMig=1;SET.isl=false;try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
 function setSave(){try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
 var ACC={cyan:['#00e5ff','0,229,255'],violet:['#a78bfa','167,139,250'],vert:['#34d17a','52,209,122'],orange:['#ff9f0a','255,159,10'],rose:['#ff4f9a','255,79,154'],blanc:['#e8e6f5','232,230,245']};
 function setApply(){var a=ACC[SET.accent]||ACC.cyan,r=document.documentElement.style;r.setProperty('--accent',a[0]);r.setProperty('--accent-rgb',a[1]);var m=document.getElementById('main');if(m)m.style.zoom={s:.92,m:1,l:1.1,xl:1.2}[SET.txt]||1}
-function priceOf(S){return SET.price>0?SET.price:(S&&S.price)||1.85}
+function priceOf(S){if(SET.price>0)return SET.price;if(SET.priceSrc==='stations'){var F=fpLoad();if(F&&F.fuel===SET.fuel&&F.avg)return F.avg}return (S&&S.price)||1.85}
+/* ---------- 2.16 : prix dans les stations proches (données publiques prix-carburants, mises à jour toutes les 10 min) ---------- */
+var FPK='sandero-prix',FP=null,FPP=null,FUELS={e10:'SP95-E10',sp95:'SP95',sp98:'SP98',gazole:'Gazole'};
+function fpLoad(){if(FP)return FP;try{FP=JSON.parse(localStorage.getItem(FPK)||'null')}catch(e){}return FP}
+function fpFetch(force){
+  if(sample)return Promise.resolve(false);if(FPP)return FPP;var F=fpLoad();
+  if(!force&&F&&F.fuel===SET.fuel&&Date.now()-F.t<2*3600e3)return Promise.resolve(false);
+  var pl=metPlace(),fu=SET.fuel,w="within_distance(geom, geom'POINT("+pl[1].toFixed(4)+" "+pl[0].toFixed(4)+")', 6km) and "+fu+"_prix is not null";
+  var u='https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records?select='+encodeURIComponent('id,adresse,ville,geom,'+fu+'_prix,'+fu+'_maj')+'&where='+encodeURIComponent(w)+'&order_by='+encodeURIComponent(fu+'_prix')+'&limit=30';
+  FPP=fetch(u).then(function(x){return x.ok?x.json():null}).then(function(j){
+    FPP=null;if(!j||!j.results)return false;var now=Date.now();
+    var L=j.results.map(function(o){var g=o.geom||{},la=g.lat,lo=g.lon,p=+o[fu+'_prix'],m=o[fu+'_maj']?Date.parse(o[fu+'_maj']):0;
+      return la==null||!(p>0)?null:{a:o.adresse||'',v:o.ville||'',la:la,lo:lo,p:p>10?p/1000:p,m:m,d:hav(pl,[la,lo])}}).filter(function(x){return x&&(!x.m||now-x.m<10*864e5)});
+    if(!L.length)return false;L.sort(function(a,b){return a.p-b.p});
+    var top=L.slice(0,5),avg=Math.round(top.reduce(function(s,x){return s+x.p},0)/top.length*1000)/1000;
+    FP={t:now,fuel:fu,avg:avg,n:L.length,k:top.length,list:L.slice(0,8)};try{localStorage.setItem(FPK,JSON.stringify(FP))}catch(e){}return true;
+  }).catch(function(){FPP=null;return false});
+  return FPP;
+}
+function fuelCard(){
+  var F=fpLoad(),h='<div class="card fpc" id="fuelc"><h2>Carburant près de chez toi · '+FUELS[SET.fuel]+'</h2>';
+  if(sample)return h+'<p class="note" style="margin-top:0">Les prix réels des stations proches s’affichent avec tes vraies données.</p></div>';
+  if(!F||F.fuel!==SET.fuel){fpFetch().then(function(ch){if(ch&&TAB==='car'){var e=$('#fuelc');if(e)e.outerHTML=fuelCard()}});return h+'<p class="note" style="margin-top:0">Recherche des prix dans les stations proches…</p></div>'}
+  if(Date.now()-F.t>2*3600e3)fpFetch().then(function(ch){if(ch&&TAB==='car'){var e=$('#fuelc');if(e)e.outerHTML=fuelCard()}});
+  h+='<div class="det">';
+  F.list.slice(0,3).forEach(function(x,i){h+='<div><span>'+(i===0?'<i class="fpbest">le moins cher</i>':'')+esc(x.a)+'<br><small>'+esc(x.v)+' · '+f1(x.d)+' km'+(x.m?' · prix du '+new Date(x.m).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):'')+'</small></span><b>'+x.p.toFixed(3).replace('.',',')+' €<a class="fpgo" href="https://maps.apple.com/?daddr='+x.la+','+x.lo+'&dirflg=d" target="_blank" rel="noopener">Itinéraire</a></b></div>'});
+  return h+'</div><p class="note">Moyenne des '+(F.k||5)+' station'+((F.k||5)>1?'s':'')+' les moins chères à moins de 6 km (prix de moins de 10 jours) : <b>'+F.avg.toFixed(3).replace('.',',')+' €/L</b>'+(SET.priceSrc==='stations'&&!(SET.price>0)?' (utilisée pour tes coûts)':' · tu peux l’utiliser pour tes coûts dans Réglages › Calculs')+'. Mis à jour '+ago(F.t)+'. Source : prix-carburants.gouv.fr (données publiques).</p></div>';
+}
+
 if(SET.startTab!=='last')TAB=SET.startTab;
-function load(){try{var o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)db=Object.assign({trips:{},fills:{},snap:null,favs:{},tracks:{},details:{}},o)}catch(e){}}
+function load(){try{var o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)db=Object.assign({trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}},o)}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
 function $(s){return document.querySelector(s)}
 function n36(x){return x?parseInt(x,36):0}
@@ -740,19 +797,30 @@ function bestHour(T){
 var BAREME={3:[.529,.316,1065,.370],4:[.606,.340,1330,.407],5:[.636,.357,1395,.427],6:[.665,.374,1457,.447],7:[.697,.394,1515,.470]};
 function bareme(d,cv){var b=BAREME[cv]||BAREME[4];return d<=5000?d*b[0]:d<=20000?d*b[1]+b[2]:d*b[3]}
 function isWork(id,name){if(SET.work&&SET.work[id]!=null)return !!SET.work[id];return /travail|boulot|bureau|taf\b|job/i.test(name||'')}
+/* ---------- 2.16 : prochain plein (estimation au rythme des 4 dernières semaines) ---------- */
+function nextFill(S,L){
+  if(!S||S.range==null)return '';var since=S.t-28*864e5,km=0;L.forEach(function(r){if(r.t0>=since&&r.t0<=S.t)km+=r.dist});
+  var day=km/28;if(day<2)return '';var left=Math.max(0,S.range-50),days=left/day,when=new Date(S.t+days*864e5);
+  var txt=days<1?'dès aujourd’hui':days<2?'demain':'vers '+DF.format(when);
+  return '<div class="nf"><svg viewBox="0 0 24 24"><path d="M5 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M4 20h12M15 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3"/></svg><span>Prochain plein <b>'+txt+'</b><small>à ton rythme de '+fi(day)+' km par jour, en gardant 50 km de réserve · estimation</small></span></div>';
+}
+/* ---------- 2.16 : trajets perso ou pro ---------- */
+function isPro(r){var T=data().tags;return !!(T&&T[r.t0]==='pro')}
 function workCard(L){
   var F=data().favs||{},ids=Object.keys(F).filter(function(id){return isWork(id,F[id])});if(!ids.length)return '';
   var now=new Date(),y=now.getFullYear(),m=now.getMonth(),price=priceOf(data().snap),A={n:0,km:0,fu:0},M={n:0,km:0,fu:0};
-  L.forEach(function(r){if(r.fav==null||ids.indexOf(String(r.fav))<0)return;var d=new Date(r.t0);if(d.getFullYear()!==y)return;
+  var PR={n:0,km:0};
+  L.forEach(function(r){var d=new Date(r.t0);if(d.getFullYear()!==y)return;var w=r.fav!=null&&ids.indexOf(String(r.fav))>=0;
+    if(!w){if(isPro(r)){PR.n++;PR.km+=r.dist}return}
     A.n++;A.km+=r.dist;A.fu+=r.fuel;if(d.getMonth()===m){M.n++;M.km+=r.dist;M.fu+=r.fuel}});
   var h='<div class="card"><h2>Domicile-travail</h2>';
-  if(!A.n)return h+'<p class="note" style="margin-top:0">Aucun trajet domicile-travail cette année pour l’instant.</p></div>';
-  var bm=bareme(A.km,SET.cv);
+  if(!A.n&&!PR.n)return h+'<p class="note" style="margin-top:0">Aucun trajet domicile-travail ou pro cette année pour l’instant.</p></div>';
+  var bm=bareme(A.km+PR.km,SET.cv);
   h+='<div class="g4"><div><b>'+cu(M.km,'i')+'<u>km</u></b><small>Ce mois · '+M.n+' trajet'+(M.n>1?'s':'')+'</small></div>'+
     '<div><b>'+cu(M.fu*price,'i')+'<u>€</u></b><small>Carburant ce mois<span class="tg">estimation</span></small></div>'+
     '<div><b>'+cu(A.km,'i')+'<u>km</u></b><small>Depuis le 1er janvier · '+A.n+' trajet'+(A.n>1?'s':'')+'</small></div>'+
     '<div><b>'+cu(A.fu*price,'i')+'<u>€</u></b><small>Carburant '+y+'<span class="tg">estimation</span></small></div></div>';
-  h+='<div class="det"><div><span>Barème kilométrique ('+(SET.cv>=7?'7 CV et +':SET.cv+' CV')+')<br><small>pour les '+fi(A.km)+' km de '+y+'</small></span><b>'+fi(bm)+' €<small><span class="tg c">calcul</span></small></b></div></div>';
+  h+='<div class="det"><div><span>Barème kilométrique ('+(SET.cv>=7?'7 CV et +':SET.cv+' CV')+')<br><small>pour les '+fi(A.km+PR.km)+' km de '+y+(PR.n?' (dont '+fi(PR.km)+' km pro)':'')+'</small></span><b>'+fi(bm)+' €<small><span class="tg c">calcul</span></small></b></div>'+(PR.n?'<div><span>Trajets pro '+y+'<br><small>marqués « Pro » dans l’onglet Trajets</small></span><b>'+PR.n+' · '+fi(PR.km)+' km</b></div>':'')+'</div>';
   h+='<p class="note">Comptés : '+ids.map(function(id){return esc(F[id])}).join(', ')+' (modifiable dans Réglages). Seuls les trajets synchronisés et rattachés à ces favoris sont comptés.<br>Barème des revenus 2025 (le dernier publié), pour une voiture thermique. Pour les frais réels, compare avec l’abattement automatique de 10 % et vérifie sur le simulateur d’impots.gouv.fr.</p></div>';
   return h;
 }
@@ -929,12 +997,35 @@ function setCursor(i,pan){
   curShow({lat:p[0],lon:p[1],km:M.d[i],ms:M.tm[i],v:M.v[i],c:M.c[i],x:M._x?M._x[i]:null,yv:M._yv?M._yv[i]:null,yc:M._yc?M._yc[i]:null});
 }
 /* ---------- 2.14 : rejouer un trajet ---------- */
+var MAPR=null,GH=null;
 var RP={on:false,paused:false,raf:0,t:0,last:0,T:null,real:0,k:1,i:0,b:null,r:null};
 function rpBtn(){var b=$('#rpl');if(!b)return;b.classList.toggle('hide',MODE!=='trip'||!MAPC);b.innerHTML=RP.on&&!RP.paused?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>×'+Math.round(RP.k):'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>'+(RP.on?'Reprendre':'Rejouer')}
-function rpStop(){if(RP.raf)cancelAnimationFrame(RP.raf);RP.raf=0;RP.on=false;RP.paused=false;if(MAP&&MAP.getSource('trail'))MAP.getSource('trail').setData({type:'FeatureCollection',features:[]});if(MAP&&MAP.getLayer('trace'))MAP.setPaintProperty('trace','line-opacity',1);rpBtn()}
+function ghClear(){['ghost','gtrail'].forEach(function(id){if(MAP&&MAP.getSource(id))MAP.getSource(id).setData({type:'FeatureCollection',features:[]})});var c=$('#ghc');if(c)c.classList.add('hide')}
+function rpStop(){if(RP.raf)cancelAnimationFrame(RP.raf);RP.raf=0;RP.on=false;RP.paused=false;GH=null;ghClear();if(MAP&&MAP.getSource('trail'))MAP.getSource('trail').setData({type:'FeatureCollection',features:[]});if(MAP&&MAP.getLayer('trace'))MAP.setPaintProperty('trace','line-opacity',1);rpBtn()}
 function rpTrail(m){if(m.getSource('trail'))return;m.addSource('trail',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
   m.addLayer({id:'trail-glow',type:'line',source:'trail',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffffff','line-width':14,'line-blur':8,'line-opacity':.5}},m.getLayer('ends')?'ends':undefined);
-  m.addLayer({id:'trail',type:'line',source:'trail',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffffff','line-width':3.5}},m.getLayer('ends')?'ends':undefined)}
+  m.addLayer({id:'trail',type:'line',source:'trail',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffffff','line-width':3.5}},m.getLayer('ends')?'ends':undefined);
+  m.addSource('ghost',{type:'geojson',data:{type:'FeatureCollection',features:[]}});m.addSource('gtrail',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  m.addLayer({id:'gtrail',type:'line',source:'gtrail',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ff3fd0','line-width':3,'line-opacity':.7,'line-dasharray':[1.5,1.5]}},m.getLayer('trail-glow')?'trail-glow':undefined);
+  m.addLayer({id:'ghost-glow',type:'circle',source:'ghost',paint:{'circle-radius':18,'circle-color':'#ff3fd0','circle-opacity':.3,'circle-blur':.7}});
+  m.addLayer({id:'ghost',type:'circle',source:'ghost',paint:{'circle-radius':7,'circle-color':'#ff3fd0','circle-opacity':.85,'circle-stroke-color':'#ffd1f4','circle-stroke-width':2}})}
+/* ---------- 2.16 : course contre le fantôme (meilleur temps sur le même trajet favori) ---------- */
+function ghostFor(r){
+  if(!r||r.fav==null)return null;var D=data(),best=null;
+  Object.keys(D.trips).forEach(function(k){var o=D.trips[k];if(o.t0===r.t0||String(o.fav)!==String(r.fav)||!trackOf(o))return;if(!best||o.dur<best.dur)best=o});
+  if(!best)return null;var P=trackOf(best),M=routeModel(best,P),ok=M.tm.every(function(x){return x!=null}),tot=M.d[M.d.length-1]||1,T=[];
+  for(var i=0;i<P.length;i++)T.push(ok?(M.tm[i]-M.tm[0])/1000:M.d[i]/tot*best.dur);
+  return {r:best,P:P,M:M,T:T,i:0,rec:best.dur<=r.dur};
+}
+function ghostAt(G,t){var T=G.T;while(G.i<T.length-2&&T[G.i+1]<=t)G.i++;var i=G.i,j=Math.min(i+1,T.length-1),f=T[j]>T[i]?Math.max(0,Math.min(1,(t-T[i])/(T[j]-T[i]))):1,P=G.P;
+  return {lat:P[i][0]+(P[j][0]-P[i][0])*f,lon:P[i][1]+(P[j][1]-P[i][1])*f,km:G.M.d[i]+(G.M.d[j]-G.M.d[i])*f,i:i}}
+function ghostChip(myKm,gKm,end){
+  var c=$('#ghc');if(!GH){c.classList.add('hide');return}c.classList.remove('hide');
+  var who=GH.rec?'ton record':'ton meilleur temps',dd=new Date(GH.r.t0),h='<b>Fantôme · '+who+'</b><small>'+dayLabel(dd).toLowerCase()+' · '+dur(GH.r.dur)+'</small>';
+  if(end){var df=Math.round(MAPR.dur-GH.r.dur);h+='<em class="'+(df<=0?'g':'b')+'">'+(df===0?'Même temps que le fantôme':df<0?'Nouveau record : '+durS(-df)+' de mieux':durS(df)+' de plus que le fantôme')+'</em>'}
+  else{var m=Math.round((myKm-gKm)*1000);h+='<em class="'+(m>=0?'g':'b')+'">'+(Math.abs(m)<15?'Au coude à coude':m>0?'▲ '+fi(m)+' m d’avance':'▼ '+fi(-m)+' m de retard')+'</em>'}
+  c.innerHTML=h;
+}
 function rpStart(){
   var M=MAPM,P=MAPC;if(!M||!P||!MAP)return;
   if(RP.on&&RP.paused){RP.paused=false;RP.last=performance.now();rpBtn();RP.raf=requestAnimationFrame(rpFrame);return}
@@ -944,6 +1035,7 @@ function rpStart(){
   for(var i=0;i<P.length;i++)T.push(ok?(M.tm[i]-M.tm[0])/1000:M.d[i]/tot*(RP.dur||600));
   RP.T=T;RP.real=T[T.length-1]||1;var D2=Math.max(9,Math.min(24,RP.real/40));RP.k=RP.real/D2;RP.t=0;RP.i=0;RP.b=null;RP.on=true;RP.paused=false;
   rpTrail(MAP);MAP.setPaintProperty('trace','line-opacity',.35);
+  GH=ghostFor(MAPR);if(GH){GH.i=0;ghostChip(0,0,false)}
   var z=Math.max(15.6,MAP.getZoom());MAP.easeTo({center:[P[0][1],P[0][0]],zoom:z,pitch:SET.map3d?62:0,bearing:SET.map3d?rpBear(P,0):0,duration:1000});
   rpBtn();setTimeout(function(){if(!RP.on)return;RP.last=performance.now();RP.raf=requestAnimationFrame(rpFrame)},1050);
 }
@@ -958,10 +1050,15 @@ function rpFrame(now){
   if(MAP.getSource('trail'))MAP.getSource('trail').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:co}});
   curShow({lat:lat,lon:lon,km:L(M.d[i],M.d[j]),ms:M.tm[0]?M.tm[0]+RP.t*1000:null,v:L(M.v[i],M.v[j]),c:M.c[j]!=null?M.c[j]:M.c[i],
     x:M._x?L(M._x[i],M._x[j]):null,yv:M._yv?L(M._yv[i],M._yv[j]):null,yc:M._yc?(M._yc[j]!=null?M._yc[j]:M._yc[i]):null});
+  if(GH&&MAP.getSource('ghost')){var tg=Math.min(RP.t,GH.T[GH.T.length-1]),g=ghostAt(GH,tg);
+    MAP.getSource('ghost').setData({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[g.lon,g.lat]}});
+    var gc=GH.P.slice(0,g.i+1).map(function(p){return [p[1],p[0]]});gc.push([g.lon,g.lat]);
+    MAP.getSource('gtrail').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:gc}});
+    ghostChip(L(M.d[i],M.d[j]),g.km,false)}
   var cam={center:[lon,lat]};
   if(SET.map3d){var tb=rpBear(P,i);if(RP.b==null)RP.b=MAP.getBearing();var dd=((tb-RP.b+540)%360)-180;RP.b+=dd*.06;cam.bearing=RP.b}
   MAP.jumpTo(cam);
-  if(RP.t>=RP.real){RP.on=false;RP.raf=0;rpBtn();CUR=P.length-1;setTimeout(function(){if(RP.on||!MAP||!MAPC)return;MAP.setPaintProperty('trace','line-opacity',1);if(MAP.getSource('trail'))MAP.getSource('trail').setData({type:'FeatureCollection',features:[]});MAP.fitBounds(bnds(window.maplibregl,MAPC),{padding:48,duration:1200})},1400);return}
+  if(RP.t>=RP.real){RP.on=false;RP.raf=0;rpBtn();CUR=P.length-1;if(GH)ghostChip(0,0,true);setTimeout(function(){if(RP.on||!MAP||!MAPC)return;MAP.setPaintProperty('trace','line-opacity',1);if(MAP.getSource('trail'))MAP.getSource('trail').setData({type:'FeatureCollection',features:[]});MAP.fitBounds(bnds(window.maplibregl,MAPC),{padding:48,duration:1200})},1400);return}
   RP.raf=requestAnimationFrame(rpFrame);
 }
 /* profil du trajet (2.11) : vitesse en courbe lissée, conso en zone colorée qui s'efface vers le bas */
@@ -1168,7 +1265,7 @@ function showMap(bfn){
 }
 function openMap(t0){
   var r=data().trips[t0],P=trackOf(r);if(!P)return;
-  rpStop();RP.dur=r.dur;MODE='trip';$('#mapv').classList.remove('spotm');
+  rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');
   var dt=new Date(r.t0);
   $('#mapt').textContent=dayLabel(dt)+' · '+HF.format(dt);
   $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'');
@@ -1446,6 +1543,86 @@ function meteoCard(){
   if(S.wet.t||S.dry.t)h+='<div class="det"><div><span>Temps sec<br><small>'+S.dry.t+' trajet'+(S.dry.t>1?'s':'')+'</small></span><b>'+(S.dry.c!=null?f1(S.dry.c)+' L/100':'–')+'</b></div><div><span>Pluie<br><small>'+S.wet.t+' trajet'+(S.wet.t>1?'s':'')+'</small></span><b>'+(S.wet.c!=null?f1(S.wet.c)+' L/100':'–')+'</b></div></div>';
   return h+'<p class="note">Conso estimée par l’autoradio, sur '+S.n+' trajet'+(S.n>1?'s':'')+'. Météo à l’heure du départ, autour de ton point de départ habituel'+(sample?' (météo fictive en mode exemple)':'')+'. Données météo : Open-Meteo.com (CC BY 4.0). Une tranche s’affiche à partir de 3 trajets et 20 km.</p></div>';
 }
+/* ---------- 2.16 : carnet d'entretien (stocké sur l'iPhone ; photos des factures dans IndexedDB) ---------- */
+var ENTK='sandero-entretien',ENT=null,PHC={},IDB=null,MT={edit:null,ph:null};
+var MTYPES=['Vidange','Révision','Pneus','Freins','Batterie','Contrôle technique','Distribution','Embrayage','Climatisation','Carrosserie','Réparation','Autre'];
+function entLoad(){if(ENT)return ENT;try{ENT=JSON.parse(localStorage.getItem(ENTK)||'[]')}catch(e){ENT=[]}if(!Array.isArray(ENT))ENT=[];return ENT}
+function entSave(){try{localStorage.setItem(ENTK,JSON.stringify(ENT))}catch(e){toast('Stockage plein : la sauvegarde du carnet a échoué.')}}
+function idb(){if(IDB)return IDB;IDB=new Promise(function(ok,ko){try{var q=indexedDB.open('la-mathias',1);q.onupgradeneeded=function(){q.result.createObjectStore('photos')};q.onsuccess=function(){ok(q.result)};q.onerror=function(){ko(q.error)}}catch(e){ko(e)}});return IDB}
+function phPut(id,url){PHC[id]=url;return idb().then(function(d){return new Promise(function(ok){var t=d.transaction('photos','readwrite');t.objectStore('photos').put(url,id);t.oncomplete=ok;t.onerror=ok})}).catch(function(){})}
+function phDel(id){delete PHC[id];idb().then(function(d){d.transaction('photos','readwrite').objectStore('photos').delete(id)}).catch(function(){})}
+function phLoadAll(){return idb().then(function(d){return new Promise(function(ok){var st=d.transaction('photos').objectStore('photos'),q=st.openCursor();q.onsuccess=function(){var c=q.result;if(c){PHC[c.key]=c.value;c.continue()}else ok()};q.onerror=function(){ok()}})}).catch(function(){})}
+phLoadAll();
+/* compteur estimé : dernier relevé + km des trajets faits depuis */
+function odo(){var E=entLoad().filter(function(e){return e.km>0}).sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)})[0];if(!E)return null;
+  var t=Date.parse(E.d)+864e5/2,k=0;Object.keys(db.trips).forEach(function(x){var r=db.trips[x];if(r.t0>t)k+=r.dist});return {km:E.km+k,base:E}}
+function kmSince(dstr){var t=Date.parse(dstr)+864e5/2,k=0;Object.keys(db.trips).forEach(function(x){var r=db.trips[x];if(r.t0>t)k+=r.dist});return k}
+function entDue(){
+  var out=[];entLoad().forEach(function(e){if(!(e.rk>0)&&!(e.rm>0))return;
+    var nw=entLoad().some(function(o){return o!==e&&o.type===e.type&&Date.parse(o.d)>Date.parse(e.d)});if(nw)return;
+    var o={e:e,kmLeft:null,days:null};if(e.rk>0)o.kmLeft=e.rk-kmSince(e.d);if(e.rm>0){var dd=new Date(e.d);dd.setMonth(dd.getMonth()+e.rm);o.days=Math.round((dd-Date.now())/864e5);o.date=dd}
+    var fk=o.kmLeft!=null?o.kmLeft/e.rk:1,fd=o.days!=null?o.days/(e.rm*30.4):1;o.frac=Math.min(fk,fd);o.st=o.frac<=0?'bad':o.frac<.12?'warn':'ok';out.push(o)});
+  return out.sort(function(a,b){return a.frac-b.frac});
+}
+function dueTxt(o){var p=[];if(o.kmLeft!=null)p.push(o.kmLeft<=0?'dépassé de '+fi(-o.kmLeft)+' km':'dans '+fi(o.kmLeft)+' km');if(o.days!=null)p.push(o.days<0?'échéance passée ('+o.date.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+')':'avant le '+o.date.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}));return p.join(' ou ')}
+function eur(v){return (Math.round(v*100)/100).toFixed(2).replace('.',',').replace(/,00$/,'')+' €'}
+function maintCard(){
+  var E=entLoad().slice().sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)}),y=new Date().getFullYear(),tot=0,O=odo(),D=entDue();
+  E.forEach(function(e){if(new Date(e.d).getFullYear()===y)tot+=e.prix||0});
+  var h='<div class="card mtc2"><h2>Carnet d’entretien</h2>';
+  if(!E.length)h+='<p class="note" style="margin-top:0">Note tes vidanges, pneus, contrôles techniques… avec le kilométrage, le prix et la photo de la facture. Tu peux ajouter un rappel pour la prochaine fois.</p>';
+  else{
+    h+='<div class="sub" style="border:0;padding:0 0 6px">'+(O?'<span>Compteur estimé <b>'+fi(O.km)+'</b> km</span>':'')+'<span><b>'+eur(tot)+'</b> en '+y+'</span><span><b>'+E.length+'</b> intervention'+(E.length>1?'s':'')+'</span></div>';
+    if(D.length)h+='<div class="det">'+D.slice(0,2).map(function(o){return '<div><span>Rappel · '+esc(o.e.type)+'<br><small>'+dueTxt(o)+'</small></span><b class="hs-'+o.st+'">'+(o.st==='ok'?'à jour':o.st==='warn'?'bientôt':'à faire')+'</b></div>'}).join('')+'</div>';
+    h+='<div class="det">'+E.slice(0,3).map(function(e){return '<div class="mte" data-me="'+e.id+'"><span>'+esc(e.type)+(e.ph?' <i class="mtph">facture</i>':'')+'<br><small>'+new Date(e.d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+(e.km?' · '+fi(e.km)+' km':'')+(e.garage?' · '+esc(e.garage):'')+'</small></span><b>'+(e.prix?eur(e.prix):'–')+'</b></div>'}).join('')+'</div>';
+  }
+  return h+'<div class="sbtns mtb2"><button type="button" class="btn" id="mtadd">Ajouter une intervention</button>'+(E.length?'<button type="button" class="btn ghost" id="mtall">Tout le carnet</button>':'')+'</div></div>';
+}
+function mtWire(){var a=$('#mtadd');if(a)a.onclick=function(){mtForm(null)};var b=$('#mtall');if(b)b.onclick=mtList;
+  Array.prototype.forEach.call(document.querySelectorAll('.mtc2 [data-me]'),function(x){x.onclick=function(){mtForm(x.getAttribute('data-me'))}})}
+function sheetOpen(title,html){var S=$('#sheet');S.innerHTML='<div class="sh-hd"><b>'+title+'</b><button type="button" class="mapx" id="shx" aria-label="Fermer">✕</button></div><div class="sh-c">'+html+'</div>';S.classList.remove('hide');document.body.style.overflow='hidden';$('#shx').onclick=sheetClose;S.querySelector('.sh-c').scrollTop=0}
+function sheetClose(){$('#sheet').classList.add('hide');$('#sheet').innerHTML='';document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
+function mtList(){
+  var E=entLoad().slice().sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)}),Y={},T={},h='',O=odo();
+  E.forEach(function(e){var y=new Date(e.d).getFullYear();(Y[y]=Y[y]||[]).push(e);T[e.type]=(T[e.type]||0)+(e.prix||0)});
+  if(O)h+='<div class="card"><div class="det" style="margin:0"><div style="border:0;padding-top:0"><span>Compteur estimé<br><small>relevé du '+new Date(O.base.d).toLocaleDateString('fr-FR')+' + km des trajets synchronisés depuis</small></span><b>'+fi(O.km)+' km</b></div></div></div>';
+  var D=entDue();if(D.length)h+='<div class="card"><h2>Rappels</h2><div class="det">'+D.map(function(o){return '<div><span>'+esc(o.e.type)+'<br><small>'+dueTxt(o)+'</small></span><b class="hs-'+o.st+'">'+(o.st==='ok'?'à jour':o.st==='warn'?'bientôt':'à faire')+'</b></div>'}).join('')+'</div></div>';
+  Object.keys(Y).sort(function(a,b){return b-a}).forEach(function(y){var L=Y[y],t=0;L.forEach(function(e){t+=e.prix||0});
+    h+='<div class="day">'+y+' · '+eur(t)+'</div>'+L.map(function(e){return '<button type="button" class="tr mtrow" data-me="'+e.id+'"><div class="t1"><b>'+esc(e.type)+'</b><span>'+(e.prix?eur(e.prix):'')+'</span></div><div class="t2"><span>'+new Date(e.d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+'</span>'+(e.km?'<span>'+fi(e.km)+' km</span>':'')+(e.garage?'<span>'+esc(e.garage)+'</span>':'')+(e.ph?'<span class="tk-on">• facture</span>':'')+'</div></button>'}).join('')});
+  var tk=Object.keys(T).filter(function(k){return T[k]>0}).sort(function(a,b){return T[b]-T[a]});
+  if(tk.length)h+='<div class="card"><h2>Dépenses par type</h2><div class="det">'+tk.map(function(k){return '<div><span>'+esc(k)+'</span><b>'+eur(T[k])+'</b></div>'}).join('')+'</div></div>';
+  h+='<div class="sbtns"><button type="button" class="btn" id="mtadd2">Ajouter une intervention</button></div>';
+  sheetOpen('Carnet d’entretien',h);$('#mtadd2').onclick=function(){mtForm(null)};
+  Array.prototype.forEach.call(document.querySelectorAll('#sheet [data-me]'),function(x){x.onclick=function(){mtForm(x.getAttribute('data-me'))}});
+}
+function mtForm(id){
+  var e=id?entLoad().filter(function(x){return x.id===id})[0]:null,O=odo();MT.edit=e;MT.ph=e&&e.ph&&PHC[e.id]?PHC[e.id]:null;
+  var td=new Date(),dv=e?e.d:td.getFullYear()+'-'+p2(td.getMonth()+1)+'-'+p2(td.getDate()),ty=e?e.type:'Vidange';
+  var h='<div class="card mtf"><div class="srow" style="border:0;padding-top:0"><div class="sl">Type</div><div class="seg" id="mtty">'+MTYPES.map(function(t){return '<button type="button" data-ty="'+t+'" aria-pressed="'+(t===ty)+'">'+t+'</button>'}).join('')+'</div></div>'+
+    '<div class="srow"><div class="sl">Date</div><div class="sin"><input id="mtd" type="date" value="'+dv+'"></div></div>'+
+    '<div class="srow"><div class="sl">Kilométrage au compteur</div>'+(O&&!e?'<p class="sh">Estimé aujourd’hui : '+fi(O.km)+' km</p>':'')+'<div class="sin"><input id="mtk" type="number" inputmode="numeric" placeholder="ex. 128500" value="'+(e&&e.km?e.km:'')+'"><span>km</span></div></div>'+
+    '<div class="srow"><div class="sl">Prix</div><div class="sin"><input id="mtp" type="text" inputmode="decimal" placeholder="ex. 89,90" value="'+(e&&e.prix?String(e.prix).replace('.',','):'')+'"><span>€</span></div></div>'+
+    '<div class="srow"><div class="sl">Garage</div><div class="sin"><input id="mtg" type="text" placeholder="facultatif" value="'+esc(e&&e.garage||'')+'"></div></div>'+
+    '<div class="srow"><div class="sl">Note</div><div class="sin"><textarea id="mtn" rows="2" placeholder="pièces changées, remarques…">'+esc(e&&e.note||'')+'</textarea></div></div>'+
+    '<div class="srow"><div class="sl">Rappel pour la prochaine fois</div><p class="sh">Facultatif. Le premier des deux atteint déclenche le rappel.</p><div class="sin"><span>dans</span><input id="mtrk" type="number" inputmode="numeric" placeholder="15000" value="'+(e&&e.rk?e.rk:'')+'"><span>km ou</span><input id="mtrm" type="number" inputmode="numeric" placeholder="12" value="'+(e&&e.rm?e.rm:'')+'"><span>mois</span></div></div>'+
+    '<div class="srow"><div class="sl">Photo de la facture</div><div id="mtphv" class="mtphv"></div><input type="file" id="mtpf" accept="image/*" hidden><div class="sbtns"><button type="button" class="btn ghost" id="mtpb">'+(MT.ph?'Changer la photo':'Ajouter une photo')+'</button></div></div>'+
+    '<div class="sbtns"><button type="button" class="btn" id="mts">Enregistrer</button>'+(e?'<button type="button" class="btn danger" id="mtdel">Supprimer</button>':'')+'</div></div>';
+  sheetOpen(e?'Modifier l’intervention':'Nouvelle intervention',h);
+  var phv=function(){$('#mtphv').innerHTML=MT.ph?'<img src="'+MT.ph+'" alt="Facture"><button type="button" class="mtphx" id="mtphx">Retirer</button>':'';var x=$('#mtphx');if(x)x.onclick=function(){MT.ph=null;phv()}};phv();
+  Array.prototype.forEach.call(document.querySelectorAll('#mtty button'),function(b){b.onclick=function(){Array.prototype.forEach.call(document.querySelectorAll('#mtty button'),function(o){o.setAttribute('aria-pressed',o===b)})}});
+  $('#mtpb').onclick=function(){$('#mtpf').click()};
+  $('#mtpf').onchange=function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){
+    var k=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    MT.ph=c.toDataURL('image/jpeg',.72);phv()};im.src=rd.result};rd.readAsDataURL(f)};
+  $('#mts').onclick=function(){
+    var b=document.querySelector('#mtty button[aria-pressed="true"]'),num=function(v){v=parseFloat(String(v).replace(/\s/g,'').replace(',','.'));return v>0?v:0};
+    var o=e||{id:'e'+Date.now().toString(36)};o.type=b?b.getAttribute('data-ty'):'Autre';o.d=$('#mtd').value||dv;o.km=Math.round(num($('#mtk').value));o.prix=Math.round(num($('#mtp').value)*100)/100;
+    o.garage=$('#mtg').value.trim();o.note=$('#mtn').value.trim();o.rk=Math.round(num($('#mtrk').value));o.rm=Math.round(num($('#mtrm').value));o.ph=!!MT.ph;
+    if(!e)entLoad().push(o);entSave();if(MT.ph)phPut(o.id,MT.ph);else phDel(o.id);
+    island({fallback:1,icon:'wrench',pop:true,tone:'good',title:e?'Intervention modifiée':'Intervention ajoutée',sub:o.type,ms:2200});sheetClose();
+  };
+  var dl=$('#mtdel');if(dl)dl.onclick=function(){if(!window.confirm('Supprimer cette intervention du carnet ?'))return;ENT=entLoad().filter(function(x){return x.id!==e.id});entSave();phDel(e.id);sheetClose()};
+}
 function cmp(a,b,better){
   if(a==null||b==null||!b)return '';
   var pc=Math.round((a-b)/Math.abs(b)*100);if(!pc)return '<em>= mois précédent</em>';
@@ -1474,8 +1651,9 @@ function render(){
   /* réservoir */
   if(S&&S.rem!=null){
     var pct=Math.max(0,Math.min(1,S.rem/(S.tank||50))),st=pct<.09?'bad':pct<SET.low/100?'warn':'';
-    h+='<div class="card"><h2>Réservoir</h2><div class="fu"><div><b>'+(S.range!=null?cu(Math.round(S.range/5)*5,'i'):'–')+'</b><small>km d’autonomie · '+(S.measured?'mesurée':'estimée')+'</small></div><div class="r"><b>'+cu(S.rem,'1')+'</b><small>litres restants</small></div></div><div class="bar" data-s="'+st+'"><i style="transform:scaleX('+pct.toFixed(3)+')"></i></div><p class="note">Valeurs au moment de la dernière synchro ('+ago(S.t)+').</p></div>';
+    h+='<div class="card"><h2>Réservoir</h2><div class="fu"><div><b>'+(S.range!=null?cu(Math.round(S.range/5)*5,'i'):'–')+'</b><small>km d’autonomie · '+(S.measured?'mesurée':'estimée')+'</small></div><div class="r"><b>'+cu(S.rem,'1')+'</b><small>litres restants</small></div></div><div class="bar" data-s="'+st+'"><i style="transform:scaleX('+pct.toFixed(3)+')"></i></div>'+nextFill(S,L)+'<p class="note">Valeurs au moment de la dernière synchro ('+ago(S.t)+').</p></div>';
   }
+  if(S)h+=fuelCard();
   /* dernier trajet (onglet Voiture) */
   if(L.length){
     var lr=L[0],ldt=new Date(lr.t0),lcons=lr.dist>.5&&lr.fuel>0?f1(lr.fuel/lr.dist*100)+' L/100':'–';
@@ -1495,6 +1673,7 @@ function render(){
     if(HL.precT)rows+=row2('Précision de la conso',esc(HL.precT),HL.prec==='o'?'ok':HL.prec==='w'?'warn':'');
     if(rows)h+='<div class="card"><h2>Santé de la voiture</h2><div class="det hs">'+rows+'</div><p class="note">Mesures de l’autoradio, au moment de la synchro ('+ago(HL.t)+').'+(HL.dtc&&HL.dtc.length?' Détail des codes dans l’écran Diagnostic de l’autoradio.':'')+'</p></div>';
   }
+  h+=maintCard();
   var T={car:h};h='';
   /* bilan du mois */
   h+=wrapCard();
@@ -1531,8 +1710,8 @@ function render(){
     if(dk!==lastDay){lastDay=dk;h+='<div class="day">'+dayLabel(dt)+'</div>'}
     var cons=r.dist>.5&&r.fuel>0?f1(r.fuel/r.dist*100)+' L/100':'–';
     var P=trackOf(r);
-    h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b><span class="eco" data-s="'+eState(r.eco)+'">'+r.eco+'</span></div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+'</span><span>'+f2(r.fuel*price)+' €</span>'+(P?'<span class="tk-on">• tracé</span>':'')+'</div>'+
-      '<div class="more det">'+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div></div></div>';
+    h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b><span class="eco" data-s="'+eState(r.eco)+'">'+r.eco+'</span></div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+'</span><span>'+f2(r.fuel*price)+' €</span>'+(P?'<span class="tk-on">• tracé</span>':'')+(isPro(r)?'<span class="ptag">PRO</span>':'')+'</div>'+
+      '<div class="more det">'+(sample?'':'<div class="pps"><span>Type de trajet</span><span class="seg"><button type="button" data-pp="'+r.t0+'" data-v="perso" aria-pressed="'+!isPro(r)+'">Perso</button><button type="button" data-pp="'+r.t0+'" data-v="pro" aria-pressed="'+isPro(r)+'">Pro</button></span></div>')+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div></div></div>';
   });
   if(L.length>SET.nTrips)h+='<p class="note" style="text-align:center">Les '+SET.nTrips+' derniers trajets sont affichés (modifiable dans Réglages).</p>';
   h+='<p class="note" style="text-align:center;margin-top:18px"><button type="button" class="btn ghost" id="wipe" style="font-size:13px;padding:8px 12px">'+(sample?'Quitter l’exemple':'Effacer les données de ce téléphone')+'</button></p>';
@@ -1542,7 +1721,10 @@ function render(){
   if(!T[TAB])TAB='car';
   miniClear();$('#main').innerHTML=T[TAB];setApply();if(TAB==='set')setWire();animMain();
   var sb=$('#syncb');if(sb)sb.onclick=scan;
-  calWire();trophyWire();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pp]'),function(b){b.onclick=function(e){e.stopPropagation();var t=b.getAttribute('data-pp');db.tags=db.tags||{};
+    if(b.getAttribute('data-v')==='pro')db.tags[t]='pro';else delete db.tags[t];save();var tr=b.closest('.tr'),i=tr&&tr.getAttribute('data-i'),y=window.scrollY;render();window.scrollTo(0,y);
+    var n=i!=null&&document.querySelector('.tr[data-i="'+i+'"]');if(n){n.classList.add('open');miniMount(n.querySelector('.mapb'))}}});
+  calWire();trophyWire();mtWire();
   Array.prototype.forEach.call(document.querySelectorAll('[data-tmf]'),function(b){b.onclick=function(){TMF=b.getAttribute('data-tmf');var y=window.scrollY;render();window.scrollTo(0,y)}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(b){b.onclick=function(){openSpots(b.getAttribute('data-spot'))}});var wrb=$('#wrapb');if(wrb)wrb.onclick=function(){openWrap(+wrb.getAttribute('data-y'))};
   Array.prototype.forEach.call(document.querySelectorAll('.mapb'),function(b){b.onclick=function(e){e.stopPropagation();openMap(+b.getAttribute('data-t'))}});
@@ -1553,7 +1735,7 @@ function render(){
   var mp=$('#mp'),mn=$('#mn');if(mp)mp.onclick=function(){if(mOff<24){mOff++;ANIM=true;render()}};if(mn)mn.onclick=function(){if(mOff>0){mOff--;ANIM=true;render()}};
   Array.prototype.forEach.call(document.querySelectorAll('.tr'),function(b){b.onclick=function(){b.classList.toggle('open');if(b.classList.contains('open'))miniMount(b.querySelector('.mapb'))}});
   if(TAB==='car')miniMount(document.querySelector('.lt .mapb'));
-  var wp=$('#wipe');if(wp)wp.onclick=function(){if(sample){sample=false;render();return}if(window.confirm('Effacer les trajets enregistrés sur ce téléphone ?')){db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{}};save();render()}};
+  var wp=$('#wipe');if(wp)wp.onclick=function(){if(sample){sample=false;render();return}if(window.confirm('Effacer les trajets enregistrés sur ce téléphone ?')){db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};save();render()}};
 }
 function segRow(k,l,h,opts){
   var b=opts.map(function(o){return '<button type="button" data-k="'+k+'" data-v="'+o[0]+'" aria-pressed="'+(String(SET[k])===String(o[0]))+'">'+o[1]+'</button>'}).join('');
@@ -1586,6 +1768,8 @@ function setHtml(D,L){
     '<div class="srow"><div class="sl">Prix du carburant</div><p class="sh">Laisse vide pour utiliser celui de l’autoradio'+(S&&S.price?' ('+f2(S.price)+' €/L)':'')+'.</p><div class="sin"><input id="sprice" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Auto" value="'+(SET.price>0?SET.price:'')+'"><span>€/L</span></div></div>'+
     segRow('low','Alerte réservoir bas','Sous ce niveau, la jauge passe en orange et l’alerte s’affiche.',[[10,'10 %'],[15,'15 %'],[20,'20 %'],[25,'25 %']])+
     segRow('nTrips','Trajets affichés','',[[20,'20'],[40,'40'],[100,'100'],[500,'Tous']])+
+    segRow('fuel','Carburant','Pour les prix des stations proches.',[['e10','SP95-E10'],['sp95','SP95'],['sp98','SP98'],['gazole','Gazole']])+
+    segRow('priceSrc','Prix utilisé pour les coûts','« Stations proches » = moyenne des 5 stations les moins chères à moins de 6 km (prix de moins de 10 jours). Un prix saisi plus haut reste prioritaire.',[['radio','Autoradio'],['stations','Stations proches']])+
     segRow('cv','Puissance fiscale','Pour le barème kilométrique. Elle est écrite sur la carte grise, case P.6.',[[3,'3 CV'],[4,'4 CV'],[5,'5 CV'],[6,'6 CV'],[7,'7 CV +']])+workRow(D)+'</div>';
   var nT=Object.keys(db.trips).length,nF=Object.keys(db.fills||{}).length,nV=Object.keys(db.favs||{}).length;
   h+='<div class="card sgc"><h2>Données</h2><div class="det">'+
@@ -1611,7 +1795,7 @@ function setWire(){
   $('#islt').onclick=function(){if(!SET.isl){toast('Active d’abord les animations.');return}var S=data().snap;island({icon:'car',tone:'info',title:(S&&S.name&&S.name!=='Sandero'?S.name:'La Mathias'),sub:'Ceci est un test',right:S&&S.range!=null?fi(Math.round(S.range/5)*5)+' km':'',ms:2400})};
   $('#sscan').onclick=scan;
   $('#sexp').onclick=function(){
-    var j=JSON.stringify({app:'la-mathias',v:1,t:Date.now(),db:db,set:SET}),n='la-mathias-'+new Date().toISOString().slice(0,10)+'.json';
+    var j=JSON.stringify({app:'la-mathias',v:1,t:Date.now(),db:db,set:SET,ent:entLoad(),photos:PHC}),n='la-mathias-'+new Date().toISOString().slice(0,10)+'.json';
     try{var f=new File([j],n,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Sauvegarde La Mathias'}).catch(function(){});return}}catch(e){}
     var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));a.download=n;document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},1000);
   };
@@ -1619,14 +1803,15 @@ function setWire(){
   fi_.onchange=function(){var f=fi_.files&&fi_.files[0];if(!f)return;var r=new FileReader();r.onload=function(){
     try{var o=JSON.parse(r.result),d=o.db||o;if(!d||typeof d.trips!=='object')throw 0;
       var before=Object.keys(db.trips).length;
-      db.trips=Object.assign({},db.trips,d.trips);db.fills=Object.assign({},db.fills||{},d.fills||{});db.favs=Object.assign({},db.favs||{},d.favs||{});db.tracks=Object.assign({},db.tracks||{},d.tracks||{});db.details=Object.assign({},db.details||{},d.details||{});
+      db.trips=Object.assign({},db.trips,d.trips);db.fills=Object.assign({},db.fills||{},d.fills||{});db.favs=Object.assign({},db.favs||{},d.favs||{});db.tracks=Object.assign({},db.tracks||{},d.tracks||{});db.details=Object.assign({},db.details||{},d.details||{});db.tags=Object.assign({},db.tags||{},d.tags||{});
       if(d.snap&&(!db.snap||d.snap.t>db.snap.t))db.snap=d.snap;if(d.health&&(!db.health||d.health.t>(db.health.t||0)))db.health=d.health;
+      if(Array.isArray(o.ent)){var E=entLoad(),ids={};E.forEach(function(x){ids[x.id]=1});o.ent.forEach(function(x){if(x&&x.id&&!ids[x.id])E.push(x)});entSave();if(o.photos)Object.keys(o.photos).forEach(function(k){if(!PHC[k])phPut(k,o.photos[k])})}
       save();sample=false;render();var n=Object.keys(db.trips).length-before;
       island({icon:'check',pop:true,tone:'good',title:'Sauvegarde importée',sub:n+' nouveau'+(n>1?'x':'')+' trajet'+(n>1?'s':''),ms:2600,fallback:1});
     }catch(e){toast('Ce fichier n’est pas une sauvegarde La Mathias.')}
   };r.readAsText(f)};
   var dm=$('#sdemo');if(dm)dm.onclick=function(){sample=!sample;render()};
-  $('#swipe').onclick=function(){if(window.confirm('Effacer les trajets, pleins et favoris enregistrés sur ce téléphone ?')){db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{}};save();sample=false;TAB='car';render()}};
+  $('#swipe').onclick=function(){if(window.confirm('Effacer les trajets, pleins et favoris enregistrés sur ce téléphone ?')){db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};save();sample=false;TAB='car';render()}};
   $('#sreset').onclick=function(){if(window.confirm('Remettre tous les réglages par défaut ?')){SET=Object.assign({},SDEF);SET.work={};setSave();render()}};
   Array.prototype.forEach.call(document.querySelectorAll('.seg button[data-w]'),function(b){b.onclick=function(){var id=b.getAttribute('data-w'),F=data().favs||{};SET.work[id]=!isWork(id,F[id]);setSave();var y=window.scrollY;render();window.scrollTo(0,y)}});
 }
