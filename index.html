@@ -276,7 +276,7 @@ button{font:inherit;color:inherit}
 .mapb{display:block;position:relative;margin:10px 0 2px;border-radius:14px;overflow:hidden;background:#0b0920;border:1px solid var(--line)}
 .mapb{height:130px}
 .thumb{display:block;width:100%;height:100%}
-.mm{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s}
+.mapb .mm{position:absolute!important;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .5s}
 .mapb.live .mm{opacity:1}.mapb.live .thumb{visibility:hidden}
 .thumb .tw{fill:none;stroke:rgba(var(--accent-rgb),.22);stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
 .thumb .tk{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 0}
@@ -378,7 +378,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.11';
+var APP_V='2.11.1';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -896,7 +896,7 @@ function miniMount(el){
     var ml=r[0];if(!document.body.contains(el))return;
     if(MINI.length>=2){var o=MINI.shift();try{o.m.remove()}catch(e){}if(o.el){o.el.classList.remove('live');o.el._mm=0;var od=o.el.querySelector('.mm');if(od)od.remove()}}
     var d=document.createElement('div');d.className='mm';el.insertBefore(d,el.firstChild);
-    var m=new ml.Map({container:d,style:r[1],bounds:bnds(ml,P),fitBoundsOptions:{padding:20},interactive:false,attributionControl:{compact:true},fadeDuration:0});
+    var m=new ml.Map({container:d,style:r[1],bounds:bnds(ml,P),fitBoundsOptions:{padding:20},interactive:false,attributionControl:false,fadeDuration:0});m.addControl(new ml.AttributionControl({compact:true}),'bottom-left');
     MINI.push({m:m,el:el});
     m.once('style.load',function(){addRoute(m,P,3,true,routeModel(r0,P));el.classList.add('live')});
   }).catch(function(){});
