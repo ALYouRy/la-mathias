@@ -296,6 +296,7 @@ button{font:inherit;color:inherit}
 .map-lg{display:flex;gap:14px;padding:0 18px 6px;font-size:12px;font-weight:600;color:var(--fg-2)}
 .map-lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
 .leaflet-container{background:#0e0e12!important;font-family:var(--font)!important}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(200deg) brightness(.92) contrast(.88) saturate(.55)}
 .leaflet-bar a{background:var(--surface-2)!important;color:var(--fg)!important;border-color:var(--line)!important}
 .leaflet-bar{border:1px solid var(--line)!important;box-shadow:none!important}
 .leaflet-control-attribution{background:rgba(7,5,26,.7)!important;color:#9a94c4!important;font-size:10px!important}
@@ -351,7 +352,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.7';
+var APP_V='2.7.1';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -665,7 +666,8 @@ function mapBtn(t0,P){
 }
 /* carte plein écran : Leaflet (chargé à la demande) + fond CARTO sombre */
 var LLP=null,MAP=null,MAPL=null,MINI=[];
-var TILE='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',TOPT={subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap © CARTO'};
+/* fond OpenStreetMap (gratuit, sans clé), assombri en CSS pour le style de l'appli */
+var TILE='https://tile.openstreetmap.org/{z}/{x}/{y}.png',TOPT={maxZoom:19,attribution:'© les contributeurs d’OpenStreetMap'};
 function accent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#00e5ff'}
 function drawIn(lines,ms){
   if(!SET.anim||reduced())return;
