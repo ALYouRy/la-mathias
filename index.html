@@ -179,6 +179,10 @@ button{font:inherit;color:inherit}
 .isl.web{top:8px}
 .isl.big{top:calc(env(safe-area-inset-top,47px) + 6px)}
 .isl.web.big{top:8px}
+.isl.glue.big{top:11px;width:232px;margin-left:-116px;height:84px;border-radius:34px}
+.isl.glue .ic{width:36px;height:36px;margin-left:12px}.isl.glue svg{width:20px;height:20px}
+.isl.glue .tx{margin:0 6px 0 10px}.isl.glue .tx b{font-size:14px}.isl.glue .tx small{font-size:11.5px}.isl.glue .rt{margin-right:14px;font-size:13.5px}
+.isl.glue.big .ic,.isl.glue.big .tx,.isl.glue.big .rt{margin-top:16px}
 .topbar{position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top);background:var(--bg);z-index:5;pointer-events:none}
 .isl.on{opacity:1}
 .isl.big{width:min(360px,calc(100vw - 20px));margin-left:calc(min(360px,calc(100vw - 20px)) / -2);height:70px;border-radius:35px;pointer-events:auto;box-shadow:0 10px 34px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04)}
@@ -259,7 +263,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.2';
+var APP_V='2.4';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -273,8 +277,9 @@ function updCheck(){
 }
 setTimeout(updCheck,1500);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)updCheck()});
-var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:true,welcome:true,alerts:true,islDur:'m',price:0,low:15,nTrips:40,startTab:'last'};
+var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last'};
 var SET=Object.assign({},SDEF);try{Object.assign(SET,JSON.parse(localStorage.getItem(SETK)||'{}'))}catch(e){}
+if(!SET.islOffMig){SET.islOffMig=1;SET.isl=false;try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
 function setSave(){try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
 var ACC={cyan:['#00e5ff','0,229,255'],violet:['#a78bfa','167,139,250'],vert:['#34d17a','52,209,122'],orange:['#ff9f0a','255,159,10'],rose:['#ff4f9a','255,79,154'],blanc:['#e8e6f5','232,230,245']};
 function setApply(){var a=ACC[SET.accent]||ACC.cyan,r=document.documentElement.style;r.setProperty('--accent',a[0]);r.setProperty('--accent-rgb',a[1]);var m=document.getElementById('main');if(m)m.style.zoom={s:.92,m:1,l:1.1,xl:1.2}[SET.txt]||1}
@@ -302,7 +307,7 @@ function island(o){if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:
 function islNext(){
   var o=ISL.q.shift(),el=document.getElementById('isl');if(!o||!el){ISL.busy=false;return}
   ISL.busy=true;
-  el.classList.toggle('web',!navigator.standalone);
+  el.classList.toggle('web',!navigator.standalone);el.classList.toggle('glue',!!navigator.standalone&&SET.islPos==='glue');
   el.setAttribute('data-tone',o.tone||'info');
   var ic=el.querySelector('.ic');ic.className='ic'+(o.pop?' pop':'');ic.innerHTML='<svg viewBox="0 0 24 24">'+(ICO[o.icon]||ICO.car)+'</svg>';
   el.querySelector('.tx b').textContent=o.title||'';el.querySelector('.tx small').textContent=o.sub||'';el.querySelector('.rt').textContent=o.right||'';
@@ -493,6 +498,7 @@ function setHtml(D,L){
     segRow('isl','Animations','Les messages qui sortent de la Dynamic Island.',ONOFF)+
     segRow('welcome','Message de bienvenue','Nom de la voiture, dernière synchro et autonomie.',ONOFF)+
     segRow('alerts','Alertes','Réservoir bas, voyant moteur et entretien en retard.',ONOFF)+
+    segRow('islPos','Position','« Collée » s’ouvre depuis la Dynamic Island. « En dessous » la fait descendre sous l’heure et la batterie.',[['glue','Collée'],['below','En dessous']])+
     segRow('islDur','Durée d’affichage','',[['s','Courte'],['m','Normale'],['l','Longue']])+
     '<div class="sbtns"><button type="button" class="btn ghost" id="islt">Tester l’animation</button></div></div>';
   h+='<div class="card sgc"><h2>Calculs</h2>'+
@@ -599,7 +605,7 @@ function tick(){
       else{
         try{
           var r=importFromUrl(code.data);stopScan();render();
-          island({icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total+(r.page<r.total?' · scanne le suivant':' · terminé'):'Synchronisation terminée',right:r.total>1?r.page+'/'+r.total:'',ms:3600});
+          island({fallback:1,icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total+(r.page<r.total?' · scanne le suivant':' · terminé'):'Synchronisation terminée',right:r.total>1?r.page+'/'+r.total:'',ms:3600});
           return;
         }catch(e){$('#smsg').textContent='Code illisible, réessaie.'}
       }
@@ -623,7 +629,7 @@ $('#sclose').onclick=stopScan;
 load();
 function fromHash(){
   if(location.hash.indexOf('#s=')!==0)return;
-  try{var r=importFromUrl(location.href);island({icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total:'Depuis l’appli, utilise plutôt le bouton Scanner',right:r.total>1?r.page+'/'+r.total:'',ms:4200})}catch(e){toast('Données illisibles.')}
+  try{var r=importFromUrl(location.href);island({fallback:1,icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total:'Depuis l’appli, utilise plutôt le bouton Scanner',right:r.total>1?r.page+'/'+r.total:'',ms:4200})}catch(e){toast('Données illisibles.')}
   try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
   render();
 }
@@ -635,10 +641,10 @@ function welcomeIsland(){
   var D=data(),S=D.snap;if(!S)return;
   var nm=S.name&&S.name!=='Sandero'?S.name:'La Mathias';
   if(SET.welcome)island({icon:'car',tone:'info',title:nm,sub:'Synchronisée '+ago(S.t),right:S.range!=null?fi(Math.round(S.range/5)*5)+' km':'',ms:2600});
-  if(SET.alerts&&S.rem!=null&&S.rem/(S.tank||50)<SET.low/100)island({icon:'fuel',pop:true,tone:'warn',title:'Réservoir bas',sub:'Pense à faire le plein',right:S.range!=null?fi(S.range)+' km':'',ms:3200});
+  if(SET.alerts&&S.rem!=null&&S.rem/(S.tank||50)<SET.low/100)island({fallback:1,icon:'fuel',pop:true,tone:'warn',title:'Réservoir bas',sub:'Pense à faire le plein',right:S.range!=null?fi(S.range)+' km':'',ms:3200});
   var H=D.health;
-  if(SET.alerts&&H&&H.dtc&&H.dtc.length)island({icon:'warn',pop:true,tone:'bad',title:'Voyant moteur',sub:H.dtc.join(', '),right:H.dtc.length+' code'+(H.dtc.length>1?'s':''),ms:3600});
-  if(SET.alerts&&H&&H.svc&&H.svcS==='bad')island({icon:'wrench',tone:'warn',title:H.svc,sub:H.svcTxt,ms:3400});
+  if(SET.alerts&&H&&H.dtc&&H.dtc.length)island({fallback:1,icon:'warn',pop:true,tone:'bad',title:'Voyant moteur',sub:H.dtc.join(', '),right:H.dtc.length+' code'+(H.dtc.length>1?'s':''),ms:3600});
+  if(SET.alerts&&H&&H.svc&&H.svcS==='bad')island({fallback:1,icon:'wrench',tone:'warn',title:H.svc,sub:H.svcTxt,ms:3400});
 }
 /* ---------- animation d'ouverture : ta Sandero en 3D (sinon la version néon) ---------- */
 (function(){
