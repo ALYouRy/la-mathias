@@ -296,7 +296,11 @@ button{font:inherit;color:inherit}
 .map-lg{display:flex;gap:14px;padding:0 18px 6px;font-size:12px;font-weight:600;color:var(--fg-2)}
 .map-lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
 .leaflet-container{background:#0e0e12!important;font-family:var(--font)!important}
-.leaflet-tile-pane{filter:invert(1) hue-rotate(200deg) brightness(.92) contrast(.88) saturate(.55)}
+.mst-sombre .leaflet-tile-pane,.leaflet-container .tfb{filter:invert(1) hue-rotate(200deg) brightness(.92) contrast(.88) saturate(.55)}
+.leaflet-container.mst-neon{background:#0a061c!important}.leaflet-container.mst-or{background:#080a14!important}.leaflet-container.mst-clair{background:#f2efe9!important}
+.map-st{display:flex;gap:6px;padding:0 16px 8px;overflow-x:auto}
+.map-st button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface-2);color:var(--fg-2);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700}
+.map-st button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.16);border-color:rgba(var(--accent-rgb),.7);color:var(--accent)}
 .leaflet-bar a{background:var(--surface-2)!important;color:var(--fg)!important;border-color:var(--line)!important}
 .leaflet-bar{border:1px solid var(--line)!important;box-shadow:none!important}
 .leaflet-control-attribution{background:rgba(7,5,26,.7)!important;color:#9a94c4!important;font-size:10px!important}
@@ -340,7 +344,7 @@ button{font:inherit;color:inherit}
 </nav>
 <div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><button type="button" class="btn ghost" id="sclose">Annuler</button></div>
 <canvas id="scv" hidden></canvas>
-<div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div id="mapc"></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
+<div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div id="mapc"></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
 
 <script src="car-model.js"></script>
 <script src="car3d.js"></script>
@@ -352,7 +356,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.7.2';
+var APP_V='2.8';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -366,7 +370,7 @@ function updCheck(){
 }
 setTimeout(updCheck,1500);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)updCheck()});
-var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4};
+var SETK='sandero-phone-set',SDEF={accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon'};
 var SET=Object.assign({},SDEF);try{Object.assign(SET,JSON.parse(localStorage.getItem(SETK)||'{}'))}catch(e){}
 if(!SET.work||typeof SET.work!=='object')SET.work={};
 if(!SET.islOffMig){SET.islOffMig=1;SET.isl=false;try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
@@ -665,9 +669,49 @@ function mapBtn(t0,P){
   return '<span class="mapb" role="button" data-t="'+t0+'"><svg class="thumb" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet"><path class="tw" d="'+dd+'"/><path class="tk" pathLength="1" d="'+dd+'"/><circle cx="'+s0[0]+'" cy="'+s0[1]+'" r="5" fill="#34d17a" stroke="#fff" stroke-width="1.5"/><circle cx="'+s1[0]+'" cy="'+s1[1]+'" r="5" fill="#ff4d4f" stroke="#fff" stroke-width="1.5"/></svg><em>Voir sur la carte ›</em></span>';
 }
 /* carte plein écran : Leaflet (chargé à la demande) + fond CARTO sombre */
-var LLP=null,MAP=null,MAPL=null,MINI=[];
+var LLP=null,MAP=null,MAPL=null,MAPT=null,MAPC=null,MINI=[],MSCH=false;
 /* fond OpenStreetMap (gratuit, sans clé), assombri en CSS pour le style de l'appli */
 var TILE='https://tile.openstreetmap.org/{z}/{x}/{y}.png',TOPT={maxZoom:19,attribution:'© les contributeurs d’OpenStreetMap'};
+/* 2.8 : styles de carte. Néon et Doré : chaque tuile OpenStreetMap est recolorée dans un canvas.
+   Si le navigateur refuse de lire la tuile (CORS), elle s'affiche en style Sombre. */
+var MAPSTYLES=[['neon','Néon'],['sombre','Sombre'],['or','Doré'],['clair','Clair']];
+var MAPPAL={
+  neon:{base:[10,6,28],hi:[46,30,96],minor:[0,229,255],major:[255,63,208],water:[22,20,84],park:[14,44,52],text:[214,204,255],glow:'rgba(0,229,255,.95)',blur:5},
+  or:{base:[8,10,20],hi:[34,38,58],minor:[255,200,110],major:[255,138,60],water:[14,26,52],park:[18,34,30],text:[236,222,190],glow:'rgba(255,186,90,.85)',blur:4}
+};
+function recolor(ctx,img,P){
+  ctx.drawImage(img,0,0,256,256);
+  var D=ctx.getImageData(0,0,256,256),a=D.data,rc=document.createElement('canvas');rc.width=rc.height=256;
+  var rx=rc.getContext('2d'),RD=rx.createImageData(256,256),ra=RD.data;
+  for(var i=0;i<a.length;i+=4){
+    var r=a[i],g=a[i+1],b=a[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=mx-mn,lum=r*.3+g*.59+b*.11,c,road=0;
+    if(b>r+18&&b>175&&g>165)c=P.water;
+    else if(g>r+8&&g>=b&&sat>14)c=P.park;
+    else if(mx>=246&&sat<12){c=P.minor;road=1}
+    else if(r>222&&sat>28){c=P.major;road=1}
+    else if(lum<135)c=P.text;
+    else{var t=Math.max(0,Math.min(1,(246-lum)/70));c=[P.base[0]+(P.hi[0]-P.base[0])*t,P.base[1]+(P.hi[1]-P.base[1])*t,P.base[2]+(P.hi[2]-P.base[2])*t]}
+    a[i]=c[0];a[i+1]=c[1];a[i+2]=c[2];
+    if(road){ra[i]=c[0];ra[i+1]=c[1];ra[i+2]=c[2];ra[i+3]=255}
+  }
+  ctx.putImageData(D,0,0);rx.putImageData(RD,0,0);
+  ctx.shadowColor=P.glow;ctx.shadowBlur=P.blur;ctx.globalAlpha=.9;ctx.drawImage(rc,0,0);ctx.globalAlpha=1;ctx.shadowBlur=0;
+}
+function baseLayer(L){
+  var P=MAPPAL[SET.mapStyle];
+  if(!P)return L.tileLayer(TILE,TOPT);
+  var G=L.GridLayer.extend({createTile:function(co,done){
+    var cv=document.createElement('canvas');cv.width=cv.height=256;var ctx=cv.getContext('2d',{willReadFrequently:true});
+    var url=L.Util.template(TILE,{z:co.z,x:co.x,y:co.y}),img=new Image();
+    function plain(im){ctx.drawImage(im,0,0,256,256);cv.className='tfb';done(null,cv)}
+    img.crossOrigin='anonymous';
+    img.onload=function(){try{recolor(ctx,img,P);done(null,cv)}catch(e){plain(img)}};
+    img.onerror=function(){var i2=new Image();i2.onload=function(){plain(i2)};i2.onerror=function(){done(new Error('tuile'),cv)};i2.src=url};
+    img.src=url;return cv;
+  }});
+  return new G(TOPT);
+}
+function styleMap(m){var c=m.getContainer();MAPSTYLES.forEach(function(x){c.classList.remove('mst-'+x[0])});c.classList.add('mst-'+(SET.mapStyle||'neon'))}
 function accent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#00e5ff'}
 function drawIn(lines,ms){
   if(!SET.anim||reduced())return;
@@ -677,9 +721,9 @@ function drawIn(lines,ms){
     setTimeout(function(){pa.style.transition='';pa.style.strokeDasharray='';pa.style.strokeDashoffset=''},ms+400)});
 }
 function routeLayers(L,P,w){
-  var acc=accent();
-  return [L.polyline(P,{color:acc,weight:w*2.4,opacity:.22,lineJoin:'round',lineCap:'round',interactive:false}),
-          L.polyline(P,{color:acc,weight:w,opacity:1,lineJoin:'round',lineCap:'round',interactive:false}),
+  var acc=accent(),nn=SET.mapStyle==='neon',lc=nn?'#ffffff':acc,gc=nn?'#ff3fd0':acc;
+  return [L.polyline(P,{color:gc,weight:w*2.6,opacity:nn?.55:.22,lineJoin:'round',lineCap:'round',interactive:false}),
+          L.polyline(P,{color:lc,weight:w,opacity:1,lineJoin:'round',lineCap:'round',interactive:false}),
           L.circleMarker(P[0],{radius:w+2.5,color:'#fff',weight:2,fillColor:'#34d17a',fillOpacity:1,interactive:false}),
           L.circleMarker(P[P.length-1],{radius:w+2.5,color:'#fff',weight:2,fillColor:'#ff4d4f',fillOpacity:1,interactive:false})];
 }
@@ -693,7 +737,7 @@ function miniMount(el){
     var d=document.createElement('div');d.className='mm';el.insertBefore(d,el.firstChild);
     var m=L.map(d,{zoomControl:false,attributionControl:true,dragging:false,touchZoom:false,doubleClickZoom:false,scrollWheelZoom:false,boxZoom:false,keyboard:false,tap:false});
     m.attributionControl.setPrefix(false);m.attributionControl.setPosition('bottomleft');
-    L.tileLayer(TILE,TOPT).addTo(m);
+    styleMap(m);baseLayer(L).addTo(m);
     m.fitBounds(L.latLngBounds(P),{padding:[16,16],animate:false});
     var ly=routeLayers(L,P,3.5);ly.forEach(function(x){x.addTo(m)});
     el.classList.add('live');drawIn([ly[0],ly[1]],1200);MINI.push(m);
@@ -708,25 +752,33 @@ function leaflet(){
   });
   return LLP;
 }
-function closeMap(){$('#mapv').classList.add('hide')}
+function closeMap(){$('#mapv').classList.add('hide');if(MSCH){MSCH=false;var y=window.scrollY;render();window.scrollTo(0,y)}}
+function mapStyleBar(){
+  var b=$('#mapst');b.innerHTML=MAPSTYLES.map(function(x){return '<button type="button" data-ms="'+x[0]+'" aria-pressed="'+(SET.mapStyle===x[0])+'">'+x[1]+'</button>'}).join('');
+  Array.prototype.forEach.call(b.querySelectorAll('button'),function(bt){bt.onclick=function(){
+    SET.mapStyle=bt.getAttribute('data-ms');setSave();MSCH=true;mapStyleBar();
+    if(MAP&&window.L){if(MAPT)MAP.removeLayer(MAPT);MAPT=baseLayer(window.L).addTo(MAP);MAPT.bringToBack();styleMap(MAP);if(MAPL&&MAPC){var ly=routeLayers(window.L,MAPC,4.5);MAP.removeLayer(MAPL);MAPL=window.L.featureGroup(ly).addTo(MAP)}}
+  }});
+}
 function openMap(t0){
   var r=data().trips[t0],P=trackOf(r);if(!P)return;
   var dt=new Date(r.t0);
   $('#mapt').textContent=dayLabel(dt)+' · '+HF.format(dt);
   $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'');
   $('#mapapple').href='https://maps.apple.com/?saddr='+P[0].join(',')+'&daddr='+P[P.length-1].join(',')+'&dirflg=d';
+  mapStyleBar();
   $('#mapv').classList.remove('hide');
   leaflet().then(function(L){
     if(!MAP){
       MAP=L.map('mapc',{zoomControl:false,attributionControl:true});
       L.control.zoom({position:'topright'}).addTo(MAP);
-      L.tileLayer(TILE,TOPT).addTo(MAP);
+      MAPT=baseLayer(L).addTo(MAP);styleMap(MAP);
       MAP.attributionControl.setPrefix(false);
     }
     MAP.invalidateSize();
     if(MAPL)MAPL.remove();
     MAP.fitBounds(L.latLngBounds(P),{padding:[36,36],animate:false});
-    var ly=routeLayers(L,P,4.5);
+    var ly=routeLayers(L,P,4.5);MAPC=P;
     MAPL=L.featureGroup(ly).addTo(MAP);
     drawIn([ly[0],ly[1]],1500);
   }).catch(function(){closeMap();toast('La carte n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500)});
@@ -846,6 +898,7 @@ function setHtml(D,L){
     '<div class="srow"><div class="sl">Couleur de l’appli</div><div class="seg">'+sw+'</div></div>'+
     segRow('txt','Taille du texte','',[['s','Petit'],['m','Normal'],['l','Grand'],['xl','Très grand']])+
     segRow('car3d','Voiture en 3D','Dans l’onglet Voiture, avec le bouton du verrou.',ONOFF)+
+    segRow('mapStyle','Style de la carte','Pour la carte des trajets. Tu peux aussi le changer directement sur la carte.',MAPSTYLES)+
     segRow('anim','Animations des onglets','Les chiffres défilent, la jauge et le graphique se remplissent.',ONOFF)+
     segRow('startTab','Onglet à l’ouverture','',[['last','Dernier utilisé'],['car','Voiture'],['bilan','Bilan'],['trips','Trajets']])+'</div>';
   h+='<div class="card sgc"><h2>Animation de démarrage</h2>'+
