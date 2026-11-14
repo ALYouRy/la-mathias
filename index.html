@@ -418,6 +418,18 @@ button{font:inherit;color:inherit}
 #main.anim .tro.ok i{animation:trPop .6s cubic-bezier(.3,1.6,.4,1) both}
 @keyframes trPop{from{transform:scale(.6)}}
 @media (prefers-reduced-motion:reduce){#main.anim .tro.ok i{animation:none}}
+/* 2.15 : conso et météo */
+.mtc .verdict{margin:2px 0 10px;padding:8px 11px;border-radius:12px;background:var(--surface-2);font-size:13px;line-height:1.5;color:var(--fg-2)}.mtc .verdict b{color:var(--fg)}
+.mtb{display:flex;flex-direction:column;gap:9px;margin:4px 0 6px}
+.mtr{display:grid;grid-template-columns:86px 1fr 96px;align-items:center;gap:10px}
+.mtv{white-space:nowrap}.mtv small{white-space:normal}
+.mtr span b{display:block;font-size:13.5px}.mtr span small{display:block;font-size:11px;color:var(--fg-3);line-height:1.25}
+.mtr i{height:9px;border-radius:5px;background:var(--track);overflow:hidden}
+.mtr em{display:block;height:100%;border-radius:5px;transform-origin:0 50%;box-shadow:0 0 10px rgba(255,255,255,.15)}
+#main.anim .mtr em{animation:mtIn .9s cubic-bezier(.2,.8,.2,1) .2s both}
+@keyframes mtIn{from{transform:scaleX(0)}}
+.mtv{text-align:right;font-size:12px;color:var(--fg-2)}.mtv b{display:inline;font-size:15px;color:var(--fg)}
+@media (prefers-reduced-motion:reduce){#main.anim .mtr em{animation:none}}
 </style>
 </head>
 <body>
@@ -471,7 +483,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.14';
+var APP_V='2.15';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1381,6 +1393,59 @@ function trophyWire(){
     toast(t.name+' : '+t.desc+(t.ok?(st[t.id]?' Débloqué le '+new Date(st[t.id]).toLocaleDateString('fr-FR')+'.':' Débloqué.'):' Progression : '+Math.floor(Math.min(1,t.val/t.goal)*100)+' %.'),4200);
   }});
 }
+/* ---------- 2.15 : conso et météo (Open-Meteo, gratuit et sans clé, données CC BY 4.0) ---------- */
+var MKEY='sandero-meteo',MET=null,METP=null;
+function p2(n){return (n<10?'0':'')+n}
+function hk(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'T'+p2(d.getHours())+':00'}
+function ymd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
+function metLoad(){if(MET)return MET;try{MET=JSON.parse(localStorage.getItem(MKEY)||'null')}catch(e){}MET=MET&&MET.h?MET:{h:{},at:0};return MET}
+/* lieu : moyenne des points de départ des tracés (sinon Marseille) */
+function metPlace(){var D=db,n=0,a=0,o=0;Object.keys(D.tracks||{}).forEach(function(k){var P=trackPts(D.tracks[k]);if(P){a+=P[0][0];o+=P[0][1];n++}});return n?[a/n,o/n]:[43.2965,5.3698]}
+function metOf(r){
+  if(sample){var d=new Date(r.t0),doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),h=d.getHours();
+    return [Math.round((15-9*Math.cos((doy-20)/365*2*Math.PI)+(h>=12&&h<=18?3:-1)+((doy*7)%5-2))*10)/10,(doy*3)%7===0?1.2:0]}
+  var M=metLoad();return M.h[hk(new Date(r.t0))]||null;
+}
+function metFetch(){
+  if(sample)return Promise.resolve(false);if(METP)return METP;
+  var M=metLoad(),now=Date.now(),need=list().filter(function(r){return !M.h[hk(new Date(r.t0))]&&now-r.t0>3600e3});
+  if(!need.length||now-M.at<30*60e3)return Promise.resolve(false);
+  var pl=metPlace(),la=pl[0].toFixed(3),lo=pl[1].toFixed(3),q='latitude='+la+'&longitude='+lo+'&hourly=temperature_2m,precipitation&timezone=Europe%2FParis',U=[];
+  var old=need.filter(function(r){return now-r.t0>85*864e5});
+  if(old.length<need.length)U.push('https://api.open-meteo.com/v1/forecast?'+q+'&past_days=92&forecast_days=1');
+  if(old.length){var a=Math.min.apply(null,old.map(function(r){return r.t0})),b=Math.max.apply(null,old.map(function(r){return r.t0}));U.push('https://archive-api.open-meteo.com/v1/archive?'+q+'&start_date='+ymd(new Date(a))+'&end_date='+ymd(new Date(b)))}
+  METP=Promise.all(U.map(function(u){return fetch(u).then(function(x){return x.ok?x.json():null}).catch(function(){return null})})).then(function(res){
+    var got=0;res.forEach(function(j){if(!j||!j.hourly||!j.hourly.time)return;var H=j.hourly;H.time.forEach(function(t,i){var T=H.temperature_2m&&H.temperature_2m[i];if(T!=null){M.h[t]=[Math.round(T*10)/10,H.precipitation&&H.precipitation[i]!=null?H.precipitation[i]:0];got++}})});
+    var keep={};list().forEach(function(r){var k=hk(new Date(r.t0));if(M.h[k])keep[k]=M.h[k]});M.h=keep;M.at=Date.now();
+    try{localStorage.setItem(MKEY,JSON.stringify(M))}catch(e){}METP=null;return got>0;
+  }).catch(function(){METP=null;return false});
+  return METP;
+}
+var TB=[{lab:'Froid',sub:'moins de 8 °C',min:-99,max:8,col:'#5ac8ff'},{lab:'Frais',sub:'8 à 15 °C',min:8,max:15,col:'#7ee0c3'},{lab:'Doux',sub:'15 à 22 °C',min:15,max:22,col:'#ffd60a'},{lab:'Chaud',sub:'plus de 22 °C',min:22,max:99,col:'#ff9f0a'}];
+function meteoStats(){
+  var B=TB.map(function(b){return {lab:b.lab,sub:b.sub,min:b.min,max:b.max,col:b.col,km:0,f:0,t:0}}),dry={km:0,f:0,t:0},wet={km:0,f:0,t:0},n=0,miss=0;
+  list().forEach(function(r){if(r.dist<1||!(r.fuel>0))return;var w=metOf(r);if(!w){miss++;return}n++;
+    B.forEach(function(b){if(w[0]>=b.min&&w[0]<b.max){b.km+=r.dist;b.f+=r.fuel;b.t++}});var x=w[1]>=.3?wet:dry;x.km+=r.dist;x.f+=r.fuel;x.t++});
+  var ok=function(o){return o.t>=3&&o.km>=20};B.forEach(function(b){b.c=ok(b)?b.f/b.km*100:null});
+  dry.c=ok(dry)?dry.f/dry.km*100:null;wet.c=ok(wet)?wet.f/wet.km*100:null;
+  return {B:B,dry:dry,wet:wet,n:n,miss:miss};
+}
+function pctTxt(a,b){var p=Math.round((a/b-1)*100);return p===0?'autant':Math.abs(p)+' % '+(p>0?'de plus':'de moins')}
+function meteoCard(){
+  var S=meteoStats(),h='<div class="card mtc" id="metc"><h2>Conso et météo</h2>';
+  if(S.n<3){if(!sample)metFetch().then(function(ch){if(ch&&TAB==='bilan'){var e=$('#metc');if(e)e.outerHTML=meteoCard()}});
+    return h+'<p class="note" style="margin-top:0">'+(S.miss&&!sample?'Récupération de la météo de tes trajets… (il faut une connexion internet).':'Il faut quelques trajets de plus pour comparer ta conso selon la météo.')+'</p></div>'}
+  var V=S.B.filter(function(b){return b.c!=null}),ref=S.B[2].c!=null?S.B[2]:V.slice().sort(function(a,b){return a.c-b.c})[0],cold=S.B[0].c!=null?S.B[0]:S.B[1].c!=null?S.B[1]:null,mx=0,lines=[];
+  V.forEach(function(b){if(b.c>mx)mx=b.c});
+  if(cold&&ref&&cold!==ref)lines.push('Par temps <b>'+cold.lab.toLowerCase()+'</b> ('+cold.sub+'), tu consommes <b>'+pctTxt(cold.c,ref.c)+'</b> que par temps '+ref.lab.toLowerCase()+'.');
+  if(S.wet.c!=null&&S.dry.c!=null)lines.push('Sous la pluie, tu consommes <b>'+pctTxt(S.wet.c,S.dry.c)+'</b> que par temps sec.');
+  if(lines.length)h+='<div class="verdict">'+lines.join('<br>')+'</div>';
+  h+='<div class="mtb">';
+  S.B.forEach(function(b){h+='<div class="mtr"><span><b>'+b.lab+'</b><small>'+b.sub+'</small></span><i><em style="width:'+(b.c!=null?Math.max(8,b.c/mx*100):0).toFixed(0)+'%;background:'+b.col+'"></em></i><span class="mtv">'+(b.c!=null?'<b>'+f1(b.c)+'</b> L/100<small>'+b.t+' trajet'+(b.t>1?'s':'')+'</small>':'<small>pas assez<br>de trajets</small>')+'</span></div>'});
+  h+='</div>';
+  if(S.wet.t||S.dry.t)h+='<div class="det"><div><span>Temps sec<br><small>'+S.dry.t+' trajet'+(S.dry.t>1?'s':'')+'</small></span><b>'+(S.dry.c!=null?f1(S.dry.c)+' L/100':'–')+'</b></div><div><span>Pluie<br><small>'+S.wet.t+' trajet'+(S.wet.t>1?'s':'')+'</small></span><b>'+(S.wet.c!=null?f1(S.wet.c)+' L/100':'–')+'</b></div></div>';
+  return h+'<p class="note">Conso estimée par l’autoradio, sur '+S.n+' trajet'+(S.n>1?'s':'')+'. Météo à l’heure du départ, autour de ton point de départ habituel'+(sample?' (météo fictive en mode exemple)':'')+'. Données météo : Open-Meteo.com (CC BY 4.0). Une tranche s’affiche à partir de 3 trajets et 20 km.</p></div>';
+}
 function cmp(a,b,better){
   if(a==null||b==null||!b)return '';
   var pc=Math.round((a-b)/Math.abs(b)*100);if(!pc)return '<em>= mois précédent</em>';
@@ -1456,6 +1521,7 @@ function render(){
   h+=realCard();
   h+=stopCard(c,p,d.getFullYear(),d.getMonth());
   h+=spotCard();
+  h+=meteoCard();
   T.bilan=h;h='';
   T.fav=workCard(L)+(favCard(L)||'<div class="card empty"><b>Pas encore de favoris</b><p>Sur l’autoradio, écran <b>Trajets</b> › <b>Trajets favoris</b> : donne un nom à tes trajets habituels (Maison → Travail…). Ils apparaîtront ici à la prochaine synchro.</p></div>');
   /* trajets */
@@ -1466,7 +1532,7 @@ function render(){
     var cons=r.dist>.5&&r.fuel>0?f1(r.fuel/r.dist*100)+' L/100':'–';
     var P=trackOf(r);
     h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b><span class="eco" data-s="'+eState(r.eco)+'">'+r.eco+'</span></div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+'</span><span>'+f2(r.fuel*price)+' €</span>'+(P?'<span class="tk-on">• tracé</span>':'')+'</div>'+
-      '<div class="more det">'+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div></div></div>';
+      '<div class="more det">'+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div></div></div>';
   });
   if(L.length>SET.nTrips)h+='<p class="note" style="text-align:center">Les '+SET.nTrips+' derniers trajets sont affichés (modifiable dans Réglages).</p>';
   h+='<p class="note" style="text-align:center;margin-top:18px"><button type="button" class="btn ghost" id="wipe" style="font-size:13px;padding:8px 12px">'+(sample?'Quitter l’exemple':'Effacer les données de ce téléphone')+'</button></p>';
