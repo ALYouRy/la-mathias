@@ -404,20 +404,6 @@ button{font:inherit;color:inherit}
 .mleg .lg-w{background:linear-gradient(90deg,#34d17a 0%,#ffd60a 22%,#ff9f0a 50%,#ff3b30 100%)}
 .stc .fu b{font-size:38px}.stc .fu .r b{font-size:28px}
 .sth{margin:14px 0 2px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
-.trc h2{display:flex;justify-content:space-between;align-items:baseline}.trn{font-size:12px;letter-spacing:0;color:var(--fg-2)}
-.trg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 6px;margin-top:6px}
-.tro{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:0;color:var(--fg-3)}
-.tro i{position:relative;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:conic-gradient(rgba(var(--accent-rgb),.55) var(--p),rgba(255,255,255,.07) 0)}
-.tro i::before{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--surface)}
-.tro svg{position:relative;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
-.tro span{font-size:10.5px;font-weight:650;line-height:1.2;text-align:center}
-.tro.ok{color:var(--fg)}
-.tro.ok i{background:conic-gradient(from 200deg,#00e5ff,#b26bff,#ff3fd0,#00e5ff);box-shadow:0 0 16px rgba(178,107,255,.45)}
-.tro.ok i::before{background:radial-gradient(circle at 35% 30%,#2a1f6a,#120e30)}
-.tro.ok svg{opacity:1;stroke:#fff;filter:drop-shadow(0 0 4px rgba(var(--accent-rgb),.8))}
-#main.anim .tro.ok i{animation:trPop .6s cubic-bezier(.3,1.6,.4,1) both}
-@keyframes trPop{from{transform:scale(.6)}}
-@media (prefers-reduced-motion:reduce){#main.anim .tro.ok i{animation:none}}
 /* 2.15 : conso et météo */
 .mtc .verdict{margin:2px 0 10px;padding:8px 11px;border-radius:12px;background:var(--surface-2);font-size:13px;line-height:1.5;color:var(--fg-2)}.mtc .verdict b{color:var(--fg)}
 .mtb{display:flex;flex-direction:column;gap:9px;margin:4px 0 6px}
@@ -458,6 +444,45 @@ button{font:inherit;color:inherit}
 .mtf .sin input{min-width:0}
 .mtphv img{display:block;max-width:100%;max-height:260px;margin:10px 0 0;border-radius:12px;border:1px solid var(--line)}
 .mtphx{margin-top:6px;border:0;background:none;color:#ff6b6d;font-weight:700;padding:4px 0}
+/* 2.17 : trophées (bronze, argent, or, légendaire) */
+.trc2 h2{display:flex;justify-content:space-between;align-items:baseline}.trn{font-size:12px;letter-spacing:0;color:var(--fg-2)}
+.trbar i{background:linear-gradient(90deg,#cd7f32,#c0c8d2,#ffd54a,#ff3fd0,#00e5ff)!important}
+.trt{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;font-weight:650;color:var(--fg-2)}
+.trt span{display:inline-flex;align-items:center;gap:5px}.trt i{width:10px;height:10px;border-radius:50%}
+.trt-b i{background:linear-gradient(135deg,#f0b27a,#8a5a2b)}.trt-a i{background:linear-gradient(135deg,#ffffff,#8f9aa8)}.trt-o i{background:linear-gradient(135deg,#fff1a8,#c99200)}.trt-l i{background:conic-gradient(#ff3b30,#ffd60a,#34d17a,#00e5ff,#a78bfa,#ff3fd0,#ff3b30)}
+.trlast{display:flex;gap:10px;margin:12px 0 2px}
+.trnext{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line)}
+.trnext>span{flex:1;min-width:0}.trnext small{display:block;font-size:11px;font-weight:700;color:var(--fg-3);letter-spacing:.02em}
+.trnext b{display:block;font-size:15.5px;margin-top:2px}.trnext em{display:block;font-style:normal;font-size:12.5px;color:var(--fg-2);margin:2px 0 0}.trnext .bar{margin:8px 0 4px}
+.md{position:relative;flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.md.big{width:56px;height:56px}
+.tri>.md,.trnext>.md,.trc2 .md{flex:0 0 auto!important;width:46px;height:46px}.tri>.md.big,.trnext>.md.big{width:56px;height:56px}
+.md .ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(255,255,255,.35) var(--p),rgba(255,255,255,.07) 0)}
+.md i{position:absolute;inset:3.5px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#26205a,#0d0a26 70%);overflow:hidden}
+.md svg{width:46%;height:46%;fill:none;stroke:#6f68a8;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.md.ok.t-b .ring{background:conic-gradient(from 200deg,#7a4a22,#f0b27a,#a8662f,#ffd3a6,#7a4a22)}
+.md.ok.t-a .ring{background:conic-gradient(from 200deg,#7d8794,#ffffff,#a9b4c1,#f4f7fb,#7d8794)}
+.md.ok.t-o .ring{background:conic-gradient(from 200deg,#9c6b00,#ffe27a,#c99200,#fff6c4,#9c6b00)}
+.md.ok.t-l .ring{background:conic-gradient(#ff3b30,#ff9f0a,#ffd60a,#34d17a,#00e5ff,#5e5ce6,#ff3fd0,#ff3b30);animation:mdSpin 3.5s linear infinite}
+.md.ok.t-b{filter:drop-shadow(0 0 6px rgba(240,178,122,.45))}.md.ok.t-a{filter:drop-shadow(0 0 6px rgba(230,238,248,.5))}.md.ok.t-o{filter:drop-shadow(0 0 8px rgba(255,214,74,.6))}
+.md.ok.t-l{filter:drop-shadow(0 0 10px rgba(255,63,208,.55)) drop-shadow(0 0 16px rgba(0,229,255,.35))}
+.md.ok.t-b i{background:radial-gradient(circle at 35% 28%,#6b4022,#2a170b 72%)}.md.ok.t-a i{background:radial-gradient(circle at 35% 28%,#5a6270,#1c2028 72%)}
+.md.ok.t-o i{background:radial-gradient(circle at 35% 28%,#7a5a0a,#2a1e02 72%)}.md.ok.t-l i{background:radial-gradient(circle at 35% 28%,#3a2a8a,#0f0a2e 72%)}
+.md.ok.t-b svg{stroke:#ffd3a6}.md.ok.t-a svg{stroke:#ffffff}.md.ok.t-o svg{stroke:#ffe9a0}.md.ok.t-l svg{stroke:#fff;filter:drop-shadow(0 0 3px #ff3fd0)}
+.md.ok i::after{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);transform:translateX(-60%);animation:mdShine 4.5s ease-in-out infinite}
+.md.ok.t-l i::after{background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);animation-duration:2.6s}
+@keyframes mdSpin{to{transform:rotate(360deg)}}
+@keyframes mdShine{0%,55%{transform:translateX(-60%)}80%,100%{transform:translateX(60%)}}
+.trf{margin:0 0 4px}
+.trl{padding:6px 14px}
+.tri{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}.tri:first-child{border-top:0}
+.tri>span{flex:1;min-width:0}.tri b{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:15px}.tri small{display:block;margin-top:3px;font-size:12.5px;color:var(--fg-2);line-height:1.4}
+.tri .bar{margin:8px 0 2px;height:6px}.tri:not(.ok) b{color:var(--fg-2)}.trd{color:var(--good)!important;font-weight:650}
+.tl{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:6px}
+.tl-b{background:rgba(205,127,50,.18);color:#f0b27a}.tl-a{background:rgba(220,228,238,.14);color:#e6edf6}.tl-o{background:rgba(255,214,74,.16);color:#ffd54a}
+.tl-l{color:#fff;background:linear-gradient(90deg,#ff3b30,#ffd60a,#34d17a,#00e5ff,#a78bfa,#ff3fd0);background-size:200% 100%;animation:tlRb 3s linear infinite}
+@keyframes tlRb{to{background-position:200% 0}}
+@media (prefers-reduced-motion:reduce){.md.ok.t-l .ring,.md.ok i::after,.tl-l{animation:none!important}}
 </style>
 </head>
 <body>
@@ -512,7 +537,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.16.1';
+var APP_V='2.17';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1447,49 +1472,117 @@ var TRI={road:'<path d="M8 3 5 21M16 3l3 18M12 4v3M12 10v3M12 16v3"/>',star:'<pa
   map:'<path d="M9 4 3 6.2v13.6L9 18l6 2 6-2.2V4.2L15 6 9 4z"/><path d="M9 4v14M15 6v14"/>',pin:'<path d="M12 21s-6-5.4-6-11a6 6 0 0 1 12 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
   flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',fuel:'<path d="M5 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M4 20h12M15 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
   crown:'<path d="M4 18h16L18 8l-4 4-2-6-2 6-4-4z"/>',feather:'<path d="M20 4C10 4 6 10 6 18M6 18l-2 2M9 15h6M11 11h7"/>',bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>'};
+var TIER={b:['bronze','Bronze'],a:['argent','Argent'],o:['or','Or'],l:['legend','Légendaire']},TCATS=['Trajets','Kilomètres','Éco-conduite','Explorations','Moments','Records','Entretien et pleins'];
+TRI.drop='<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>';TRI.snow='<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 4.5l3 2 3-2M9 19.5l3-2 3 2"/>';
+TRI.fire='<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 3 2 0-2 0-4 0-6z"/>';TRI.cal='<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>';
+TRI.wrench='<path d="M14.5 5.5a4 4 0 0 0-4.9 5.3L4 16.4 7.6 20l5.6-5.6a4 4 0 0 0 5.3-4.9l-2.7 2.7-2.6-.7-.7-2.6z"/>';TRI.brief='<rect x="3.5" y="7" width="17" height="12" rx="2.5"/><path d="M9 7V5h6v2M3.5 12h17"/>';
+TRI.trophy='<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/>';TRI.ghost='<path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"/><circle cx="10" cy="11" r=".8"/><circle cx="14" cy="11" r=".8"/>';
 function trophyDefs(){
-  var L=list().slice().reverse(),D=data(),km=0,run=0,rec=0,best=0,maxD=0,night=0,early=0,zen=0,months={},tracks=0;
-  L.forEach(function(r){var d=new Date(r.t0),h=d.getHours();km+=r.dist;if(r.dist>maxD)maxD=r.dist;if(r.eco>best)best=r.eco;
-    if(r.eco>=ECO_MIN){run++;if(run>rec)rec=run}else run=0;if(h<5)night=1;if(h===5)early=1;if(r.dist>=20&&!r.hard&&!r.accel)zen=1;
-    var mk=d.getFullYear()+'-'+d.getMonth(),M=months[mk]||(months[mk]={km:0,f:0});M.km+=r.dist;M.f+=r.fuel;if(D.tracks&&D.tracks[r.t0])tracks++});
-  var sobre=Object.keys(months).some(function(k){var M=months[k];return M.km>=100&&M.f/M.km*100<6})?1:0;
-  var fills=Object.keys(D.fills||{}).filter(function(k){return D.fills[k].full}).length,pass=freqData('all').max||0,n=L.length;
-  return [
-    ['t1','Premier tour de roue','Ton premier trajet synchronisé.','flag',n,1],
-    ['t10','Habituée du volant','10 trajets.','road',n,10],['t100','Centenaire','100 trajets.','road',n,100],['t500','Marathonienne','500 trajets.','crown',n,500],
-    ['k100','100 km','100 km au compteur de l’appli.','bolt',km,100],['k1000','1 000 km','1 000 km parcourus.','bolt',km,1000],['k5000','5 000 km','5 000 km parcourus.','bolt',km,5000],['k10000','10 000 km','10 000 km parcourus.','crown',km,10000],
-    ['e5','Pied léger','5 trajets d’affilée avec un score éco ≥ 80.','leaf',rec,5],['e10','Ceinture verte','10 trajets d’affilée avec un score éco ≥ 80.','leaf',rec,10],['e20','Maître zen','20 trajets d’affilée avec un score éco ≥ 80.','leaf',rec,20],
-    ['e95','Score parfait','Un trajet avec un score éco d’au moins 95.','star',best,95],
-    ['zen','Conduite de velours','Un trajet d’au moins 20 km sans freinage brusque ni accélération vive.','feather',zen,1],
-    ['long','Grand voyageur','Un trajet d’au moins 100 km.','map',maxD,100],
-    ['nuit','Oiseau de nuit','Un départ entre minuit et 5 h.','moon',night,1],['tot','Lève-tôt','Un départ entre 5 h et 6 h.','sun',early,1],
-    ['sobre','Mois sobre','Un mois sous 6 L/100 (au moins 100 km).','leaf',sobre,1],
-    ['gps','Cartographe','50 trajets avec leur tracé GPS.','pin',tracks,50],['pass','Ma rue','50 passages au même endroit.','pin',pass,50],
-    ['plein','10 pleins','10 pleins complets enregistrés.','fuel',fills,10]
-  ].map(function(t){return {id:t[0],name:t[1],desc:t[2],icon:t[3],val:t[4],goal:t[5],ok:t[4]>=t[5]}});
+  var D=data(),L=list().slice().reverse(),km=0,run=0,rec=0,best=0,maxD=0,night=0,early=0,zen=0,zenN=0,wk=0,rain=0,cold=0,hot=0,pro=0,work=0,months={},tracks=0,days={},favB={},favRec=0,first=L.length?L[0].t0:null;
+  var F=D.favs||{};
+  L.forEach(function(r){var d=new Date(r.t0),h=d.getHours(),dw=d.getDay();km+=r.dist;if(r.dist>maxD)maxD=r.dist;if(r.eco>best)best=r.eco;
+    if(r.eco>=ECO_MIN){run++;if(run>rec)rec=run}else run=0;if(h<5){night++}if(h===5)early++;
+    if(r.dist>=20&&!r.hard&&!r.accel){zen=1;zenN++}if((dw===0||dw===6)&&r.dist>=50)wk++;
+    var mk=d.getFullYear()+'-'+d.getMonth(),M=months[mk]||(months[mk]={km:0,f:0});M.km+=r.dist;M.f+=r.fuel;if(D.tracks&&D.tracks[r.t0])tracks++;
+    days[ymd(d)]=1;var w=metOf(r);if(w){if(w[1]>=.3)rain++;if(w[0]<0)cold++;if(w[0]>=32)hot++}
+    if(isPro(r))pro++;if(r.fav!=null&&F[r.fav]&&isWork(r.fav,F[r.fav]))work++;
+    if(r.fav!=null){var B=favB[r.fav]||(favB[r.fav]={n:0,best:1e12});if(B.n>=2&&r.dur<B.best)favRec++;B.n++;if(r.dur<B.best)B.best=r.dur}});
+  var sob=0,sob55=0;Object.keys(months).forEach(function(k){var M=months[k];if(M.km>=100){var c=M.f/M.km*100;if(c<6)sob++;if(c<5.5)sob55++}});
+  var dk=Object.keys(days).sort(),streak=0,cur=0,prev=null;dk.forEach(function(k){var t=Date.parse(k);cur=prev!=null&&Math.round((t-prev)/864e5)===1?cur+1:1;if(cur>streak)streak=cur;prev=t});
+  var fills=Object.keys(D.fills||{}).filter(function(k){return D.fills[k].full}).length,fq=freqData('all'),pass=fq.max||0,ent=entLoad().length,years=first?(Date.now()-first)/(365.25*864e5):0;
+  var T=[
+    ['Trajets','t1','Premier tour de roue','Synchronise ton premier trajet.','b','flag',L.length,1,'trajet'],
+    ['Trajets','t10','Habituée du volant','Fais 10 trajets.','b','road',L.length,10,'trajets'],
+    ['Trajets','t50','Fidèle au poste','Fais 50 trajets.','a','road',L.length,50,'trajets'],
+    ['Trajets','t100','Centenaire','Fais 100 trajets.','a','road',L.length,100,'trajets'],
+    ['Trajets','t250','Pilier de la route','Fais 250 trajets.','o','crown',L.length,250,'trajets'],
+    ['Trajets','t500','Marathonienne','Fais 500 trajets.','o','crown',L.length,500,'trajets'],
+    ['Trajets','t1000','Mille et une routes','Fais 1 000 trajets.','l','crown',L.length,1000,'trajets'],
+    ['Kilomètres','k100','Cent bornes','Parcours 100 km.','b','bolt',km,100,'km'],
+    ['Kilomètres','k500','Demi-millier','Parcours 500 km.','b','bolt',km,500,'km'],
+    ['Kilomètres','k1000','Mille kilomètres','Parcours 1 000 km.','a','bolt',km,1000,'km'],
+    ['Kilomètres','k5000','Tour de France','Parcours 5 000 km.','a','map',km,5000,'km'],
+    ['Kilomètres','k10000','Dix mille','Parcours 10 000 km.','o','map',km,10000,'km'],
+    ['Kilomètres','k25000','Grande voyageuse','Parcours 25 000 km.','o','map',km,25000,'km'],
+    ['Kilomètres','k40000','Tour de la Terre','Parcours 40 075 km, la longueur de l’équateur.','l','map',km,40075,'km'],
+    ['Éco-conduite','e5','Pied léger','5 trajets d’affilée avec un score éco ≥ 80.','b','leaf',rec,5,'d’affilée'],
+    ['Éco-conduite','e10','Ceinture verte','10 trajets d’affilée avec un score éco ≥ 80.','a','leaf',rec,10,'d’affilée'],
+    ['Éco-conduite','e20','Maître zen','20 trajets d’affilée avec un score éco ≥ 80.','o','leaf',rec,20,'d’affilée'],
+    ['Éco-conduite','e50','Nirvana','50 trajets d’affilée avec un score éco ≥ 80.','l','leaf',rec,50,'d’affilée'],
+    ['Éco-conduite','s90','Bonne élève','Un trajet avec un score éco d’au moins 90.','b','star',best,90,'/100'],
+    ['Éco-conduite','s95','Score parfait','Un trajet avec un score éco d’au moins 95.','a','star',best,95,'/100'],
+    ['Éco-conduite','s99','Perfection','Un trajet avec un score éco d’au moins 99.','l','star',best,99,'/100'],
+    ['Éco-conduite','zen','Conduite de velours','Un trajet d’au moins 20 km sans freinage brusque ni accélération vive.','b','feather',zenN,1,'trajet'],
+    ['Éco-conduite','zen10','Main de velours','10 trajets d’au moins 20 km sans freinage brusque ni accélération vive.','o','feather',zenN,10,'trajets'],
+    ['Éco-conduite','sob','Mois sobre','Un mois sous 6 L/100 (au moins 100 km).','a','leaf',sob,1,'mois'],
+    ['Éco-conduite','sob3','Saison sobre','3 mois sous 6 L/100 (au moins 100 km chacun).','o','leaf',sob,3,'mois'],
+    ['Éco-conduite','sob55','Économe de génie','Un mois sous 5,5 L/100 (au moins 100 km).','l','leaf',sob55,1,'mois'],
+    ['Explorations','g10','Cartographe','10 trajets avec leur tracé GPS.','b','pin',tracks,10,'tracés'],
+    ['Explorations','g50','Géographe','50 trajets avec leur tracé GPS.','a','pin',tracks,50,'tracés'],
+    ['Explorations','g200','Atlas vivant','200 trajets avec leur tracé GPS.','o','pin',tracks,200,'tracés'],
+    ['Explorations','p10','Ma rue','Passe 10 fois au même endroit.','b','pin',pass,10,'passages'],
+    ['Explorations','p50','Chez moi partout','Passe 50 fois au même endroit.','a','pin',pass,50,'passages'],
+    ['Explorations','p200','Pavés usés','Passe 200 fois au même endroit.','o','pin',pass,200,'passages'],
+    ['Explorations','long','Grand voyage','Un trajet d’au moins 100 km.','a','map',maxD,100,'km'],
+    ['Explorations','long300','Grande évasion','Un trajet d’au moins 300 km.','o','map',maxD,300,'km'],
+    ['Explorations','wk','Escapade','Un trajet d’au moins 50 km le week-end.','b','sun',wk,1,'escapade'],
+    ['Moments','nuit','Oiseau de nuit','Un départ entre minuit et 5 h.','b','moon',night,1,'départ'],
+    ['Moments','nuit10','Chouette','10 départs entre minuit et 5 h.','a','moon',night,10,'départs'],
+    ['Moments','tot','Lève-tôt','Un départ entre 5 h et 6 h.','b','sun',early,1,'départ'],
+    ['Moments','rain','Sous la pluie','Un trajet sous la pluie.','b','drop',rain,1,'trajet'],
+    ['Moments','cold','Grand froid','Un trajet sous 0 °C.','a','snow',cold,1,'trajet'],
+    ['Moments','hot','Canicule','Un trajet à 32 °C ou plus.','a','fire',hot,1,'trajet'],
+    ['Moments','d7','Semaine complète','Roule 7 jours d’affilée.','a','cal',streak,7,'jours'],
+    ['Moments','d30','Mois sans pause','Roule 30 jours d’affilée.','o','cal',streak,30,'jours'],
+    ['Moments','y1','Un an ensemble','Un an depuis ton premier trajet synchronisé.','o','cal',years,1,'an'],
+    ['Moments','pro10','Professionnelle','Marque 10 trajets comme « Pro ».','b','brief',pro,10,'trajets pro'],
+    ['Moments','work100','Métro-boulot-auto','100 trajets domicile-travail.','a','brief',work,100,'trajets'],
+    ['Records','rec1','Record battu','Bats ton meilleur temps sur un trajet favori.','b','ghost',favRec,1,'record'],
+    ['Records','rec10','Chasseuse de fantômes','Bats 10 fois un record sur tes trajets favoris.','o','ghost',favRec,10,'records'],
+    ['Entretien et pleins','f1','Premier plein','Enregistre un plein complet sur l’autoradio.','b','fuel',fills,1,'plein'],
+    ['Entretien et pleins','f10','Dix pleins','10 pleins complets enregistrés.','a','fuel',fills,10,'pleins'],
+    ['Entretien et pleins','f50','Pompiste','50 pleins complets enregistrés.','o','fuel',fills,50,'pleins'],
+    ['Entretien et pleins','m1','Mécano','Ajoute une intervention au carnet d’entretien.','b','wrench',ent,1,'intervention'],
+    ['Entretien et pleins','m10','Voiture chouchoutée','10 interventions dans le carnet d’entretien.','a','wrench',ent,10,'interventions']
+  ].map(function(t){return {cat:t[0],id:t[1],name:t[2],how:t[3],tier:t[4],icon:t[5],val:t[6],goal:t[7],unit:t[8],ok:t[6]>=t[7]}});
+  var nOr=T.filter(function(t){return t.ok&&t.tier==='o'}).length,nO=T.filter(function(t){return t.tier==='o'}).length;
+  T.push({cat:'Records',id:'legend',name:'Légende de La Mathias',how:'Débloque tous les trophées en or.',tier:'l',icon:'trophy',val:nOr,goal:nO,unit:'trophées en or',ok:nOr>=nO});
+  return T;
 }
 var TRK='sandero-trophees';
 function trophyCheck(T){
-  if(sample)return;var st={};try{st=JSON.parse(localStorage.getItem(TRK)||'null')}catch(e){}
-  var first=!st;st=st||{};var nw=[];
-  T.forEach(function(t){if(t.ok&&!st[t.id]){st[t.id]=Date.now();if(!first)nw.push(t)}});
+  if(sample)return null;var st=null;try{st=JSON.parse(localStorage.getItem(TRK)||'null')}catch(e){}
+  var quiet=!st||st._v!==2;st=st||{};var nw=[];
+  T.forEach(function(t){if(t.ok&&!st[t.id]){st[t.id]=Date.now();if(!quiet)nw.push(t)}});st._v=2;
   try{localStorage.setItem(TRK,JSON.stringify(st))}catch(e){}
-  nw.slice(0,3).forEach(function(t,i){setTimeout(function(){island({fallback:1,icon:'star',pop:true,tone:'good',title:'Trophée débloqué',sub:t.name,ms:3200})},600+i*400)});
+  nw.slice(0,3).forEach(function(t,i){setTimeout(function(){island({fallback:1,icon:'star',pop:true,tone:'good',title:'Trophée '+TIER[t.tier][1].toLowerCase()+' débloqué',sub:t.name,ms:3200})},600+i*400)});
   return st;
 }
+function medal(t,big){var pc=Math.max(0,Math.min(1,t.val/t.goal));return '<span class="md t-'+t.tier+(t.ok?' ok':'')+(big?' big':'')+'" style="--p:'+(pc*360).toFixed(0)+'deg"><span class="ring"></span><i><svg viewBox="0 0 24 24">'+(TRI[t.icon]||TRI.star)+'</svg></i></span>'}
+function progTxt(t){var v=t.unit==='km'?fi(Math.min(t.val,t.goal)):t.unit==='an'?f1(Math.min(t.val,t.goal)):Math.floor(Math.min(t.val,t.goal));return v+' / '+(t.unit==='km'?fi(t.goal):t.goal)+' '+t.unit}
 function trophyCard(){
-  var T=trophyDefs(),st=trophyCheck(T)||{},ok=T.filter(function(t){return t.ok}).length;
-  var h='<div class="card trc"><h2>Trophées <span class="trn">'+ok+' / '+T.length+'</span></h2><div class="trg">';
-  T.forEach(function(t){var pc=Math.max(0,Math.min(1,t.val/t.goal));
-    h+='<button type="button" class="tro'+(t.ok?' ok':'')+'" data-tr="'+t.id+'" style="--p:'+(pc*360).toFixed(0)+'deg"><i><svg viewBox="0 0 24 24">'+TRI[t.icon]+'</svg></i><span>'+t.name+'</span></button>'});
-  return h+'</div></div>';
+  var T=trophyDefs(),st=trophyCheck(T)||{},ok=T.filter(function(t){return t.ok}),c={b:0,a:0,o:0,l:0};ok.forEach(function(t){c[t.tier]++});
+  var next=T.filter(function(t){return !t.ok}).sort(function(a,b){return b.val/b.goal-a.val/a.goal})[0];
+  var last=ok.slice().sort(function(a,b){return (st[b.id]||0)-(st[a.id]||0)}).slice(0,5);
+  var h='<div class="card trc2"><h2>Trophées <span class="trn">'+ok.length+' / '+T.length+'</span></h2><div class="bar trbar"><i style="transform:scaleX('+(ok.length/T.length).toFixed(3)+')"></i></div>'+
+    '<div class="trt">'+['b','a','o','l'].map(function(k){return '<span class="trt-'+k+'"><i></i>'+c[k]+' '+TIER[k][1].toLowerCase()+'</span>'}).join('')+'</div>';
+  if(last.length)h+='<div class="trlast">'+last.map(function(t){return medal(t)}).join('')+'</div>';
+  if(next)h+='<div class="trnext">'+medal(next)+'<span><small>Prochain trophée · '+TIER[next.tier][1]+'</small><b>'+next.name+'</b><em>'+next.how+'</em><div class="bar"><i style="transform:scaleX('+Math.min(1,next.val/next.goal).toFixed(3)+')"></i></div><small>'+progTxt(next)+'</small></span></div>';
+  return h+'<div class="sbtns"><button type="button" class="btn ghost" id="trall">Voir tous les trophées</button></div></div>';
 }
-function trophyWire(){
-  var T=null;Array.prototype.forEach.call(document.querySelectorAll('[data-tr]'),function(b){b.onclick=function(){
-    T=T||trophyDefs();var t=T.filter(function(x){return x.id===b.getAttribute('data-tr')})[0];if(!t)return;var st={};try{st=JSON.parse(localStorage.getItem(TRK)||'{}')||{}}catch(e){}
-    toast(t.name+' : '+t.desc+(t.ok?(st[t.id]?' Débloqué le '+new Date(st[t.id]).toLocaleDateString('fr-FR')+'.':' Débloqué.'):' Progression : '+Math.floor(Math.min(1,t.val/t.goal)*100)+' %.'),4200);
-  }});
+var TRF='all';
+function trophyPage(){
+  var T=trophyDefs(),st={};try{st=JSON.parse(localStorage.getItem(TRK)||'{}')||{}}catch(e){}
+  var L=T.filter(function(t){return TRF==='all'||(TRF==='ok'?t.ok:!t.ok)}),h='<div class="seg trf">'+[['all','Tous'],['ok','Débloqués'],['todo','À débloquer']].map(function(x){return '<button type="button" data-trf="'+x[0]+'" aria-pressed="'+(TRF===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>';
+  TCATS.forEach(function(cat){var C=L.filter(function(t){return t.cat===cat});if(!C.length)return;
+    h+='<div class="day">'+cat+'</div><div class="card trl">'+C.map(function(t){var pc=Math.min(1,t.val/t.goal);
+      return '<div class="tri'+(t.ok?' ok':'')+'">'+medal(t,true)+'<span><b>'+t.name+'<em class="tl tl-'+t.tier+'">'+TIER[t.tier][1]+'</em></b><small>'+t.how+'</small>'+
+        (t.ok?'<small class="trd">'+(st[t.id]?'Débloqué le '+new Date(st[t.id]).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'Débloqué')+'</small>'
+          :'<div class="bar"><i style="transform:scaleX('+pc.toFixed(3)+')"></i></div><small>'+progTxt(t)+'</small>')+'</span></div>'}).join('')+'</div>'});
+  sheetOpen('Trophées · '+T.filter(function(t){return t.ok}).length+' / '+T.length,h);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-trf]'),function(b){b.onclick=function(){TRF=b.getAttribute('data-trf');trophyPage()}});
 }
+function trophyWire(){var b=$('#trall');if(b)b.onclick=trophyPage;Array.prototype.forEach.call(document.querySelectorAll('.trc2 .md'),function(m){m.onclick=trophyPage})}
 /* ---------- 2.15 : conso et météo (Open-Meteo, gratuit et sans clé, données CC BY 4.0) ---------- */
 var MKEY='sandero-meteo',MET=null,METP=null;
 function p2(n){return (n<10?'0':'')+n}
