@@ -278,7 +278,6 @@ button{font:inherit;color:inherit}
 .thumb{display:block;width:100%;height:100%}
 .mm{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s}
 .mapb.live .mm{opacity:1}.mapb.live .thumb{visibility:hidden}
-.mm .leaflet-control-attribution{font-size:8.5px!important}
 .thumb .tw{fill:none;stroke:rgba(var(--accent-rgb),.22);stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
 .thumb .tk{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 0}
 .tr.open .thumb .tk,#main.anim .thumb .tk{stroke-dasharray:1;animation:tkDraw 1.3s cubic-bezier(.4,0,.2,1) .1s both}
@@ -290,21 +289,22 @@ button{font:inherit;color:inherit}
 .map-hd{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px}
 .map-hd b{display:block;font-size:17px;font-weight:700}.map-hd small{display:block;margin-top:2px;font-size:12.5px;font-weight:600;color:var(--fg-2)}
 .mapx{flex:0 0 auto;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-size:15px;padding:0}
-#mapc{flex:1;min-height:0;background:#0e0e12}
+#mapc{flex:1;min-height:0;background:#07051a}
 .map-ft{display:flex;gap:10px;padding:10px 16px calc(env(safe-area-inset-bottom) + 12px)}
 .map-ft .btn{flex:1;font-size:14px;padding:11px 8px;text-align:center;text-decoration:none}
 .map-lg{display:flex;gap:14px;padding:0 18px 6px;font-size:12px;font-weight:600;color:var(--fg-2)}
 .map-lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.leaflet-container{background:#0e0e12!important;font-family:var(--font)!important}
-.mst-sombre .leaflet-tile-pane,.leaflet-container .tfb{filter:invert(1) hue-rotate(200deg) brightness(.92) contrast(.88) saturate(.55)}
-.leaflet-container.mst-neon{background:#0a061c!important}.leaflet-container.mst-or{background:#080a14!important}.leaflet-container.mst-clair{background:#f2efe9!important}
+.maplibregl-map{font-family:var(--font)!important}
+.maplibregl-ctrl-group{background:var(--surface-2)!important;border:1px solid var(--line);box-shadow:none!important}
+.maplibregl-ctrl-group button+button{border-top:1px solid var(--line)!important}
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon{filter:invert(1) brightness(1.4)}
+.maplibregl-ctrl-attrib{background:rgba(7,5,26,.72)!important;color:#9a94c4!important;font-size:10px}
+.maplibregl-ctrl-attrib a{color:#c9c3ee!important}
+.maplibregl-ctrl-attrib-button{filter:invert(1)}
+.mm .maplibregl-ctrl-attrib{font-size:8.5px}
 .map-st{display:flex;gap:6px;padding:0 16px 8px;overflow-x:auto}
 .map-st button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface-2);color:var(--fg-2);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700}
 .map-st button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.16);border-color:rgba(var(--accent-rgb),.7);color:var(--accent)}
-.leaflet-bar a{background:var(--surface-2)!important;color:var(--fg)!important;border-color:var(--line)!important}
-.leaflet-bar{border:1px solid var(--line)!important;box-shadow:none!important}
-.leaflet-control-attribution{background:rgba(7,5,26,.7)!important;color:#9a94c4!important;font-size:10px!important}
-.leaflet-control-attribution a{color:#c9c3ee!important}
 @media (prefers-reduced-motion:reduce){#main.anim .bh-r i,#main.anim .cal button,.thumb .tk,.mapv{animation:none!important}}
 </style>
 </head>
@@ -356,7 +356,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.8';
+var APP_V='2.9';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -668,96 +668,106 @@ function mapBtn(t0,P){
   var dd=P.map(function(p,i){var q=pt(p);return (i?'L':'M')+q[0]+' '+q[1]}).join(''),s0=pt(P[0]),s1=pt(P[P.length-1]);
   return '<span class="mapb" role="button" data-t="'+t0+'"><svg class="thumb" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet"><path class="tw" d="'+dd+'"/><path class="tk" pathLength="1" d="'+dd+'"/><circle cx="'+s0[0]+'" cy="'+s0[1]+'" r="5" fill="#34d17a" stroke="#fff" stroke-width="1.5"/><circle cx="'+s1[0]+'" cy="'+s1[1]+'" r="5" fill="#ff4d4f" stroke="#fff" stroke-width="1.5"/></svg><em>Voir sur la carte ›</em></span>';
 }
-/* carte plein écran : Leaflet (chargé à la demande) + fond CARTO sombre */
-var LLP=null,MAP=null,MAPL=null,MAPT=null,MAPC=null,MINI=[],MSCH=false;
-/* fond OpenStreetMap (gratuit, sans clé), assombri en CSS pour le style de l'appli */
-var TILE='https://tile.openstreetmap.org/{z}/{x}/{y}.png',TOPT={maxZoom:19,attribution:'© les contributeurs d’OpenStreetMap'};
-/* 2.8 : styles de carte. Néon et Doré : chaque tuile OpenStreetMap est recolorée dans un canvas.
-   Si le navigateur refuse de lire la tuile (CORS), elle s'affiche en style Sombre. */
+/* ---------- 2.9 : carte vectorielle : MapLibre GL + tuiles OpenFreeMap (gratuit, sans clé) ----------
+   Néon et Doré : style dessiné ici, avec les données des styles OpenFreeMap. Sombre = « dark », Clair = « positron ». */
+var MLV='4.7.1',MLP=null,MAP=null,MAPC=null,MAPANIM=false,MINI=[],MSCH=false,OFM='https://tiles.openfreemap.org/styles/',BASEP=null,STY={};
 var MAPSTYLES=[['neon','Néon'],['sombre','Sombre'],['or','Doré'],['clair','Clair']];
-var MAPPAL={
-  neon:{base:[10,6,28],hi:[46,30,96],minor:[0,229,255],major:[255,63,208],water:[22,20,84],park:[14,44,52],text:[214,204,255],glow:'rgba(0,229,255,.95)',blur:5},
-  or:{base:[8,10,20],hi:[34,38,58],minor:[255,200,110],major:[255,138,60],water:[14,26,52],park:[18,34,30],text:[236,222,190],glow:'rgba(255,186,90,.85)',blur:4}
+var PAL={
+  neon:{bg:'#07051a',park:'#0b2433',water:'#0d0a3c',wline:'#3b4cff',bld:'#120e30',bldl:'#2c2370',minor:'#3e2d9a',mid:'#00e5ff',major:'#ff3fd0',rail:'#6b5bc4',lab:'#ece8ff',lab2:'#9befff',halo:'#07051a',route:'#ffffff',rglow:'#b26bff'},
+  or:{bg:'#070912',park:'#0f1f1b',water:'#0a1630',wline:'#28467e',bld:'#11141f',bldl:'#272c41',minor:'#3d3324',mid:'#ffc46b',major:'#ff8a3c',rail:'#5b5142',lab:'#f3e6c8',lab2:'#ffd391',halo:'#070912',route:'#00e5ff',rglow:'#00e5ff'}
 };
-function recolor(ctx,img,P){
-  ctx.drawImage(img,0,0,256,256);
-  var D=ctx.getImageData(0,0,256,256),a=D.data,rc=document.createElement('canvas');rc.width=rc.height=256;
-  var rx=rc.getContext('2d'),RD=rx.createImageData(256,256),ra=RD.data;
-  for(var i=0;i<a.length;i+=4){
-    var r=a[i],g=a[i+1],b=a[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=mx-mn,lum=r*.3+g*.59+b*.11,c,road=0;
-    if(b>r+18&&b>175&&g>165)c=P.water;
-    else if(g>r+8&&g>=b&&sat>14)c=P.park;
-    else if(mx>=246&&sat<12){c=P.minor;road=1}
-    else if(r>222&&sat>28){c=P.major;road=1}
-    else if(lum<135)c=P.text;
-    else{var t=Math.max(0,Math.min(1,(246-lum)/70));c=[P.base[0]+(P.hi[0]-P.base[0])*t,P.base[1]+(P.hi[1]-P.base[1])*t,P.base[2]+(P.hi[2]-P.base[2])*t]}
-    a[i]=c[0];a[i+1]=c[1];a[i+2]=c[2];
-    if(road){ra[i]=c[0];ra[i+1]=c[1];ra[i+2]=c[2];ra[i+3]=255}
-  }
-  ctx.putImageData(D,0,0);rx.putImageData(RD,0,0);
-  ctx.shadowColor=P.glow;ctx.shadowBlur=P.blur;ctx.globalAlpha=.9;ctx.drawImage(rc,0,0);ctx.globalAlpha=1;ctx.shadowBlur=0;
+function maplibre(){
+  if(window.maplibregl)return Promise.resolve(window.maplibregl);if(MLP)return MLP;
+  MLP=new Promise(function(ok,ko){
+    var l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/maplibre-gl@'+MLV+'/dist/maplibre-gl.css';document.head.appendChild(l);
+    var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/maplibre-gl@'+MLV+'/dist/maplibre-gl.js';
+    s.onload=function(){window.maplibregl?ok(window.maplibregl):ko()};s.onerror=function(){MLP=null;ko()};document.head.appendChild(s);
+  });
+  return MLP;
 }
-function baseLayer(L){
-  var P=MAPPAL[SET.mapStyle];
-  if(!P)return L.tileLayer(TILE,TOPT);
-  var G=L.GridLayer.extend({createTile:function(co,done){
-    var cv=document.createElement('canvas');cv.width=cv.height=256;var ctx=cv.getContext('2d',{willReadFrequently:true});
-    var url=L.Util.template(TILE,{z:co.z,x:co.x,y:co.y}),img=new Image();
-    function plain(im){ctx.drawImage(im,0,0,256,256);cv.className='tfb';done(null,cv)}
-    img.crossOrigin='anonymous';
-    img.onload=function(){try{recolor(ctx,img,P);done(null,cv)}catch(e){plain(img)}};
-    img.onerror=function(){var i2=new Image();i2.onload=function(){plain(i2)};i2.onerror=function(){done(new Error('tuile'),cv)};i2.src=url};
-    img.src=url;return cv;
-  }});
-  return new G(TOPT);
+function zw(a,b){return ['interpolate',['exponential',1.35],['zoom'],10,a,18,b]}
+function neonStyle(k,base){
+  var C=PAL[k],src=null,S='openmaptiles',font=['Noto Sans Regular'],fontB=null;
+  Object.keys(base.sources||{}).forEach(function(id){if(!src&&base.sources[id].type==='vector'){src=base.sources[id];S=id}});
+  (base.layers||[]).some(function(l){var f=l.layout&&l.layout['text-font'];if(Array.isArray(f)&&typeof f[0]==='string'){font=f;return true}});
+  (base.layers||[]).some(function(l){var f=l.layout&&l.layout['text-font'];if(Array.isArray(f)&&typeof f[0]==='string'&&/bold/i.test(f[0])){fontB=f;return true}});
+  fontB=fontB||font;
+  var cls=function(a){return ['match',['get','class'],a,true,false]},T='transportation',NM=['coalesce',['get','name:fr'],['get','name']];
+  var line=function(id,f,paint,extra){var o={id:id,type:'line',source:S,'source-layer':T,filter:cls(f),layout:{'line-cap':'round','line-join':'round'},paint:paint};for(var x in extra)o[x]=extra[x];return o};
+  var L=[
+    {id:'bg',type:'background',paint:{'background-color':C.bg}},
+    {id:'landcover',type:'fill',source:S,'source-layer':'landcover',filter:cls(['grass','wood','farmland','wetland']),paint:{'fill-color':C.park,'fill-opacity':.45}},
+    {id:'park',type:'fill',source:S,'source-layer':'park',paint:{'fill-color':C.park,'fill-opacity':.7}},
+    {id:'water',type:'fill',source:S,'source-layer':'water',paint:{'fill-color':C.water}},
+    {id:'water-edge',type:'line',source:S,'source-layer':'water',paint:{'line-color':C.wline,'line-width':zw(.6,2.5),'line-blur':zw(1,3),'line-opacity':.75}},
+    {id:'waterway',type:'line',source:S,'source-layer':'waterway',paint:{'line-color':C.wline,'line-width':zw(.4,3),'line-opacity':.6}},
+    {id:'building',type:'fill',source:S,'source-layer':'building',minzoom:13,paint:{'fill-color':C.bld,'fill-outline-color':C.bldl}},
+    line('rail',['rail','transit'],{'line-color':C.rail,'line-width':zw(.4,1.6),'line-dasharray':[3,3],'line-opacity':.55}),
+    line('minor',['minor','service','track'],{'line-color':C.minor,'line-width':zw(.5,5),'line-opacity':.85}),
+    line('mid-glow',['secondary','tertiary'],{'line-color':C.mid,'line-width':zw(5,26),'line-blur':zw(4,15),'line-opacity':.45}),
+    line('mid',['secondary','tertiary'],{'line-color':C.mid,'line-width':zw(1.1,4.5)}),
+    line('major-glow',['motorway','trunk','primary'],{'line-color':C.major,'line-width':zw(8,34),'line-blur':zw(6,20),'line-opacity':.55}),
+    line('major',['motorway','trunk','primary'],{'line-color':C.major,'line-width':zw(1.8,7)}),
+    line('major-core',['motorway','trunk','primary'],{'line-color':'#ffffff','line-width':zw(.4,1.8),'line-opacity':.6}),
+    {id:'road-label',type:'symbol',source:S,'source-layer':'transportation_name',minzoom:14,layout:{'symbol-placement':'line','text-field':NM,'text-font':font,'text-size':11,'text-letter-spacing':.05},paint:{'text-color':C.lab2,'text-halo-color':C.halo,'text-halo-width':1.6,'text-opacity':.85}},
+    {id:'place',type:'symbol',source:S,'source-layer':'place',filter:cls(['city','town','village','suburb','quarter','neighbourhood']),layout:{'text-field':['upcase',NM],'text-font':fontB,'text-size':['match',['get','class'],['city','town'],15,11],'text-letter-spacing':.18,'text-max-width':8},paint:{'text-color':C.lab,'text-halo-color':C.halo,'text-halo-width':2,'text-halo-blur':1,'text-opacity':.9}}
+  ];
+  var st={version:8,name:'La Mathias '+k,sources:{},glyphs:base.glyphs,layers:L};st.sources[S]=src;return st;
 }
-function styleMap(m){var c=m.getContainer();MAPSTYLES.forEach(function(x){c.classList.remove('mst-'+x[0])});c.classList.add('mst-'+(SET.mapStyle||'neon'))}
+function styleFor(k){
+  if(STY[k])return STY[k];
+  if(k==='clair')return STY[k]=Promise.resolve(OFM+'positron');
+  if(k==='sombre')return STY[k]=Promise.resolve(OFM+'dark');
+  if(!BASEP)BASEP=fetch(OFM+'liberty').then(function(r){if(!r.ok)throw new Error('style');return r.json()}).catch(function(e){BASEP=null;throw e});
+  return STY[k]=BASEP.then(function(b){var st=neonStyle(k,b);return glyphOk(st).then(function(ok){return ok?st:noText(st)})}).catch(function(e){STY[k]=null;throw e});
+}
+/* si une police ne se charge pas, MapLibre n'affiche rien du tout : on vérifie avant, sinon carte sans texte */
+function noText(st){var c=JSON.parse(JSON.stringify(st));c.layers=c.layers.filter(function(l){return l.type!=='symbol'});return c}
+function glyphOk(st){
+  var F={};st.layers.forEach(function(l){var x=l.layout&&l.layout['text-font'];if(x)F[x[0]]=1});var fs=Object.keys(F);
+  if(!st.glyphs||!fs.length)return Promise.resolve(false);
+  return Promise.all(fs.map(function(f){return fetch(st.glyphs.replace('{fontstack}',encodeURIComponent(f)).replace('{range}','0-255')).then(function(r){return r.ok}).catch(function(){return false})}))
+    .then(function(a){return a.every(Boolean)});
+}
 function accent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#00e5ff'}
-function drawIn(lines,ms){
-  if(!SET.anim||reduced())return;
-  lines.forEach(function(pl){var pa=pl._path;if(!pa||!pa.getTotalLength)return;var len=pa.getTotalLength();
-    pa.style.strokeDasharray=len;pa.style.strokeDashoffset=len;pa.getBoundingClientRect();
-    pa.style.transition='stroke-dashoffset '+ms+'ms cubic-bezier(.4,0,.2,1) .25s';pa.style.strokeDashoffset='0';
-    setTimeout(function(){pa.style.transition='';pa.style.strokeDasharray='';pa.style.strokeDashoffset=''},ms+400)});
+function routeColors(){var C=PAL[SET.mapStyle];if(C)return [C.route,C.rglow];var a=accent();return SET.mapStyle==='clair'?['#6d28ff','#6d28ff']:[a,a]}
+function lnglat(P){return P.map(function(p){return [p[1],p[0]]})}
+function bnds(ml,P){var b=new ml.LngLatBounds();lnglat(P).forEach(function(c){b.extend(c)});return b}
+function clearRoute(m){['ends','trace','trace-glow'].forEach(function(id){if(m.getLayer(id))m.removeLayer(id)});['ends','trace'].forEach(function(id){if(m.getSource(id))m.removeSource(id)})}
+function addRoute(m,P,w,anim){
+  var co=routeColors(),LL=lnglat(P),ln=function(c){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:c}}};
+  anim=anim&&SET.anim&&!reduced();clearRoute(m);
+  m.addSource('trace',{type:'geojson',data:ln(anim?LL.slice(0,2):LL)});
+  m.addSource('ends',{type:'geojson',data:{type:'FeatureCollection',features:[{type:'Feature',properties:{c:'#34d17a'},geometry:{type:'Point',coordinates:LL[0]}},{type:'Feature',properties:{c:'#ff4d4f'},geometry:{type:'Point',coordinates:LL[LL.length-1]}}]}});
+  m.addLayer({id:'trace-glow',type:'line',source:'trace',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':co[1],'line-width':w*3.4,'line-blur':w*2,'line-opacity':.75}});
+  m.addLayer({id:'trace',type:'line',source:'trace',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':co[0],'line-width':w}});
+  m.addLayer({id:'ends',type:'circle',source:'ends',paint:{'circle-radius':w+3,'circle-color':['get','c'],'circle-stroke-color':'#ffffff','circle-stroke-width':2}});
+  if(!anim)return;
+  var t0=performance.now(),ms=1500,n=LL.length;
+  (function step(t){var s=m.getSource('trace');if(!s)return;var k=Math.min(1,Math.max(0,(t-t0-200)/ms)),e=1-Math.pow(1-k,3);
+    s.setData(ln(LL.slice(0,Math.max(2,Math.ceil(e*n)))));if(k<1)requestAnimationFrame(step)})(t0);
 }
-function routeLayers(L,P,w){
-  var acc=accent(),nn=SET.mapStyle==='neon',lc=nn?'#ffffff':acc,gc=nn?'#ff3fd0':acc;
-  return [L.polyline(P,{color:gc,weight:w*2.6,opacity:nn?.55:.22,lineJoin:'round',lineCap:'round',interactive:false}),
-          L.polyline(P,{color:lc,weight:w,opacity:1,lineJoin:'round',lineCap:'round',interactive:false}),
-          L.circleMarker(P[0],{radius:w+2.5,color:'#fff',weight:2,fillColor:'#34d17a',fillOpacity:1,interactive:false}),
-          L.circleMarker(P[P.length-1],{radius:w+2.5,color:'#fff',weight:2,fillColor:'#ff4d4f',fillOpacity:1,interactive:false})];
-}
-/* mini-carte non interactive dans un aperçu (sinon, l'aperçu dessiné reste affiché) */
-function miniClear(){MINI.forEach(function(m){try{m.remove()}catch(e){}});MINI=[]}
+/* mini-carte non interactive dans un aperçu (2 au plus en même temps ; sinon l'aperçu dessiné reste affiché) */
+function miniClear(){MINI.forEach(function(x){try{x.m.remove()}catch(e){}});MINI=[]}
 function miniMount(el){
   if(!el||el._mm)return;el._mm=1;
   var P=trackOf(data().trips[+el.getAttribute('data-t')]);if(!P)return;
-  leaflet().then(function(L){
-    if(!document.body.contains(el))return;
+  Promise.all([maplibre(),styleFor(SET.mapStyle)]).then(function(r){
+    var ml=r[0];if(!document.body.contains(el))return;
+    if(MINI.length>=2){var o=MINI.shift();try{o.m.remove()}catch(e){}if(o.el){o.el.classList.remove('live');o.el._mm=0;var od=o.el.querySelector('.mm');if(od)od.remove()}}
     var d=document.createElement('div');d.className='mm';el.insertBefore(d,el.firstChild);
-    var m=L.map(d,{zoomControl:false,attributionControl:true,dragging:false,touchZoom:false,doubleClickZoom:false,scrollWheelZoom:false,boxZoom:false,keyboard:false,tap:false});
-    m.attributionControl.setPrefix(false);m.attributionControl.setPosition('bottomleft');
-    styleMap(m);baseLayer(L).addTo(m);
-    m.fitBounds(L.latLngBounds(P),{padding:[16,16],animate:false});
-    var ly=routeLayers(L,P,3.5);ly.forEach(function(x){x.addTo(m)});
-    el.classList.add('live');drawIn([ly[0],ly[1]],1200);MINI.push(m);
+    var m=new ml.Map({container:d,style:r[1],bounds:bnds(ml,P),fitBoundsOptions:{padding:20},interactive:false,attributionControl:{compact:true},fadeDuration:0});
+    MINI.push({m:m,el:el});
+    m.once('style.load',function(){addRoute(m,P,3,true);el.classList.add('live')});
   }).catch(function(){});
-}
-function leaflet(){
-  if(window.L&&window.L.map)return Promise.resolve(window.L);if(LLP)return LLP;
-  LLP=new Promise(function(ok,ko){
-    var l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(l);
-    var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
-    s.onload=function(){ok(window.L)};s.onerror=function(){LLP=null;ko()};document.head.appendChild(s);
-  });
-  return LLP;
 }
 function closeMap(){$('#mapv').classList.add('hide');if(MSCH){MSCH=false;var y=window.scrollY;render();window.scrollTo(0,y)}}
 function mapStyleBar(){
   var b=$('#mapst');b.innerHTML=MAPSTYLES.map(function(x){return '<button type="button" data-ms="'+x[0]+'" aria-pressed="'+(SET.mapStyle===x[0])+'">'+x[1]+'</button>'}).join('');
   Array.prototype.forEach.call(b.querySelectorAll('button'),function(bt){bt.onclick=function(){
-    SET.mapStyle=bt.getAttribute('data-ms');setSave();MSCH=true;mapStyleBar();
-    if(MAP&&window.L){if(MAPT)MAP.removeLayer(MAPT);MAPT=baseLayer(window.L).addTo(MAP);MAPT.bringToBack();styleMap(MAP);if(MAPL&&MAPC){var ly=routeLayers(window.L,MAPC,4.5);MAP.removeLayer(MAPL);MAPL=window.L.featureGroup(ly).addTo(MAP)}}
+    var k=bt.getAttribute('data-ms');if(k===SET.mapStyle)return;
+    SET.mapStyle=k;setSave();MSCH=true;mapStyleBar();
+    if(MAP)styleFor(k).then(function(st){MAPANIM=false;MAP.setStyle(st,{diff:false})}).catch(function(){toast('Ce style n’a pas pu se charger.')});
   }});
 }
 function openMap(t0){
@@ -768,19 +778,18 @@ function openMap(t0){
   $('#mapapple').href='https://maps.apple.com/?saddr='+P[0].join(',')+'&daddr='+P[P.length-1].join(',')+'&dirflg=d';
   mapStyleBar();
   $('#mapv').classList.remove('hide');
-  leaflet().then(function(L){
+  Promise.all([maplibre(),styleFor(SET.mapStyle)]).then(function(res){
+    var ml=res[0];MAPC=P;
     if(!MAP){
-      MAP=L.map('mapc',{zoomControl:false,attributionControl:true});
-      L.control.zoom({position:'topright'}).addTo(MAP);
-      MAPT=baseLayer(L).addTo(MAP);styleMap(MAP);
-      MAP.attributionControl.setPrefix(false);
+      MAPANIM=true;
+      MAP=new ml.Map({container:'mapc',style:res[1],bounds:bnds(ml,P),fitBoundsOptions:{padding:44},attributionControl:{compact:true},dragRotate:false,pitchWithRotate:false,maxZoom:19});
+      MAP.touchZoomRotate.disableRotation();
+      MAP.addControl(new ml.NavigationControl({showCompass:false}),'top-right');
+      MAP.on('style.load',function(){if(MAPC)addRoute(MAP,MAPC,4.5,MAPANIM);MAPANIM=false});
+    }else{
+      MAP.resize();MAP.fitBounds(bnds(ml,P),{padding:44,duration:0});
+      if(MAP.isStyleLoaded())addRoute(MAP,P,4.5,true);else MAPANIM=true;
     }
-    MAP.invalidateSize();
-    if(MAPL)MAPL.remove();
-    MAP.fitBounds(L.latLngBounds(P),{padding:[36,36],animate:false});
-    var ly=routeLayers(L,P,4.5);MAPC=P;
-    MAPL=L.featureGroup(ly).addTo(MAP);
-    drawIn([ly[0],ly[1]],1500);
   }).catch(function(){closeMap();toast('La carte n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500)});
 }
 function cmp(a,b,better){
@@ -1049,7 +1058,7 @@ Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(
   TAB=t;try{localStorage.setItem('sandero-phone-tab',t)}catch(e){}window.scrollTo(0,0);ANIM=true;render();
 }});
 $('#mapx').onclick=closeMap;
-$('#mapfit').onclick=function(){if(MAP&&MAPL)MAP.fitBounds(MAPL.getBounds(),{padding:[36,36]})};
+$('#mapfit').onclick=function(){if(MAP&&MAPC&&window.maplibregl)MAP.fitBounds(bnds(window.maplibregl,MAPC),{padding:44})};
 $('#sclose').onclick=function(){var part=SC.any&&scLeft()>0,d=SC.total-scLeft(),t=SC.total;stopScan();if(part)toast('Synchro partielle : '+d+' code'+(d>1?'s':'')+' sur '+t+'. Relance-la pour finir.',4000)};
 
 /* ---------- démarrage ---------- */
