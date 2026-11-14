@@ -513,14 +513,25 @@ button{font:inherit;color:inherit}
 .md.ok.t-u svg{stroke:#fff3c4;filter:drop-shadow(0 0 3px #ffd36b) drop-shadow(0 0 6px #b07cff);position:relative}
 .md.ok.t-u i::after{background:linear-gradient(115deg,transparent 35%,rgba(255,246,214,.7) 50%,transparent 65%);animation-duration:3.2s}
 .uhalo{position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,120,.0) 55%,rgba(255,214,120,.35) 66%,rgba(176,124,255,.25) 74%,transparent 80%);opacity:0}
-.md.ok.t-u .uhalo{animation:uPulse 2.6s ease-in-out infinite}
+.md.ok .uhalo{animation:uPulse 2.6s ease-in-out infinite}
 .ust,.uorb{display:none}
-.md.ok.t-u .ust{display:block;position:absolute;width:9px;height:9px;background:#fffbe8;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);filter:drop-shadow(0 0 3px #ffd36b);transform:scale(0);animation:uTw 2.4s ease-in-out infinite;pointer-events:none}
-.md.ok.t-u .s1{top:-6px;left:4px}.md.ok.t-u .s2{top:2px;right:-7px;width:7px;height:7px;animation-delay:.5s}.md.ok.t-u .s3{bottom:-5px;right:2px;width:10px;height:10px;animation-delay:1s;background:#e9dcff}
-.md.ok.t-u .s4{bottom:4px;left:-8px;width:6px;height:6px;animation-delay:1.5s}.md.ok.t-u .s5{top:44%;right:-11px;width:5px;height:5px;animation-delay:1.9s;background:#cfefff}
+.md.ok .ust{display:block;position:absolute;width:9px;height:9px;background:#fffbe8;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);filter:drop-shadow(0 0 3px #ffd36b);transform:scale(0);animation:uTw 2.4s ease-in-out infinite;pointer-events:none}
+.md.ok .s1{top:-6px;left:4px}.md.ok .s2{top:2px;right:-7px;width:7px;height:7px;animation-delay:.5s}.md.ok .s3{bottom:-5px;right:2px;width:10px;height:10px;animation-delay:1s;background:#e9dcff}
+.md.ok .s4{bottom:4px;left:-8px;width:6px;height:6px;animation-delay:1.5s}.md.ok .s5{top:44%;right:-11px;width:5px;height:5px;animation-delay:1.9s;background:#cfefff}
 .md.ok.t-u .uorb{display:block;position:absolute;inset:-4px;border-radius:50%;animation:mdSpin 3s linear infinite;pointer-events:none}
 .md.ok.t-u .uorb b{position:absolute;top:-2px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px #ffe08a,0 0 14px 4px rgba(176,124,255,.8)}
-.md.big.ok.t-u .ust{width:12px;height:12px}.md.big.ok.t-u .s4,.md.big.ok.t-u .s5{width:8px;height:8px}
+.md.big.ok .ust{width:12px;height:12px}.md.big.ok .s4,.md.big.ok .s5{width:8px;height:8px}
+/* 2.20 : animations progressives selon le niveau */
+.md.ok.t-b i::after{animation-duration:7s;background:linear-gradient(115deg,transparent 42%,rgba(255,220,180,.28) 50%,transparent 58%)}
+.md.ok.t-a i::after{animation-duration:5.5s}
+.md.ok.t-a .uhalo{background:radial-gradient(circle,transparent 58%,rgba(230,238,248,.28) 68%,transparent 78%);animation-duration:3.6s}
+.md.ok.t-a .ust{background:#f4f8ff;filter:drop-shadow(0 0 3px #cfe0ff);animation-duration:3.2s}
+.md.ok.t-o .ring{animation:mdSpin 9s linear infinite}
+.md.ok.t-o i::after{animation-duration:4s;background:linear-gradient(115deg,transparent 38%,rgba(255,240,180,.5) 50%,transparent 62%)}
+.md.ok.t-o .uhalo{background:radial-gradient(circle,transparent 56%,rgba(255,214,74,.42) 67%,transparent 79%);animation-duration:3s}
+.md.ok.t-o .ust{background:#fff3b0;filter:drop-shadow(0 0 3px #ffd24a);animation-duration:2.8s}
+.md.ok.t-l .uhalo{background:conic-gradient(from 0deg,rgba(255,59,48,.35),rgba(255,214,10,.35),rgba(52,209,122,.35),rgba(0,229,255,.35),rgba(94,92,230,.35),rgba(255,63,208,.35),rgba(255,59,48,.35));-webkit-mask:radial-gradient(circle,transparent 58%,#000 64%,transparent 78%);mask:radial-gradient(circle,transparent 58%,#000 64%,transparent 78%);animation:uPulse 2.8s ease-in-out infinite,mdSpin 6s linear infinite}
+.md.ok.t-l .ust{filter:drop-shadow(0 0 3px #ff3fd0);animation-duration:2.6s}.md.ok.t-l .s1{background:#9ff3ff}.md.ok.t-l .s2{background:#ffd6f4}.md.ok.t-l .s3{background:#fff4a8}
 @keyframes uTw{0%,100%{transform:scale(0) rotate(0)}40%{transform:scale(1) rotate(45deg)}60%{transform:scale(.8) rotate(70deg)}80%{transform:scale(0) rotate(90deg)}}
 @keyframes uPulse{0%,100%{opacity:.35;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
 @keyframes uSky{to{transform:rotate(360deg)}}
@@ -529,7 +540,7 @@ button{font:inherit;color:inherit}
 .trt-u i{background:radial-gradient(circle at 35% 30%,#fff6d6,#ffd36b 40%,#7b4bff 80%);box-shadow:0 0 6px #ffd36b}
 .ldots i.ok.t-u{background:radial-gradient(circle at 35% 30%,#fff6d6,#ffd36b 40%,#7b4bff 80%);box-shadow:0 0 6px #ffd36b}
 .tri.ok.tri-u{background:radial-gradient(ellipse at 15% 50%,rgba(176,124,255,.14),transparent 60%);border-radius:14px}
-@media (prefers-reduced-motion:reduce){.md.ok.t-u .ring,.md.ok.t-u .uorb,.md.ok.t-u .uhalo,.md.ok.t-u .ust,.usky,.tl-u{animation:none!important}.md.ok.t-u .ust{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.md.ok .ring,.md.ok .uorb,.md.ok .uhalo,.md.ok .ust,.usky,.tl-u{animation:none!important}.md.ok .ust{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.md.ok.t-l .ring,.md.ok i::after,.tl-l{animation:none!important}}
 </style>
 </head>
@@ -586,7 +597,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.19';
+var APP_V='2.20';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1595,7 +1606,8 @@ function trophyDefs(){
     ['Entretien et pleins','m10','Voiture chouchoutée','10 interventions dans le carnet d’entretien.','a','wrench',ent,10,'interventions']
   ].map(function(t){return {cat:t[0],id:t[1],name:t[2],how:t[3],tier:t[4],icon:t[5],val:t[6],goal:t[7],unit:t[8],ok:t[6]>=t[7]}});
   var nOr=T.filter(function(t){return t.ok&&t.tier==='o'}).length,nO=T.filter(function(t){return t.tier==='o'}).length;
-  T.push({cat:'Records',id:'legend',name:'Légende de La Mathias',how:'Débloque tous les trophées en or. Le trophée ultime, unique en son genre.',tier:'u',icon:'trophy',val:nOr,goal:nO,unit:'trophées en or',ok:nOr>=nO});
+  if(sample)T.forEach(function(t){t.ok=true});
+  T.push({cat:'Records',id:'legend',name:'Légende de La Mathias',how:'Débloque tous les trophées en or. Le trophée ultime, unique en son genre.',tier:'u',icon:'trophy',val:nOr,goal:nO,unit:'trophées en or',ok:sample||nOr>=nO});
   return T;
 }
 var TRK='sandero-trophees';
@@ -1607,12 +1619,12 @@ function trophyCheck(T){
   nw.slice(0,3).forEach(function(t,i){setTimeout(function(){island({fallback:1,icon:'star',pop:true,tone:'good',title:'Trophée '+TIER[t.tier][1].toLowerCase()+' débloqué',sub:t.name,ms:3200})},600+i*400)});
   return st;
 }
-function medal(t,big){var pc=Math.max(0,Math.min(1,t.val/t.goal)),u=t.tier==='u';return '<span class="md t-'+t.tier+(t.ok?' ok':'')+(big?' big':'')+'" style="--p:'+(pc*360).toFixed(0)+'deg">'+(u?'<span class="uhalo"></span>':'')+'<span class="ring"></span><i>'+(u?'<span class="usky"></span>':'')+'<svg viewBox="0 0 24 24">'+(TRI[t.icon]||TRI.star)+'</svg></i>'+(u?'<span class="uorb"><b></b></span>'+[1,2,3,4,5].map(function(k){return '<span class="ust s'+k+'"></span>'}).join(''):'')+'</span>'}
+function medal(t,big){var pc=Math.max(0,Math.min(1,t.val/t.goal)),u=t.tier==='u',ns={b:0,a:1,o:2,l:3,u:5}[t.tier]||0;return '<span class="md t-'+t.tier+(t.ok?' ok':'')+(big?' big':'')+'" style="--p:'+(pc*360).toFixed(0)+'deg">'+(t.tier!=='b'?'<span class="uhalo"></span>':'')+'<span class="ring"></span><i>'+(u?'<span class="usky"></span>':'')+'<svg viewBox="0 0 24 24">'+(TRI[t.icon]||TRI.star)+'</svg></i>'+(u?'<span class="uorb"><b></b></span>':'')+[1,2,3,4,5].slice(0,ns).map(function(k){return '<span class="ust s'+k+'"></span>'}).join('')+'</span>'}
 function progTxt(t){var v=t.unit==='km'?fi(Math.min(t.val,t.goal)):t.unit==='an'?f1(Math.min(t.val,t.goal)):Math.floor(Math.min(t.val,t.goal));return v+' / '+(t.unit==='km'?fi(t.goal):t.goal)+' '+t.unit}
 function trophyCard(){
   var T=trophyDefs(),st=trophyCheck(T)||{},ok=T.filter(function(t){return t.ok}),c={b:0,a:0,o:0,l:0,u:0};ok.forEach(function(t){c[t.tier]++});
   var next=T.filter(function(t){return !t.ok}).sort(function(a,b){return b.val/b.goal-a.val/a.goal})[0];
-  var last=ok.slice().sort(function(a,b){return (st[b.id]||0)-(st[a.id]||0)}).slice(0,5);
+  var RK={u:5,l:4,o:3,a:2,b:1},last=ok.slice().sort(function(a,b){return sample?RK[b.tier]-RK[a.tier]:(st[b.id]||0)-(st[a.id]||0)}).slice(0,5);
   var h='<div class="card trc2"><h2>Trophées <span class="trn">'+ok.length+' / '+T.length+'</span></h2><div class="bar trbar"><i style="transform:scaleX('+(ok.length/T.length).toFixed(3)+')"></i></div>'+
     '<div class="trt">'+['b','a','o','l','u'].filter(function(k){return k!=='u'||c.u}).map(function(k){return '<span class="trt-'+k+'"><i></i>'+c[k]+' '+TIER[k][1].toLowerCase()+'</span>'}).join('')+'</div>';
   if(last.length)h+='<div class="trlast">'+last.map(function(t){return medal(t)}).join('')+'</div>';
