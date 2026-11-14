@@ -512,7 +512,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.16';
+var APP_V='2.16.1';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1557,9 +1557,11 @@ phLoadAll();
 function odo(){var E=entLoad().filter(function(e){return e.km>0}).sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)})[0];if(!E)return null;
   var t=Date.parse(E.d)+864e5/2,k=0;Object.keys(db.trips).forEach(function(x){var r=db.trips[x];if(r.t0>t)k+=r.dist});return {km:E.km+k,base:E}}
 function kmSince(dstr){var t=Date.parse(dstr)+864e5/2,k=0;Object.keys(db.trips).forEach(function(x){var r=db.trips[x];if(r.t0>t)k+=r.dist});return k}
+var MPOS={avant:'avant',arriere:'arrière',tous:'avant et arrière'},MPOSOF={Pneus:1,Freins:1};
+function entName(e){return e.type+(MPOSOF[e.type]&&e.pos?' '+MPOS[e.pos]:'')}
 function entDue(){
   var out=[];entLoad().forEach(function(e){if(!(e.rk>0)&&!(e.rm>0))return;
-    var nw=entLoad().some(function(o){return o!==e&&o.type===e.type&&Date.parse(o.d)>Date.parse(e.d)});if(nw)return;
+    var nw=entLoad().some(function(o){return o!==e&&o.type===e.type&&Date.parse(o.d)>Date.parse(e.d)&&(!MPOSOF[e.type]||!e.pos||!o.pos||o.pos===e.pos||o.pos==='tous')});if(nw)return;
     var o={e:e,kmLeft:null,days:null};if(e.rk>0)o.kmLeft=e.rk-kmSince(e.d);if(e.rm>0){var dd=new Date(e.d);dd.setMonth(dd.getMonth()+e.rm);o.days=Math.round((dd-Date.now())/864e5);o.date=dd}
     var fk=o.kmLeft!=null?o.kmLeft/e.rk:1,fd=o.days!=null?o.days/(e.rm*30.4):1;o.frac=Math.min(fk,fd);o.st=o.frac<=0?'bad':o.frac<.12?'warn':'ok';out.push(o)});
   return out.sort(function(a,b){return a.frac-b.frac});
@@ -1573,8 +1575,8 @@ function maintCard(){
   if(!E.length)h+='<p class="note" style="margin-top:0">Note tes vidanges, pneus, contrôles techniques… avec le kilométrage, le prix et la photo de la facture. Tu peux ajouter un rappel pour la prochaine fois.</p>';
   else{
     h+='<div class="sub" style="border:0;padding:0 0 6px">'+(O?'<span>Compteur estimé <b>'+fi(O.km)+'</b> km</span>':'')+'<span><b>'+eur(tot)+'</b> en '+y+'</span><span><b>'+E.length+'</b> intervention'+(E.length>1?'s':'')+'</span></div>';
-    if(D.length)h+='<div class="det">'+D.slice(0,2).map(function(o){return '<div><span>Rappel · '+esc(o.e.type)+'<br><small>'+dueTxt(o)+'</small></span><b class="hs-'+o.st+'">'+(o.st==='ok'?'à jour':o.st==='warn'?'bientôt':'à faire')+'</b></div>'}).join('')+'</div>';
-    h+='<div class="det">'+E.slice(0,3).map(function(e){return '<div class="mte" data-me="'+e.id+'"><span>'+esc(e.type)+(e.ph?' <i class="mtph">facture</i>':'')+'<br><small>'+new Date(e.d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+(e.km?' · '+fi(e.km)+' km':'')+(e.garage?' · '+esc(e.garage):'')+'</small></span><b>'+(e.prix?eur(e.prix):'–')+'</b></div>'}).join('')+'</div>';
+    if(D.length)h+='<div class="det">'+D.slice(0,2).map(function(o){return '<div><span>Rappel · '+esc(entName(o.e))+'<br><small>'+dueTxt(o)+'</small></span><b class="hs-'+o.st+'">'+(o.st==='ok'?'à jour':o.st==='warn'?'bientôt':'à faire')+'</b></div>'}).join('')+'</div>';
+    h+='<div class="det">'+E.slice(0,3).map(function(e){return '<div class="mte" data-me="'+e.id+'"><span>'+esc(entName(e))+(e.ph?' <i class="mtph">facture</i>':'')+'<br><small>'+new Date(e.d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+(e.km?' · '+fi(e.km)+' km':'')+(e.garage?' · '+esc(e.garage):'')+'</small></span><b>'+(e.prix?eur(e.prix):'–')+'</b></div>'}).join('')+'</div>';
   }
   return h+'<div class="sbtns mtb2"><button type="button" class="btn" id="mtadd">Ajouter une intervention</button>'+(E.length?'<button type="button" class="btn ghost" id="mtall">Tout le carnet</button>':'')+'</div></div>';
 }
@@ -1584,11 +1586,11 @@ function sheetOpen(title,html){var S=$('#sheet');S.innerHTML='<div class="sh-hd"
 function sheetClose(){$('#sheet').classList.add('hide');$('#sheet').innerHTML='';document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
 function mtList(){
   var E=entLoad().slice().sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)}),Y={},T={},h='',O=odo();
-  E.forEach(function(e){var y=new Date(e.d).getFullYear();(Y[y]=Y[y]||[]).push(e);T[e.type]=(T[e.type]||0)+(e.prix||0)});
+  E.forEach(function(e){var y=new Date(e.d).getFullYear();(Y[y]=Y[y]||[]).push(e);var nm=entName(e);T[nm]=(T[nm]||0)+(e.prix||0)});
   if(O)h+='<div class="card"><div class="det" style="margin:0"><div style="border:0;padding-top:0"><span>Compteur estimé<br><small>relevé du '+new Date(O.base.d).toLocaleDateString('fr-FR')+' + km des trajets synchronisés depuis</small></span><b>'+fi(O.km)+' km</b></div></div></div>';
-  var D=entDue();if(D.length)h+='<div class="card"><h2>Rappels</h2><div class="det">'+D.map(function(o){return '<div><span>'+esc(o.e.type)+'<br><small>'+dueTxt(o)+'</small></span><b class="hs-'+o.st+'">'+(o.st==='ok'?'à jour':o.st==='warn'?'bientôt':'à faire')+'</b></div>'}).join('')+'</div></div>';
+  var D=entDue();if(D.length)h+='<div class="card"><h2>Rappels</h2><div class="det">'+D.map(function(o){return '<div><span>'+esc(entName(o.e))+'<br><small>'+dueTxt(o)+'</small></span><b class="hs-'+o.st+'">'+(o.st==='ok'?'à jour':o.st==='warn'?'bientôt':'à faire')+'</b></div>'}).join('')+'</div></div>';
   Object.keys(Y).sort(function(a,b){return b-a}).forEach(function(y){var L=Y[y],t=0;L.forEach(function(e){t+=e.prix||0});
-    h+='<div class="day">'+y+' · '+eur(t)+'</div>'+L.map(function(e){return '<button type="button" class="tr mtrow" data-me="'+e.id+'"><div class="t1"><b>'+esc(e.type)+'</b><span>'+(e.prix?eur(e.prix):'')+'</span></div><div class="t2"><span>'+new Date(e.d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+'</span>'+(e.km?'<span>'+fi(e.km)+' km</span>':'')+(e.garage?'<span>'+esc(e.garage)+'</span>':'')+(e.ph?'<span class="tk-on">• facture</span>':'')+'</div></button>'}).join('')});
+    h+='<div class="day">'+y+' · '+eur(t)+'</div>'+L.map(function(e){return '<button type="button" class="tr mtrow" data-me="'+e.id+'"><div class="t1"><b>'+esc(entName(e))+'</b><span>'+(e.prix?eur(e.prix):'')+'</span></div><div class="t2"><span>'+new Date(e.d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+'</span>'+(e.km?'<span>'+fi(e.km)+' km</span>':'')+(e.garage?'<span>'+esc(e.garage)+'</span>':'')+(e.ph?'<span class="tk-on">• facture</span>':'')+'</div></button>'}).join('')});
   var tk=Object.keys(T).filter(function(k){return T[k]>0}).sort(function(a,b){return T[b]-T[a]});
   if(tk.length)h+='<div class="card"><h2>Dépenses par type</h2><div class="det">'+tk.map(function(k){return '<div><span>'+esc(k)+'</span><b>'+eur(T[k])+'</b></div>'}).join('')+'</div></div>';
   h+='<div class="sbtns"><button type="button" class="btn" id="mtadd2">Ajouter une intervention</button></div>';
@@ -1599,6 +1601,7 @@ function mtForm(id){
   var e=id?entLoad().filter(function(x){return x.id===id})[0]:null,O=odo();MT.edit=e;MT.ph=e&&e.ph&&PHC[e.id]?PHC[e.id]:null;
   var td=new Date(),dv=e?e.d:td.getFullYear()+'-'+p2(td.getMonth()+1)+'-'+p2(td.getDate()),ty=e?e.type:'Vidange';
   var h='<div class="card mtf"><div class="srow" style="border:0;padding-top:0"><div class="sl">Type</div><div class="seg" id="mtty">'+MTYPES.map(function(t){return '<button type="button" data-ty="'+t+'" aria-pressed="'+(t===ty)+'">'+t+'</button>'}).join('')+'</div></div>'+
+    '<div class="srow'+(MPOSOF[ty]?'':' hide')+'" id="mtposr"><div class="sl">Position</div><div class="seg" id="mtpos">'+[['avant','Avant'],['arriere','Arrière'],['tous','Avant et arrière']].map(function(x){return '<button type="button" data-pos="'+x[0]+'" aria-pressed="'+((e&&e.pos||'avant')===x[0])+'">'+x[1]+'</button>'}).join('')+'</div></div>'+
     '<div class="srow"><div class="sl">Date</div><div class="sin"><input id="mtd" type="date" value="'+dv+'"></div></div>'+
     '<div class="srow"><div class="sl">Kilométrage au compteur</div>'+(O&&!e?'<p class="sh">Estimé aujourd’hui : '+fi(O.km)+' km</p>':'')+'<div class="sin"><input id="mtk" type="number" inputmode="numeric" placeholder="ex. 128500" value="'+(e&&e.km?e.km:'')+'"><span>km</span></div></div>'+
     '<div class="srow"><div class="sl">Prix</div><div class="sin"><input id="mtp" type="text" inputmode="decimal" placeholder="ex. 89,90" value="'+(e&&e.prix?String(e.prix).replace('.',','):'')+'"><span>€</span></div></div>'+
@@ -1609,17 +1612,18 @@ function mtForm(id){
     '<div class="sbtns"><button type="button" class="btn" id="mts">Enregistrer</button>'+(e?'<button type="button" class="btn danger" id="mtdel">Supprimer</button>':'')+'</div></div>';
   sheetOpen(e?'Modifier l’intervention':'Nouvelle intervention',h);
   var phv=function(){$('#mtphv').innerHTML=MT.ph?'<img src="'+MT.ph+'" alt="Facture"><button type="button" class="mtphx" id="mtphx">Retirer</button>':'';var x=$('#mtphx');if(x)x.onclick=function(){MT.ph=null;phv()}};phv();
-  Array.prototype.forEach.call(document.querySelectorAll('#mtty button'),function(b){b.onclick=function(){Array.prototype.forEach.call(document.querySelectorAll('#mtty button'),function(o){o.setAttribute('aria-pressed',o===b)})}});
+  Array.prototype.forEach.call(document.querySelectorAll('#mtty button'),function(b){b.onclick=function(){Array.prototype.forEach.call(document.querySelectorAll('#mtty button'),function(o){o.setAttribute('aria-pressed',o===b)});$('#mtposr').classList.toggle('hide',!MPOSOF[b.getAttribute('data-ty')])}});
+  Array.prototype.forEach.call(document.querySelectorAll('#mtpos button'),function(b){b.onclick=function(){Array.prototype.forEach.call(document.querySelectorAll('#mtpos button'),function(o){o.setAttribute('aria-pressed',o===b)})}});
   $('#mtpb').onclick=function(){$('#mtpf').click()};
   $('#mtpf').onchange=function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){
     var k=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
     MT.ph=c.toDataURL('image/jpeg',.72);phv()};im.src=rd.result};rd.readAsDataURL(f)};
   $('#mts').onclick=function(){
     var b=document.querySelector('#mtty button[aria-pressed="true"]'),num=function(v){v=parseFloat(String(v).replace(/\s/g,'').replace(',','.'));return v>0?v:0};
-    var o=e||{id:'e'+Date.now().toString(36)};o.type=b?b.getAttribute('data-ty'):'Autre';o.d=$('#mtd').value||dv;o.km=Math.round(num($('#mtk').value));o.prix=Math.round(num($('#mtp').value)*100)/100;
+    var o=e||{id:'e'+Date.now().toString(36)};o.type=b?b.getAttribute('data-ty'):'Autre';var pb=document.querySelector('#mtpos button[aria-pressed="true"]');if(MPOSOF[o.type])o.pos=pb?pb.getAttribute('data-pos'):'avant';else delete o.pos;o.d=$('#mtd').value||dv;o.km=Math.round(num($('#mtk').value));o.prix=Math.round(num($('#mtp').value)*100)/100;
     o.garage=$('#mtg').value.trim();o.note=$('#mtn').value.trim();o.rk=Math.round(num($('#mtrk').value));o.rm=Math.round(num($('#mtrm').value));o.ph=!!MT.ph;
     if(!e)entLoad().push(o);entSave();if(MT.ph)phPut(o.id,MT.ph);else phDel(o.id);
-    island({fallback:1,icon:'wrench',pop:true,tone:'good',title:e?'Intervention modifiée':'Intervention ajoutée',sub:o.type,ms:2200});sheetClose();
+    island({fallback:1,icon:'wrench',pop:true,tone:'good',title:e?'Intervention modifiée':'Intervention ajoutée',sub:entName(o),ms:2200});sheetClose();
   };
   var dl=$('#mtdel');if(dl)dl.onclick=function(){if(!window.confirm('Supprimer cette intervention du carnet ?'))return;ENT=entLoad().filter(function(x){return x.id!==e.id});entSave();phDel(e.id);sheetClose()};
 }
