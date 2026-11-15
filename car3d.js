@@ -283,6 +283,11 @@ function frame(now){
   var tgt=[0,0.62,0],cp=Math.cos(V.pitch),ang=-V.yaw-0.1,d=V.dist*Math.max(1,1.7/(W/H));
   var eye=[tgt[0]+d*cp*Math.cos(ang),tgt[1]+d*Math.sin(V.pitch),tgt[2]+d*cp*Math.sin(ang)];
   var VP=M4.mul(M4.persp(0.52,W/H,0.5,60),M4.look(eye,tgt)),u=V.u;
+  scene(VP,eye,true,cw,ch);
+  loop();
+}
+function scene(VP,eye,full,cw,ch){
+  var gl=V.gl,u=V.u;
   gl.useProgram(V.prog);
   gl.uniformMatrix4fv(u.uVP,false,f16(VP));gl.uniform3fv(u.uEye,f3(F3c,eye));
   gl.uniform1f(u.uGlow,0);gl.uniform1f(u.uMir,0);gl.uniform1f(u.uBlue,0);gl.uniform1f(u.uLine,0);
@@ -303,10 +308,8 @@ function frame(now){
   }
   gl.depthMask(false);GL3.parts.forEach(function(o){if(o.shadow)draw(o)});gl.depthMask(true);
   GL3.parts.forEach(function(o){if(!o.shadow&&!(o.alpha<1))draw(o)});
-  drawPlates(gl,VP);
-  halos(VP,eye,cw,ch);
+  if(full){drawPlates(gl,VP);halos(VP,eye,cw,ch)}
   gl.depthMask(false);GL3.parts.forEach(function(o){if(o.alpha<1)draw(o)});gl.depthMask(true);
-  loop();
 }
 function loop(){if(!V.raf&&V.visible&&!document.hidden){V.raf=requestAnimationFrame(frame)}}
 function wire(cv){
@@ -331,7 +334,48 @@ function startCine(){
   c.t0=performance.now();V.yaw=c.y0;V.pitch=c.p0;V.dist=c.d0;V.cine=c;
   if(c.onStart)try{c.onStart()}catch(e){}
 }
+var MODEL=null;
+function modelBuf(src){
+  if(MODEL)return Promise.resolve(MODEL);
+  if(window.SANDERO_CAR)return Promise.resolve().then(function(){var t=atob(window.SANDERO_CAR),n=t.length,u=new Uint8Array(n),i;for(i=0;i<n;i++)u[i]=t.charCodeAt(i);window.SANDERO_CAR=null;MODEL=u.buffer;return MODEL});
+  return fetch(src||'car.bin').then(function(r){if(!r.ok)throw new Error('modèle '+r.status);return r.arrayBuffer()}).then(function(b){MODEL=b;return b});
+}
+/* 2.39 : petite voiture 3D pour les cartes (deuxième contexte WebGL, même modèle et même couleur) */
+var MINI=null,KEYS=['gl','prog','u','cv','hl','hlAcc','halos'];
+function swapIn(S){var K={v:{},parts:GL3.parts,gp:GL3.prog,piv:GL3.piv,model:GL3.model,dm:DM,plate:Object.assign({},PLATE),head:V.head,tail:V.tail};KEYS.forEach(function(k){K.v[k]=V[k]});
+  KEYS.forEach(function(k){V[k]=S.v[k]});GL3.parts=S.parts;GL3.prog=S.gp;GL3.piv=S.piv;GL3.model=S.model;DM={};PLATE.prog=null;V.head=0;V.tail=0;return K}
+function swapOut(K,S){if(S){KEYS.forEach(function(k){S.v[k]=V[k]});S.parts=GL3.parts;S.gp=GL3.prog;S.piv=GL3.piv;S.model=GL3.model}
+  KEYS.forEach(function(k){V[k]=K.v[k]});GL3.parts=K.parts;GL3.prog=K.gp;GL3.piv=K.piv;GL3.model=K.model;DM=K.dm;Object.keys(PLATE).forEach(function(k){if(!(k in K.plate))delete PLATE[k]});Object.assign(PLATE,K.plate);V.head=K.head;V.tail=K.tail}
+function miniMake(){
+  return modelBuf().then(function(buf){
+    if(MINI)return MINI;
+    var cv=document.createElement('canvas'),S={v:{cv:cv,hl:null,hlAcc:[[0,0,0,0],[0,0,0,0]],halos:null},parts:[],gp:null,piv:null,model:false},K=swapIn(S);
+    try{var gl=cv.getContext('webgl',{antialias:true,alpha:true,premultipliedAlpha:true,preserveDrawingBuffer:true});if(!gl)throw new Error('webgl');
+      V.cv=cv;init(cv);PLATE.prog=null;load(buf);GL3.parts=GL3.parts.filter(function(o){return !o.shadow})}
+    catch(e){swapOut(K,null);throw e}
+    swapOut(K,S);MINI={S:S,cv:cv};return MINI;
+  });
+}
+/* dessine la voiture vue du dessus : cap = angle à l’écran (0 = vers le haut, sens horaire, en degrés), tilt = inclinaison de la carte (0 à 70°) */
+function miniDraw(target,cap,tilt,px){
+  if(!MINI)return;var S=MINI.S,K=swapIn(S),gl=V.gl,cv=MINI.cv,dpr=Math.min(window.devicePixelRatio||1,2),W=Math.round(px*dpr);
+  try{
+    if(cv.width!==W){cv.width=W;cv.height=W}
+    gl.viewport(0,0,W,W);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    var el=Math.max(18,Math.min(86,90-(tilt||0)))*Math.PI/180,th=(cap||0)*Math.PI/180,d=10.5,tgt=[0,0.55,0];
+    /* la caméra regarde « vers le haut de l’écran » : en repère voiture (avant = +x), sa direction horizontale tourne de -cap */
+    var hx=Math.cos(th),hz=-Math.sin(th);
+    var eye=[tgt[0]-d*Math.cos(el)*hx,tgt[1]+d*Math.sin(el),tgt[2]-d*Math.cos(el)*hz];
+    var VP=M4.mul(M4.persp(0.5,1,0.5,60),M4.look(eye,tgt));
+    scene(VP,eye,false,W,W);
+    var c2=target.getContext('2d');if(target.width!==W){target.width=W;target.height=W}c2.clearRect(0,0,W,W);c2.drawImage(cv,0,0);
+  }finally{swapOut(K,S)}
+}
 window.Car3D={
+  /* petite voiture pour les cartes : renvoie un canvas à placer dans un marqueur, avec .aim(cap,tilt) pour la tourner */
+  marker:function(px){px=px||64;var c=document.createElement('canvas');c.className='car3dm';c.style.width=c.style.height=px+'px';c.aim=function(cap,tilt){c._a=[cap,tilt];if(MINI)miniDraw(c,cap,tilt,px)};
+    miniMake().then(function(){var a=c._a||[0,0];miniDraw(c,a[0],a[1],px);c.classList.add('ok')}).catch(function(){c.classList.add('ko')});return c},
+  paint:function(p){if(p)V.paint=p},
   /* animation d'ouverture sur ce canvas ; la promesse se résout à la fin du mouvement de caméra */
   cine:function(cv,opt,onStart){
     return new Promise(function(res){
@@ -352,8 +396,7 @@ window.Car3D={
     V.cv=cv;V.ready=false;
     try{init(cv)}catch(e){return Promise.reject(e)}
     wire(cv);
-    var getBuf=window.SANDERO_CAR?Promise.resolve().then(function(){var t=atob(window.SANDERO_CAR),n=t.length,u=new Uint8Array(n),i;for(i=0;i<n;i++)u[i]=t.charCodeAt(i);window.SANDERO_CAR=null;return u.buffer})
-      :fetch(opt.src||'car.bin').then(function(r){if(!r.ok)throw new Error('modèle '+r.status);return r.arrayBuffer()});
+    var getBuf=modelBuf(opt.src);
     return getBuf.then(function(b){load(b);V.ready=true;V.last=performance.now();startCine();loop();return true});
   },
   set:function(opt){if(opt.plate!=null){settings.plateText=opt.plate;PLATE.dirty=true}if(opt.paint)V.paint=opt.paint}

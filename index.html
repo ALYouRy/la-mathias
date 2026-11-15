@@ -553,6 +553,7 @@ button{font:inherit;color:inherit}
 .pkm{position:relative;height:180px;margin:10px 0 10px;border-radius:14px;overflow:hidden;background:#0b0920;border:1px solid var(--line)}
 .pkm .mm{position:absolute!important;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .5s}.pkm.live .mm{opacity:1}.pkm.live .pkph{visibility:hidden}
 .pkph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 50%,rgba(var(--accent-rgb),.12),transparent 60%)}
+.carmk{pointer-events:none;width:auto;height:auto}.car3dm{display:block;opacity:0;transition:opacity .35s;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(0,229,255,.45))}.car3dm.ok{opacity:1}
 .pkpin{display:block;width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 6px rgba(var(--accent-rgb),.25),0 0 18px rgba(var(--accent-rgb),.9);animation:pkPulse 2s ease-in-out infinite}
 @keyframes pkPulse{0%,100%{box-shadow:0 0 0 4px rgba(var(--accent-rgb),.3),0 0 14px rgba(var(--accent-rgb),.8)}50%{box-shadow:0 0 0 12px rgba(var(--accent-rgb),0),0 0 22px rgba(var(--accent-rgb),1)}}
 .pkr{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}.pkr small{color:var(--fg-3);font-size:12px}.pkr .btn{flex:0 0 auto;font-size:14px;padding:10px 14px;text-decoration:none}
@@ -833,7 +834,7 @@ button{font:inherit;color:inherit}
 <div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div class="mapw"><div id="mapc"></div><button type="button" class="rpl hide" id="rpl"></button><div class="ghc hide" id="ghc"></div><div class="mleg hide" id="mleg"></div></div><div class="prof hide" id="prof"><div class="prof-l" id="profl"></div><svg id="profs" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-label="Profil du trajet : fais glisser le doigt"></svg><div class="prof-x"><span>0 km</span><span id="profk"></span><span id="profx"></span></div></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
 
 <script src="car-model.js"></script>
-<script src="car3d.js?v=2.32"></script>
+<script src="car3d.js?v=2.39"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>/* LZString 1.5.0 · Copyright (c) 2013 Pieroxy · licence MIT · https://github.com/pieroxy/lz-string */
 var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
@@ -845,7 +846,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.38';
+var APP_V='2.39';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1350,15 +1351,29 @@ function hungriest(M){
   if(bi<0)M.c.forEach(function(c,k){if(c!=null&&(bi<0||c>M.c[bi]))bi=k});
   return bi<0?0:bi;
 }
+/* 2.39 : la voiture 3D à la place du point sur les cartes */
+function hasCar(){return !!(window.Car3D&&Car3D.marker)}
+function brgLL(a,b){var r=Math.PI/180;return (Math.atan2((b[0]-a[0])*Math.cos(a[1]*r),b[1]-a[1])*180/Math.PI+360)%360}
+function brgAt(P,i){var a=P[i];for(var j=i+1;j<P.length;j++)if(P[j][0]!==a[0]||P[j][1]!==a[1])return brgLL([a[1],a[0]],[P[j][1],P[j][0]]);for(j=i-1;j>=0;j--)if(P[j][0]!==a[0]||P[j][1]!==a[1])return brgLL([P[j][1],P[j][0]],[a[1],a[0]]);return null}
+function carMarker(ml,m,px,tilt){
+  if(!hasCar()||!ml)return null;var S=data().snap;if(S&&S.paint&&Car3D.paint)Car3D.paint(S.paint);
+  var c=Car3D.marker(px||60),w=document.createElement('div');w.className='carmk';w.appendChild(c);
+  var mk=new ml.Marker({element:w,anchor:'center'});mk._b=0;
+  mk.aimAt=function(b){if(b!=null&&!isNaN(b))mk._b=b;c.aim(((mk._b-m.getBearing())%360+360)%360,Math.max(m.getPitch(),tilt==null?40:tilt))};
+  m.on('rotate',function(){mk.aimAt()});m.on('pitch',function(){mk.aimAt()});mk.aimAt();return mk;
+}
 function addCursor(m){
   if(m.getSource('cur'))return;
   m.addSource('cur',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-  m.addLayer({id:'cur-glow',type:'circle',source:'cur',paint:{'circle-radius':17,'circle-color':'#ffffff','circle-opacity':.22,'circle-blur':.7}});
-  m.addLayer({id:'cur',type:'circle',source:'cur',paint:{'circle-radius':7,'circle-color':'#ffffff','circle-stroke-color':'#07051a','circle-stroke-width':2.5}});
+  var hc=hasCar()?0:1;
+  m.addLayer({id:'cur-glow',type:'circle',source:'cur',paint:{'circle-radius':17,'circle-color':'#ffffff','circle-opacity':.22*hc,'circle-blur':.7}});
+  m.addLayer({id:'cur',type:'circle',source:'cur',paint:{'circle-radius':7,'circle-color':'#ffffff','circle-opacity':hc,'circle-stroke-opacity':hc,'circle-stroke-color':'#07051a','circle-stroke-width':2.5}});
 }
 function xOf(M,i){var tot=M.d[M.d.length-1]||1;return M.d[i]/tot*1000}
 function curShow(o){
-  if(MAP&&MAP.getSource('cur'))MAP.getSource('cur').setData({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[o.lon,o.lat]}});
+  if(MAP&&MAP.getSource('cur')){MAP.getSource('cur').setData({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[o.lon,o.lat]}});
+    if(!MAP._car&&hasCar()){MAP._car=carMarker(window.maplibregl,MAP,62);if(MAP._car)MAP._car.setLngLat([o.lon,o.lat]).addTo(MAP)}
+    if(MAP._car){MAP._car.setLngLat([o.lon,o.lat]);MAP._car.aimAt(o.b)}}
   var h='<span class="pp"><b>'+f1(o.km)+'</b> km</span>';if(o.ms)h+='<span class="pp">'+HF.format(new Date(o.ms))+'</span>';
   if(o.v!=null)h+='<span class="pp"><b>'+Math.round(o.v)+'</b> km/h</span>';
   if(o.c!=null)h+='<span class="pp pc" style="--c:'+consoCol(o.c)+'"><b>'+f1(o.c)+'</b> L/100</span>';
@@ -1371,7 +1386,7 @@ function curShow(o){
 function setCursor(i,pan){
   var M=MAPM;if(!M||!M.det)return;i=Math.max(0,Math.min(M.P.length-1,i));CUR=i;var p=M.P[i];
   if(pan&&MAP&&!MAP.getBounds().contains([p[1],p[0]]))MAP.panTo([p[1],p[0]]);
-  curShow({lat:p[0],lon:p[1],km:M.d[i],ms:M.tm[i],v:M.v[i],c:M.c[i],x:M._x?M._x[i]:null,yv:M._yv?M._yv[i]:null,yc:M._yc?M._yc[i]:null});
+  curShow({lat:p[0],lon:p[1],b:brgAt(M.P,i),km:M.d[i],ms:M.tm[i],v:M.v[i],c:M.c[i],x:M._x?M._x[i]:null,yv:M._yv?M._yv[i]:null,yc:M._yc?M._yc[i]:null});
 }
 /* ---------- 2.14 : rejouer un trajet ---------- */
 var MAPR=null,GH=null;
@@ -1425,7 +1440,7 @@ function rpFrame(now){
   var L=function(a,b){return a==null||b==null?(b!=null?b:a):a+(b-a)*f},lat=L(P[i][0],P[j][0]),lon=L(P[i][1],P[j][1]);
   var co=P.slice(0,i+1).map(function(p){return [p[1],p[0]]});co.push([lon,lat]);
   if(MAP.getSource('trail'))MAP.getSource('trail').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:co}});
-  curShow({lat:lat,lon:lon,km:L(M.d[i],M.d[j]),ms:M.tm[0]?M.tm[0]+RP.t*1000:null,v:L(M.v[i],M.v[j]),c:M.c[j]!=null?M.c[j]:M.c[i],
+  curShow({lat:lat,lon:lon,b:brgAt(P,i),km:L(M.d[i],M.d[j]),ms:M.tm[0]?M.tm[0]+RP.t*1000:null,v:L(M.v[i],M.v[j]),c:M.c[j]!=null?M.c[j]:M.c[i],
     x:M._x?L(M._x[i],M._x[j]):null,yv:M._yv?L(M._yv[i],M._yv[j]):null,yc:M._yc?(M._yc[j]!=null?M._yc[j]:M._yc[i]):null});
   if(GH&&MAP.getSource('ghost')){var tg=Math.min(RP.t,GH.T[GH.T.length-1]),g=ghostAt(GH,tg);
     MAP.getSource('ghost').setData({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[g.lon,g.lat]}});
@@ -1487,7 +1502,7 @@ function legDraw(M){
   L.innerHTML=(cz?'<b>L/100</b><div class="lg-b"></div><div class="lg-n"><span style="left:0">4,5</span><span style="left:27%">6</span><span style="left:64%">8</span><span style="left:100%">10</span></div>':'')+'<button type="button" id="mlegb">'+(cz?'Tracé simple':'Couleur selon la conso')+'</button>';
   $('#mlegb').onclick=function(){SET.routeMode=cz?'simple':'conso';setSave();MSCH=true;legDraw(M);if(MAP&&MAPC&&MAP.isStyleLoaded()){addRoute(MAP,MAPC,4.5,false,MAPM);if(M.det){addCursor(MAP);setCursor(CUR,false)}if(SET.map3d)add3d(MAP)}};
 }
-function clearRoute(m){['cur','cur-glow','ends','trace','trace-glow'].forEach(function(id){if(m.getLayer(id))m.removeLayer(id)});['cur','ends','trace'].forEach(function(id){if(m.getSource(id))m.removeSource(id)})}
+function clearRoute(m){if(m._car){m._car.remove();m._car=null}['cur','cur-glow','ends','trace','trace-glow'].forEach(function(id){if(m.getLayer(id))m.removeLayer(id)});['cur','ends','trace'].forEach(function(id){if(m.getSource(id))m.removeSource(id)})}
 function addRoute(m,P,w,anim,M){
   var co=routeColors(),LL=lnglat(P),ln=function(c){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:c}}};
   var cz=!!(M&&M.has&&SET.routeMode!=='simple');
@@ -2275,7 +2290,9 @@ function parkMount(){
     var ml=r[0];if(!document.body.contains(el))return;
     var d=document.createElement('div');d.className='mm';el.insertBefore(d,el.firstChild);
     var m=new ml.Map({container:d,style:r[1],center:[lo,la],zoom:15.6,interactive:false,attributionControl:false,fadeDuration:0});m.addControl(new ml.AttributionControl({compact:false}),'bottom-left');
-    PARKM=m;var mk=document.createElement('div');mk.className='pkpin';new ml.Marker({element:mk}).setLngLat([lo,la]).addTo(m);
+    PARKM=m;var cm=carMarker(ml,m,70,50);
+    if(cm){var lt=realList().filter(function(r){return rawTrack(r)})[0],PT=lt&&(trackOf(lt)||rawTrack(lt));if(PT&&PT.length>1&&hav(PT[PT.length-1],[la,lo])<.3)cm.aimAt(brgAt(PT,PT.length-2));cm.setLngLat([lo,la]).addTo(m)}
+    else{var mk=document.createElement('div');mk.className='pkpin';new ml.Marker({element:mk}).setLngLat([lo,la]).addTo(m)}
     m.once('style.load',function(){el.classList.add('live')});
   }).catch(function(){});
 }
@@ -2947,10 +2964,13 @@ function tripRevealShow(o,el){
       m.addSource('tvp',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
       m.addLayer({id:'tvp',type:'circle',source:'tvp',paint:{'circle-radius':7,'circle-color':['get','c'],'circle-stroke-color':'#fff','circle-stroke-width':2.5,'circle-blur':['get','b']}});
       box.classList.add('live');
+      var car=carMarker(ml,m,52,48);if(car)car.setLngLat(LL[0]).addTo(m);
       var t0=performance.now(),D0=rm?1:1800,pt=function(c,ll,b){return {type:'Feature',properties:{c:c,b:b||0},geometry:{type:'Point',coordinates:ll}}};
       (function fr(t){if(!CEL.map)return;var k=Math.min(1,(t-t0)/D0),e=1-Math.pow(1-k,2),n=Math.max(2,Math.ceil(LL.length*e)),seg=LL.slice(0,n);
         m.getSource('tv').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:seg}});
-        m.getSource('tvp').setData({type:'FeatureCollection',features:[pt('#34d17a',LL[0])].concat(k<1?[pt('#ffffff',seg[seg.length-1],.4)]:[pt('#ff4d6d',LL[LL.length-1])])});
+        var hd=seg[seg.length-1];
+        if(car){car.setLngLat(hd);var bi=Math.max(0,n-2);while(bi>0&&LL[bi][0]===hd[0]&&LL[bi][1]===hd[1])bi--;if(LL[bi][0]!==hd[0]||LL[bi][1]!==hd[1])car.aimAt(brgLL(LL[bi],hd))}
+        m.getSource('tvp').setData({type:'FeatureCollection',features:[pt('#34d17a',LL[0])].concat(car?[]:k<1?[pt('#ffffff',hd,.4)]:[pt('#ff4d6d',LL[LL.length-1])])});
         if(k<1)requestAnimationFrame(fr)})(t0);
     });
   }).catch(function(){var b=$('#trvmap');if(b)b.innerHTML='<div class="trv-nomap">Carte indisponible</div>'});
