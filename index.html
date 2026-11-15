@@ -735,6 +735,21 @@ button{font:inherit;color:inherit}
 .bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
 .bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 /* 2.38 */
+.comfr{margin:-4px 0 10px;font-size:12.5px;color:var(--fg-3)}
+.comarr{margin:10px 0 12px;padding:12px;border-radius:16px;background:rgba(45,226,230,.06);border:1px solid rgba(45,226,230,.18)}.comarr>div:first-child{display:flex;justify-content:space-between;gap:8px;font-size:13px}.comarr>div:first-child span{color:var(--fg-3)}
+.comarr>i{display:block;height:7px;margin:6px 0 10px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden}.comarr>i b{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#2de2e6,#ff3fd0)}
+.arrg{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.arrc{text-align:center;font-size:11.5px;font-weight:700;padding:6px 0;border-radius:9px;background:rgba(255,255,255,.04);color:var(--fg-3);border:1px dashed rgba(255,255,255,.12)}
+.arrc.on{background:rgba(45,226,230,.16);color:#bff9ff;border:1px solid rgba(45,226,230,.55);box-shadow:0 0 8px rgba(45,226,230,.3);cursor:pointer}.arrc.nw{background:rgba(94,240,160,.18);color:#c9ffe0;border-color:rgba(94,240,160,.6)}
+.comtop{display:flex;flex-direction:column;gap:6px}.ctr{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);border:0;color:inherit;font:inherit;text-align:left}
+.ctr em{font-style:normal;font-weight:800;width:18px;color:#ffd24a}.ctr>span{flex:1;min-width:0}.ctr b{display:block;font-size:13.5px}.ctr i{display:block;height:5px;margin-top:4px;border-radius:5px;background:rgba(255,255,255,.06)}.ctr s{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#2de2e6,#ff3fd0)}.ctr small{font-size:11.5px;color:var(--fg-3);white-space:nowrap}
+.comch button{font:inherit;font-size:12px;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--fg-2)}.comch button.nw{color:#5ef0a0;border-color:rgba(94,240,160,.5);box-shadow:0 0 10px rgba(94,240,160,.25)}
+.comnb{display:grid;grid-template-columns:1fr 1fr;gap:6px}.comnb span{padding:8px 10px;border-radius:12px;border:1px dashed rgba(255,255,255,.14);background:rgba(255,255,255,.02)}.comnb b{display:block;font-size:13px}.comnb small{font-size:11.5px;color:var(--fg-3)}
+.comc .sbtns{display:flex;gap:8px}.comc .sbtns .btn{flex:1}
+.cmleg{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;font-size:11.5px;color:var(--fg-2)}.cmleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}.cmleg i.nv{background:#0d0a26;border:1px solid #3b3570}
+.fogp.cmp .fogbig b{font-size:46px}
+.ficmap{position:relative!important;height:210px;border-radius:18px;overflow:hidden;background:#0b0920;margin-bottom:12px}.ficmap canvas{opacity:0;transition:opacity .5s}.ficmap.live canvas{opacity:1}
+.ficg{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}.ficg b{font-size:22px!important}.ficg small{display:block;font-size:11px;color:var(--fg-3)}
+.fich{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:10px}.fich span{color:var(--fg-3)}.ficg{margin-bottom:10px}
 .comh{display:flex;align-items:baseline;gap:8px;margin:4px 0 10px}.comn{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#5ef0a0;text-shadow:0 0 18px rgba(94,240,160,.55)}.comh u{text-decoration:none;font-weight:700;color:var(--fg-2)}.comh>span{margin-left:auto;font-size:12.5px;color:var(--fg-3)}
 .comd{margin:8px 0}.comd>div{display:flex;justify-content:space-between;gap:8px;font-size:13px}.comd>div span{color:var(--fg-3);font-variant-numeric:tabular-nums}.comd i{display:block;height:7px;margin-top:5px;border-radius:9px;background:rgba(255,255,255,.07);overflow:hidden}.comd i b{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#34d17a,#00e5ff);box-shadow:0 0 10px rgba(0,229,255,.5)}
 .comch{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px;max-height:150px;overflow:auto}.comch span{font-size:12px;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--fg-2)}.comch span.nw{color:#5ef0a0;border-color:rgba(94,240,160,.5);box-shadow:0 0 10px rgba(94,240,160,.25)}
@@ -846,7 +861,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.40';
+var APP_V='2.41';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1881,7 +1896,10 @@ function trophyDefs(){
   var dtc0=(IN.dtc&&D.info&&!IN.dtc.length)||(D.health&&D.health.dtc&&!D.health.dtc.length)?1:0,mok=IN.maint&&IN.maint.length&&IN.maint.every(function(m){return m.st===0})?1:0,lvl=levelOf(lifeKm());
   var dk=Object.keys(days).sort(),streak=0,cur=0,prev=null;dk.forEach(function(k){var t=Date.parse(k);cur=prev!=null&&Math.round((t-prev)/864e5)===1?cur+1:1;if(cur>streak)streak=cur;prev=t});
   var fills=Object.keys(D.fills||{}).filter(function(k){return D.fills[k].full}).length,fq=freqData('all'),pass=fq.max||0,ent=entLoad().length,years=first?(Date.now()-first)/(365.25*864e5):0;
-  var comN=sample?0:Object.keys(comLoad().c).length;
+  var comN=0,depN=0,outN=0,arrMax=0,arrAll=0,pct=0;
+  if(!sample){var CC=comLoad(),DP=comDeps();comN=Object.keys(CC.c).length;depN=DP.length;outN=DP.length>1?DP.slice(1).reduce(function(s,x){return s+x.v},0):0;
+    if(DP[0]&&DP[0].tot)pct=DP[0].v/DP[0].tot*100;
+    Object.keys(BIG).forEach(function(p){var n=arrList().filter(function(x){return x.p===p}).length;if(n>arrMax)arrMax=n;if(n>=BIG[p][1])arrAll=1})}
   var T=[
     ['Trajets','t1','Premier tour de roue','Synchronise ton premier trajet.','b','flag',L.length,1,'trajet'],
     ['Trajets','t10','Habitué du volant','Fais 10 trajets.','b','road',L.length,10,'trajets'],
@@ -1919,6 +1937,11 @@ function trophyDefs(){
     ['Explorations','com15','Explorateur du coin','Traverse 15 communes différentes.','a','pin',comN,15,'communes'],
     ['Explorations','com30','Arpenteur','Traverse 30 communes différentes.','o','map',comN,30,'communes'],
     ['Explorations','com60','Conquérant du département','Traverse 60 communes différentes.','l','map',comN,60,'communes'],
+    ['Explorations','out1','Hors des frontières','Traverse une commune hors de ton département habituel.','b','map',outN,1,'commune'],
+    ['Explorations','dep3','Trois départements','Roule dans 3 départements différents.','a','map',depN,3,'départements'],
+    ['Explorations','arr8','Tour des arrondissements','Traverse 8 arrondissements de Marseille, Paris ou Lyon.','a','pin',arrMax,8,'arrondissements'],
+    ['Explorations','arrAll','Toute la ville','Traverse tous les arrondissements de ta grande ville.','o','crown',arrAll,1,'ville complète'],
+    ['Explorations','pct25','Un quart du département','Traverse 25 % des communes de ton département.','l','map',pct,25,'%'],
     ['Explorations','long','Grand voyage','Un trajet d’au moins 60 km.','a','map',maxD,60,'km'],
     ['Explorations','long300','Grande évasion','Un trajet d’au moins 150 km.','o','map',maxD,150,'km'],
     ['Explorations','wk','Escapade','Un trajet d’au moins 30 km le week-end.','b','sun',wk,1,'escapade'],
@@ -2110,7 +2133,7 @@ function maintCard(){
 function mtWire(){var a=$('#mtadd');if(a)a.onclick=function(){mtForm(null)};var b=$('#mtall');if(b)b.onclick=mtList;
   Array.prototype.forEach.call(document.querySelectorAll('.mtc2 [data-me]'),function(x){x.onclick=function(){mtForm(x.getAttribute('data-me'))}})}
 function sheetOpen(title,html){var S=$('#sheet');S.innerHTML='<div class="sh-hd"><b>'+title+'</b><button type="button" class="mapx" id="shx" aria-label="Fermer">✕</button></div><div class="sh-c">'+html+'</div>';S.classList.remove('hide');document.body.style.overflow='hidden';$('#shx').onclick=sheetClose;S.querySelector('.sh-c').scrollTop=0}
-function sheetClose(){$('#sheet').classList.add('hide');$('#sheet').innerHTML='';document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
+function sheetClose(){if(typeof FICM!=='undefined'&&FICM){try{FICM.remove()}catch(e){}FICM=null}$('#sheet').classList.add('hide');$('#sheet').innerHTML='';document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
 function mtList(){
   var E=entLoad().slice().sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)}),Y={},T={},h='',O=odo();
   E.forEach(function(e){var y=new Date(e.d).getFullYear();(Y[y]=Y[y]||[]).push(e);var nm=entName(e);T[nm]=(T[nm]||0)+(e.prix||0)});
@@ -2794,17 +2817,24 @@ function batAlertIsland(){
   var A=batAlert();if(!A)return;var k=ymd(new Date());try{if(localStorage.getItem(BWK)===k)return;localStorage.setItem(BWK,k)}catch(e){}
   setTimeout(function(){island({fallback:1,icon:'warn',pop:true,tone:'warn',title:'Batterie faible : '+f1(A.last)+' V',sub:'Pense à la recharger avant le froid',ms:4200})},1800);
 }
-/* ---------- 2.38 (14) : communes traversées (geo.api.gouv.fr, gardé en mémoire) ---------- */
+/* ---------- 2.38 (14) + 2.41 : communes traversées (geo.api.gouv.fr, gardé en mémoire) ---------- */
 var COMK='sandero-communes',COM=null,COMQ={busy:false,left:0,fail:0},GEO='https://geo.api.gouv.fr/',COMG=150; /* grille de ≈ 700 m */
-function comLoad(){if(COM)return COM;try{COM=JSON.parse(localStorage.getItem(COMK)||'{}')}catch(e){COM={}}['cells','c','deps','done'].forEach(function(k){COM[k]=COM[k]||{}});return COM}
+var FRN=34875, /* communes en France au 1er janvier 2026 (Insee / DGCL) */
+  BIG={'13055':['Marseille',16],'75056':['Paris',20],'69123':['Lyon',9]};
+function comLoad(){if(COM)return COM;try{COM=JSON.parse(localStorage.getItem(COMK)||'{}')}catch(e){COM={}}['cells','c','deps','done','arr','a','regs'].forEach(function(k){COM[k]=COM[k]||{}});Object.keys(COM.deps).forEach(function(d){if(COM.deps[d])delete COM.deps[d].busy});return COM}
 function comSave(){try{localStorage.setItem(COMK,JSON.stringify(COM))}catch(e){}}
 /* points tous les ~step km le long du tracé */
 function densify(P,step){var out=[P[0]];for(var i=1;i<P.length;i++){var a=P[i-1],b=P[i],d=hav(a,b),n=Math.min(400,Math.ceil(d/step));for(var k=1;k<=n;k++)out.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n])}return out}
-function comCells(P){var o={};densify(P,.25).forEach(function(p){var k=Math.round(p[0]*COMG)+','+Math.round(p[1]*COMG);if(!o[k])o[k]=p});return o}
+function cellOf(p){return Math.round(p[0]*COMG)+','+Math.round(p[1]*COMG)}
+function comCells(P){var o={};densify(P,.25).forEach(function(p){var k=cellOf(p);if(!o[k])o[k]=p});return o}
 function comTrips(){return sample?[]:realList().filter(function(r){return rawTrack(r)}).sort(function(a,b){return a.t0-b.t0})}
 function comList(){var C=comLoad().c;return Object.keys(C).map(function(k){var x=C[k];return {code:k,n:x.n,d:x.d,t:x.t}}).sort(function(a,b){return b.t-a.t||a.n.localeCompare(b.n)})}
+function arrName(n){return String(n||'').replace(/^(Marseille|Paris|Lyon)\s+/,'').replace(/\s*Arrondissement$/i,'')}
+function arrList(){var A=comLoad().a;return Object.keys(A).map(function(k){var x=A[k];return {code:k,n:x.n,p:x.p,t:x.t}}).sort(function(a,b){return a.code.localeCompare(b.code)})}
 function comQueue(){
-  if(sample||COMQ.busy||!window.fetch)return;var C=comLoad(),T=comTrips().filter(function(r){return !C.done[r.t0]});COMQ.left=T.length;if(!T.length)return;
+  if(sample||COMQ.busy||!window.fetch)return;var C=comLoad(),T=comTrips().filter(function(r){return !C.done[r.t0]});COMQ.left=T.length;
+  Object.keys(C.deps).forEach(function(d){var x=C.deps[d];if(x&&(!x.cc||!x.r)&&!x.busy&&(DEPF[d]||0)<2)comDep(d)});
+  if(!T.length){arrQueue();return}
   COMQ.busy=true;var first=!C.init,found=[],need={},TC=[];
   T.forEach(function(r){var cells=comCells(trackOf(r)||rawTrack(r));TC.push([r,Object.keys(cells)]);Object.keys(cells).forEach(function(k){if(C.cells[k]===undefined&&!need[k])need[k]=cells[k]})});
   var Q=Object.keys(need),fail=false,run=0,assign=function(){
@@ -2821,29 +2851,154 @@ function comQueue(){
     }).catch(function(){fail=true;COMQ.fail++;if(--run===0)done()});
   };
   var done=function(){
-    assign();COMQ.busy=false;if(!fail)C.init=1;comSave();
-    if(found.length){
-      if(!first)island({icon:'star',pop:true,tone:'good',title:found.length>1?found.length+' nouvelles communes':'Nouvelle commune',sub:found.slice(0,3).join(', ')+(found.length>3?'…':''),ms:3600,fallback:1});
-    }
+    assign();COMQ.busy=false;if(!fail)C.init=1;comSave();COMS=null;
+    if(found.length&&!first)island({icon:'star',pop:true,tone:'good',title:found.length>1?found.length+' nouvelles communes':'Nouvelle commune',sub:found.slice(0,3).join(', ')+(found.length>3?'…':''),ms:3600,fallback:1});
+    if(!fail)arrQueue();
     if(found.length||TAB==='vie'){var c=$('#cele');if(!c||c.hidden){var y=window.scrollY;render();window.scrollTo(0,y)}}
   };
   if(!Q.length){run=1;done();return}
   for(var i=0;i<Math.min(4,Q.length);i++){run++;one()}
 }
-function comDep(d){var C=comLoad();C.deps[d]={n:'Département '+d,tot:0};
-  Promise.all([fetch(GEO+'departements/'+d+'?fields=nom').then(function(r){return r.json()}),fetch(GEO+'departements/'+d+'/communes?fields=code').then(function(r){return r.json()})]).then(function(a){
-    C.deps[d]={n:a[0]&&a[0].nom||('Département '+d),tot:(a[1]||[]).length};comSave()}).catch(function(){delete C.deps[d]})}
+/* (21) arrondissements de Marseille, Paris et Lyon */
+var ARQ={busy:false,fail:0},DEPF={};
+function arrQueue(){
+  var C=comLoad();if(sample||ARQ.busy||C.arrOff||ARQ.fail>=2||!window.fetch)return;
+  var Q=Object.keys(C.cells).filter(function(k){return BIG[C.cells[k]]&&C.arr[k]===undefined});if(!Q.length)return;
+  ARQ.busy=true;var first=!C.arrInit,found=[],fail=false,run=0,tmin={};
+  comTrips().forEach(function(r){Object.keys(comCells(trackOf(r)||rawTrack(r))).forEach(function(k){if(BIG[C.cells[k]]&&(tmin[k]==null||r.t0<tmin[k]))tmin[k]=r.t0})});
+  var one=function(){
+    if(fail||!Q.length){if(--run===0)done();return}
+    var k=Q.shift(),ij=k.split(','),la=+ij[0]/COMG,lo=+ij[1]/COMG,par=C.cells[k];
+    fetch(GEO+'communes?lat='+la.toFixed(5)+'&lon='+lo.toFixed(5)+'&type=arrondissement-municipal&fields=nom,code&format=json').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(a){
+      var x=(a||[]).filter(function(y){return y.code!==par})[0];
+      if(!x&&a&&a.length){C.arrOff=1;fail=true;if(--run===0)done();return}
+      C.arr[k]=x?x.code:'';var t=tmin[k]||Date.now();
+      if(x){if(!C.a[x.code]){C.a[x.code]={n:x.nom,p:par,t:t};found.push(arrName(x.nom))}else if(t<C.a[x.code].t)C.a[x.code].t=t}
+      one();
+    }).catch(function(){if(!fail)ARQ.fail++;fail=true;if(--run===0)done()});
+  };
+  var done=function(){ARQ.busy=false;if(!fail||C.arrOff)C.arrInit=1;comSave();COMS=null;
+    if(found.length&&!first)island({icon:'star',pop:true,tone:'good',title:found.length>1?found.length+' nouveaux arrondissements':'Nouvel arrondissement',sub:found.slice(0,3).join(', '),ms:3400,fallback:1});
+    if(found.length||TAB==='vie'){var c=$('#cele');if(!c||c.hidden){var y=window.scrollY;render();window.scrollTo(0,y)}}};
+  for(var i=0;i<Math.min(4,Q.length);i++){run++;one()}
+}
+/* département : nom, région, liste des communes avec leur centre (pour le total et les voisines) */
+function comDep(d){var C=comLoad(),old=C.deps[d]||{};C.deps[d]=Object.assign({n:'Département '+d,tot:0},old,{busy:1});
+  Promise.all([fetch(GEO+'departements/'+d+'?fields=nom,codeRegion').then(function(r){if(!r.ok)throw 0;return r.json()}),fetch(GEO+'departements/'+d+'/communes?fields=nom,code,centre').then(function(r){if(!r.ok)throw 0;return r.json()})]).then(function(a){
+    var cc=(a[1]||[]).filter(function(x){return x.centre&&x.centre.coordinates}).map(function(x){return [x.code,x.nom,+x.centre.coordinates[1].toFixed(4),+x.centre.coordinates[0].toFixed(4)]});
+    C.deps[d]={n:a[0]&&a[0].nom||('Département '+d),tot:(a[1]||[]).length,r:a[0]&&a[0].codeRegion||'',cc:cc};
+    var rg=C.deps[d].r;if(rg&&!C.regs[rg])fetch(GEO+'regions/'+rg+'?fields=nom').then(function(r){return r.json()}).then(function(x){C.regs[rg]={n:x&&x.nom||rg};comSave()}).catch(function(){});
+    comSave()}).catch(function(){DEPF[d]=(DEPF[d]||0)+1;var x=C.deps[d];if(x)delete x.busy})}
 function comDeps(){var C=comLoad(),by={};comList().forEach(function(x){(by[x.d]=by[x.d]||[]).push(x)});
-  return Object.keys(by).map(function(d){var I=C.deps[d]||{};return {d:d,n:I.n||('Département '+d),tot:I.tot||0,v:by[d].length}}).sort(function(a,b){return b.v-a.v})}
+  return Object.keys(by).map(function(d){var I=C.deps[d]||{};return {d:d,n:I.n||('Département '+d),tot:I.tot||0,r:I.r||'',v:by[d].length}}).sort(function(a,b){return b.v-a.v})}
+function comRegs(){var C=comLoad(),R={};comDeps().forEach(function(x){if(x.r)R[x.r]=(C.regs[x.r]||{}).n||x.r});return R}
+/* (23)(24) passages, km et conso par commune / arrondissement */
+var COMS=null;
+function comStats(){
+  var C=comLoad(),key=Object.keys(C.cells).length+'|'+Object.keys(C.arr).length+'|'+comTrips().length;if(COMS&&COMS.key===key)return COMS;
+  var S={key:key,by:{}},add=function(code,r,km,fu){if(!code)return;var x=S.by[code]||(S.by[code]={n:0,km:0,fu:0,last:0,first:1e15,T:{}});if(!x.T[r.t0]){x.T[r.t0]=1;x.n++;if(r.t0>x.last)x.last=r.t0;if(r.t0<x.first)x.first=r.t0}x.km+=km;x.fu+=fu};
+  comTrips().forEach(function(r){var P=trackOf(r)||rawTrack(r),Q=densify(P,.25),per=(r.dist||0)/Math.max(1,Q.length),fpp=(r.fuel||0)/Math.max(1,Q.length);
+    Q.forEach(function(p){var k=cellOf(p),c=C.cells[k],a=C.arr[k];add(c,r,per,fpp);if(a)add(a,r,per,fpp)})});
+  COMS=S;return S;
+}
+/* (25) communes voisines jamais traversées, triées par distance de ta commune la plus fréquentée */
+function comNear(){
+  var C=comLoad(),S=comStats(),best=null;Object.keys(C.c).forEach(function(k){if(S.by[k]&&(!best||S.by[k].n>S.by[best].n))best=k});if(!best)return [];
+  var all=[];Object.keys(C.deps).forEach(function(d){(C.deps[d].cc||[]).forEach(function(x){all.push(x)})});
+  var home=all.filter(function(x){return x[0]===best})[0];if(!home)return [];
+  return all.filter(function(x){return !C.c[x[0]]}).map(function(x){return {code:x[0],n:x[1],km:hav([home[2],home[3]],[x[2],x[3]])}}).sort(function(a,b){return a.km-b.km}).slice(0,6);
+}
 function comCard(){
-  if(sample)return '';var L=comList(),D=comDeps(),wk=Date.now()-7*864e5;
+  if(sample)return '';var C=comLoad(),L=comList(),D=comDeps(),wk=Date.now()-7*864e5;
   if(!L.length)return comTrips().length?'<div class="card comc"><h2>Communes traversées</h2><p class="note">'+(COMQ.fail?'Pas de réponse du service des communes, nouvel essai à la prochaine ouverture.':'Recherche des communes traversées par tes trajets…')+'</p></div>':'';
-  var h='<div class="card comc"><h2>Communes traversées</h2><div class="comh"><strong class="comn">'+cu(L.length,'i')+'</strong><u>commune'+(L.length>1?'s':'')+'</u><span>'+D.length+' département'+(D.length>1?'s':'')+'</span></div>';
+  var S=comStats(),RG=comRegs(),nr=Object.keys(RG).length,pf=L.length/FRN*100;
+  var h='<div class="card comc"><h2>Communes traversées</h2><div class="comh"><strong class="comn">'+cu(L.length,'i')+'</strong><u>commune'+(L.length>1?'s':'')+'</u><span>'+D.length+' département'+(D.length>1?'s':'')+(nr?' · '+nr+' région'+(nr>1?'s':''):'')+'</span></div>'+
+    '<p class="comfr">🇫🇷 '+fi(L.length)+' / '+fi(FRN)+' communes de France · '+(pf<.01?'< 0,01':pf<1?pf.toFixed(2).replace('.',','):f1(pf))+' %'+(nr?' · '+Object.keys(RG).map(function(k){return esc(RG[k])}).join(', '):'')+'</p>';
+  /* (21) arrondissements */
+  Object.keys(BIG).forEach(function(p){if(!C.c[p])return;var A=arrList().filter(function(x){return x.p===p}),tot=BIG[p][1];
+    if(!A.length&&(C.arrOff||!C.arrInit))return;var pc=A.length/tot*100,have={};A.forEach(function(x){have[arrName(x.n)]=x});
+    var chips='';for(var i=1;i<=tot;i++){var lab=i===1?'1er':i+'e',x=have[lab];chips+='<span class="arrc'+(x?' on'+(x.t>wk?' nw':''):'')+'"'+(x?' data-com="'+x.code+'"':'')+'>'+lab+'</span>'}
+    h+='<div class="comarr"><div><b>'+BIG[p][0]+'</b><span>'+A.length+' / '+tot+' arrondissements · '+fi(pc)+' %</span></div><i><b style="width:'+Math.max(2,pc).toFixed(1)+'%"></b></i><div class="arrg">'+chips+'</div></div>'});
   D.slice(0,4).forEach(function(x){var pc=x.tot?x.v/x.tot*100:0;h+='<div class="comd"><div><b>'+esc(x.n)+'</b><span>'+x.v+(x.tot?' / '+x.tot+' · '+(pc<10?f1(pc):fi(pc))+' %':'')+'</span></div><i><b style="width:'+Math.max(2,Math.min(100,pc)).toFixed(1)+'%"></b></i></div>'});
-  h+='<div class="comch">'+L.map(function(x){return '<span'+(x.t>wk?' class="nw"':'')+'>'+esc(x.n)+'</span>'}).join('')+'</div>';
+  /* (24) les plus traversées */
+  var top=L.map(function(x){return [x,S.by[x.code]]}).filter(function(x){return x[1]}).sort(function(a,b){return b[1].n-a[1].n||b[1].km-a[1].km}).slice(0,5);
+  if(top.length>1){var mx=top[0][1].n;h+='<h3 class="sth">Les plus traversées</h3><div class="comtop">'+top.map(function(x,i){return '<button type="button" class="ctr" data-com="'+x[0].code+'"><em>'+(i+1)+'</em><span><b>'+esc(x[0].n)+'</b><i><s style="width:'+(x[1].n/mx*100).toFixed(0)+'%"></s></i></span><small>'+x[1].n+' trajet'+(x[1].n>1?'s':'')+'</small></button>'}).join('')+'</div>'}
+  h+='<h3 class="sth">Toutes tes communes</h3><div class="comch">'+L.map(function(x){return '<button type="button" data-com="'+x.code+'"'+(x.t>wk?' class="nw"':'')+'>'+esc(x.n)+'</button>'}).join('')+'</div>';
+  /* (25) voisines */
+  var N=comNear();if(N.length)h+='<h3 class="sth">À découvrir près de chez toi</h3><div class="comnb">'+N.map(function(x){return '<span><b>'+esc(x.n)+'</b><small>à '+(x.km<10?f1(x.km):fi(x.km))+' km</small></span>'}).join('')+'</div>';
   if(COMQ.busy&&COMQ.left)h+='<p class="note">Recherche en cours… encore '+COMQ.left+' trajet'+(COMQ.left>1?'s':'')+' à analyser.</p>';
-  h+='<div class="sbtns"><button type="button" class="btn" data-fog="1">Carte à dévoiler</button></div><p class="note">Les communes sont trouvées à partir de tes tracés GPS (service geo.api.gouv.fr). En vert : découvertes cette semaine.</p></div>';
+  h+='<div class="sbtns"><button type="button" class="btn" data-cmap="1">Carte des communes</button><button type="button" class="btn ghost" data-fog="1">Carte à dévoiler</button></div><p class="note">Touche une commune pour sa fiche. Trouvées à partir de tes tracés GPS (service geo.api.gouv.fr). En vert : découvertes cette semaine.</p></div>';
   return h;
+}
+/* contours (geo.api.gouv.fr, format GeoJSON), gardés le temps de la session */
+var CONT={};
+function getJ(u){if(CONT[u])return CONT[u];CONT[u]=fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()});CONT[u].catch(function(){delete CONT[u]});return CONT[u]}
+function contDep(d){return getJ(GEO+'departements/'+d+'/communes?format=geojson&geometry=contour&fields=nom,code')}
+function contOne(code,arr){return getJ(GEO+'communes/'+code+'?format=geojson&geometry=contour&fields=nom,code'+(arr?'&type=arrondissement-municipal':''))}
+function fcBounds(ml,F){var b=new ml.LngLatBounds(),walk=function(c){if(typeof c[0]==='number')b.extend(c);else c.forEach(walk)};F.forEach(function(f){if(f.geometry)walk(f.geometry.coordinates)});return b}
+/* (22) carte des communes coloriées */
+var CMAP={map:null};
+function openComMap(){
+  var C=comLoad(),D=comDeps(),S=comStats();if(!D.length)return;
+  var box=$('#fog');box.innerHTML='<div class="fogmap" id="cmapm"></div><div class="fogvig"></div><button type="button" class="wx" id="cmapx" aria-label="Fermer">✕</button>'+
+    '<div class="foghd"><small>Carte des communes</small><b>Colorie tout le département</b></div><div class="fogp cmp" id="cmapp"><p>Chargement des contours…</p></div>';
+  box.classList.remove('hide');document.body.style.overflow='hidden';$('#cmapx').onclick=closeComMap;
+  Promise.all([maplibre(),styleFor('neon')].concat(D.slice(0,3).map(function(x){return contDep(x.d)}))).then(function(res){
+    var ml=res[0];if(box.classList.contains('hide'))return;var F=[];
+    res.slice(2).forEach(function(fc){(fc.features||[]).forEach(function(f){F.push(f)})});
+    var done=function(extra){
+      var bigOn={},P2={'132':'13055','751':'75056','693':'69123'};extra.forEach(function(f){bigOn[P2[String(f.properties.code).slice(0,3)]]=1});
+      F=F.filter(function(f){return !bigOn[f.properties.code]}).concat(extra);
+      var mx=1;F.forEach(function(f){var c=f.properties.code,v=!!(C.c[c]||C.a[c]),s=S.by[c];f.properties.v=v?1:0;f.properties.n=s?s.n:0;f.properties.nm=f.properties.nom;if(s&&s.n>mx)mx=s.n});
+      var vis=F.filter(function(f){return f.properties.v}),nv=vis.length,tot=F.length;
+      $('#cmapp').innerHTML='<div class="fogbig"><b>'+nv+'</b><u>/ '+tot+'</u></div><p>zones coloriées · touche une commune pour sa fiche</p><div class="cmleg"><span><i style="background:#2de2e6"></i>1 passage</span><span><i style="background:#b26bff"></i>quelques-uns</span><span><i style="background:#ff3fd0"></i>souvent</span><span><i class="nv"></i>à découvrir</span></div>';
+      var m=new ml.Map({container:'cmapm',style:res[1],bounds:fcBounds(ml,vis.length?vis:F),fitBoundsOptions:{padding:{top:110,bottom:220,left:24,right:24},maxZoom:12},attributionControl:false,fadeDuration:0,dragRotate:false,pitchWithRotate:false,touchPitch:false});
+      m.addControl(new ml.AttributionControl({compact:true}),'bottom-right');CMAP.map=m;
+      m.once('style.load',function(){
+        m.addSource('cm',{type:'geojson',data:{type:'FeatureCollection',features:F}});
+        var col=['interpolate',['linear'],['get','n'],0,'#2de2e6',Math.max(2,mx*.25),'#b26bff',Math.max(3,mx),'#ff3fd0'];
+        m.addLayer({id:'cm-nv',type:'fill',source:'cm',filter:['==',['get','v'],0],paint:{'fill-color':'#0d0a26','fill-opacity':.72}});
+        m.addLayer({id:'cm-v',type:'fill',source:'cm',filter:['==',['get','v'],1],paint:{'fill-color':col,'fill-opacity':0,'fill-opacity-transition':{duration:900}}});
+        m.addLayer({id:'cm-l',type:'line',source:'cm',paint:{'line-color':['case',['==',['get','v'],1],col,'#3b3570'],'line-width':['case',['==',['get','v'],1],2,.8],'line-opacity':.9}});
+        m.addLayer({id:'cm-g',type:'line',source:'cm',filter:['==',['get','v'],1],paint:{'line-color':col,'line-width':8,'line-blur':6,'line-opacity':.45}});
+        setTimeout(function(){if(CMAP.map)m.setPaintProperty('cm-v','fill-opacity',.42)},120);
+        m.on('click',function(e){var f=m.queryRenderedFeatures(e.point,{layers:['cm-v','cm-nv']})[0];if(!f)return;var c=f.properties.code;
+          if(C.c[c]||C.a[c]){closeComMap();comSheet(c)}else toast(f.properties.nom+' : pas encore traversée')});
+      });
+    };
+    var codes=[],par={};Object.keys(BIG).forEach(function(p){if(!C.c[p]||C.arrOff)return;var base={'13055':13201,'75056':75101,'69123':69381}[p];for(var i=0;i<BIG[p][1];i++){codes.push(String(base+i));par[String(base+i)]=p}});
+    if(!codes.length){done([]);return}
+    Promise.all(codes.map(function(c){return contOne(c,1).catch(function(){return null})})).then(function(R){
+      done(R.filter(function(f){return f&&f.geometry&&f.properties&&par[f.properties.code]}));
+    });
+  }).catch(function(){var p=$('#cmapp');if(p)p.innerHTML='<p>Carte indisponible pour le moment (pas de réponse du service).</p>'});
+}
+function closeComMap(){if(CMAP.map){try{CMAP.map.remove()}catch(e){}CMAP.map=null}var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow=''}
+/* (23) fiche d'une commune ou d'un arrondissement */
+var FICM=null;
+function comSheet(code){
+  var C=comLoad(),isA=!!C.a[code],I=isA?C.a[code]:C.c[code];if(!I)return;var S=comStats().by[code]||{n:0,km:0,fu:0,T:{}},nm=isA?(BIG[I.p]?BIG[I.p][0]+' ':'')+arrName(I.n):I.n;
+  var DL={day:'numeric',month:'long',year:'numeric'},cons=S.km>1&&S.fu>0?S.fu/S.km*100:null,dep=!isA&&C.deps[I.d]?C.deps[I.d].n:'';
+  var TT=Object.keys(S.T||{}).map(Number).sort(function(a,b){return b-a}),last=TT[0];
+  var row=function(l,v){return '<div><span>'+l+'</span><b>'+v+'</b></div>'};
+  sheetOpen(esc(nm),'<div class="ficmap" id="ficmap"></div>'+
+    '<div class="fich"><b>'+(isA?esc(BIG[I.p]?BIG[I.p][0]:''):esc(dep))+'</b>'+(I.t?'<span>Découverte le '+new Date(Math.min(I.t,S.first||I.t)).toLocaleDateString('fr-FR',DL)+'</span>':'')+'</div>'+
+    '<div class="g4 ficg"><div><b>'+S.n+'</b><small>trajet'+(S.n>1?'s':'')+'</small></div><div><b>'+(S.km<10?f1(S.km):fi(S.km))+'</b><small>km roulés dedans</small></div><div><b'+(cons!=null?' style="color:'+consoCol(cons)+'"':'')+'>'+(cons!=null?f1(cons):'–')+'</b><small>L/100 moyen</small></div></div>'+
+    '<div class="det">'+(last?row('Dernier passage',cap(DF.format(new Date(last)))):'')+row('Carburant estimé',f1(S.fu)+' L')+'</div>'+
+    '<p class="note">Km et conso estimés : la part de chaque trajet passée dans '+esc(nm)+'.</p>');
+  Promise.all([maplibre(),styleFor('neon'),contOne(code,isA)]).then(function(res){
+    var ml=res[0],box=$('#ficmap'),f=res[2];if(!box||!f||!f.geometry)return;
+    if(FICM){try{FICM.remove()}catch(e){}}
+    var m=new ml.Map({container:box,style:res[1],bounds:fcBounds(ml,[f]),fitBoundsOptions:{padding:22},interactive:false,attributionControl:false,fadeDuration:0});FICM=m;
+    m.once('style.load',function(){m.addSource('fc',{type:'geojson',data:f});
+      m.addLayer({id:'fc',type:'fill',source:'fc',paint:{'fill-color':'#2de2e6','fill-opacity':.22}});
+      m.addLayer({id:'fc-g',type:'line',source:'fc',paint:{'line-color':'#2de2e6','line-width':10,'line-blur':8,'line-opacity':.55}});
+      m.addLayer({id:'fc-l',type:'line',source:'fc',paint:{'line-color':'#bff9ff','line-width':2.2}});
+      var TR=comTrips().filter(function(r){return S.T&&S.T[r.t0]}).slice(-30).map(function(r){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:lnglat(trackOf(r)||rawTrack(r))}}});
+      m.addSource('ft',{type:'geojson',data:{type:'FeatureCollection',features:TR}});
+      m.addLayer({id:'ft',type:'line',source:'ft',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ff3fd0','line-width':2,'line-opacity':.8}});
+      box.classList.add('live')});
+  }).catch(function(){var b=$('#ficmap');if(b)b.innerHTML='<p class="note" style="padding:60px 16px;text-align:center">Contour indisponible pour le moment.</p>'});
 }
 /* ---------- 2.38 (13) : carte à dévoiler (brouillard) ---------- */
 var FOG={map:null,raf:0},FG=250; /* cases de 0,004° */
@@ -3112,6 +3267,8 @@ function render(){
   if(!sample)batAlertIsland();
   setTimeout(snapQueue,1500);setTimeout(comQueue,2500);
   Array.prototype.forEach.call(document.querySelectorAll('[data-fog]'),function(b){b.onclick=openFog});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cmap]'),function(b){b.onclick=openComMap});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-com]'),function(b){b.onclick=function(){comSheet(b.getAttribute('data-com'))}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-duel]'),function(b){b.onclick=function(){duelOpen(b.getAttribute('data-duel'))}});
   clockWire();
   Array.prototype.forEach.call(document.querySelectorAll('[data-tmf]'),function(b){b.onclick=function(){TMF=b.getAttribute('data-tmf');var y=window.scrollY;render();window.scrollTo(0,y)}});
