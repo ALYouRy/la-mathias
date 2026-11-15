@@ -67,7 +67,7 @@ button{font:inherit;color:inherit}
 .tr .t2{display:flex;gap:14px;margin-top:4px;font-size:13px;color:var(--fg-2)}
 .tr .more{display:none;margin-top:10px}
 .tr.open .more{display:block}
-.eco{display:inline-flex;min-width:40px;justify-content:center;padding:3px 8px;border-radius:9px;font-size:13px;font-weight:750}
+.eco{display:inline-flex;align-items:center;gap:4px;min-width:40px;justify-content:center;padding:3px 8px;border-radius:9px;font-size:13px;font-weight:750}
 .eco[data-s="ok"]{background:rgba(52,209,122,.14);color:var(--good)}
 .eco[data-s="warn"]{background:rgba(255,176,32,.14);color:var(--warn)}
 .eco[data-s="bad"]{background:rgba(255,77,79,.14);color:var(--bad)}
@@ -674,6 +674,10 @@ button{font:inherit;color:inherit}
 @keyframes nmGo{0%,100%{filter:drop-shadow(0 0 4px rgba(255,214,74,.35))}50%{filter:drop-shadow(0 0 14px rgba(255,214,74,.8))}}
 @keyframes nmTw{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
 @media (prefers-reduced-motion:reduce){#nm.nmg,#nm.t-u::before,#nm.t-u::after{animation:none!important}}
+.lspent{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface-2)}.lspent small{display:block;font-size:12px;font-weight:700;color:var(--fg-2)}
+.lspent b{display:block;font-size:30px;font-weight:750;letter-spacing:-.03em;margin-top:2px;text-shadow:0 0 14px rgba(var(--accent-rgb),.25)}.lspent b u{text-decoration:none;font-size:15px;color:var(--fg-2);margin-left:4px}
+.lspent>span{display:block;font-size:12px;color:var(--fg-3);margin-top:3px;line-height:1.45}
+.ecoi{width:13px;height:13px;flex:0 0 auto;fill:currentColor;fill-opacity:.25;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:4px}.eco .ecoi{margin-right:0}
 @media (prefers-reduced-motion:reduce){.pkpin{animation:none}}
 @media (prefers-reduced-motion:reduce){.md.ok .ring,.md.ok .uorb,.md.ok .uhalo,.md.ok .ust,.usky,.tl-u{animation:none!important}.md.ok .ust{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.md.ok.t-l .ring,.md.ok i::after,.tl-l{animation:none!important}}
@@ -743,7 +747,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.27.1';
+var APP_V='2.28';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2061,7 +2065,7 @@ function lifeTab(){
   /* moyennes */
   var mths=Math.max(1,Object.keys(o.months).length);
   h+='<div class="card"><h2>Moyennes</h2><div class="det">'+
-    row('Conso moyenne',o.cons!=null?f1(o.cons)+' L/100':'–')+row('Score éco moyen',o.eco!=null?o.eco+' / 100':'–')+
+    row('Conso moyenne',o.cons!=null?f1(o.cons)+' L/100':'–')+row(ECOI+'Score éco moyen',o.eco!=null?o.eco+' / 100':'–')+
     row('Distance par trajet',f1(o.km/o.n)+' km')+row('Durée par trajet',dur(o.dur/o.n))+
     row('Vitesse moyenne',o.dur>0?Math.round(o.km/(o.dur/3600))+' km/h':'–')+row('Km par mois',fi(o.km/mths)+' km','sur '+mths+' mois avec des trajets')+
     row('Coût aux 100 km',o.km>1?f2(o.cost/o.km*100)+' €':'–')+row('Temps à l’arrêt moteur tournant',dur(o.idle))+
@@ -2182,11 +2186,18 @@ function radioMaintCard(){
 }
 function dtcRows(){var I=data().info;if(!I||!I.dtc.length)return '';
   return '<div class="dtcl">'+I.dtc.map(function(d){return '<div><b>'+esc(d.c)+'</b><span>'+(d.x?esc(d.x):'Pas d’explication pour ce code.')+'</span></div>'}).join('')+'</div>'}
+/* prix moyen réellement payé : trajets (pondéré par les litres), sinon pleins, sinon prix habituel */
+function avgPaid(){var D=data(),l=0,e=0;realList().forEach(function(r){if(r.price>0&&r.fuel>0){l+=r.fuel;e+=r.fuel*r.price}});
+  if(l>1)return {p:e/l,src:'prix moyen payé sur tes trajets'};
+  var F=Object.keys(D.fills||{}).map(function(k){return D.fills[k]}).filter(function(f){return f.price>0&&f.litres>0});
+  if(F.length){F.forEach(function(f){l+=f.litres;e+=f.litres*f.price});return {p:e/l,src:'prix moyen payé à tes pleins'}}
+  return {p:priceOf(D.snap),src:'prix réglé dans l’appli'}}
 function radioLifeCard(){
   var I=data().info;if(!I)return '';var C=I.car,S=I.tot,O=radioOdo(),h='',row=function(l,v){return '<div><span>'+l+'</span><b>'+v+'</b></div>'};
   if(S&&S.n!=null)h+='<div class="card"><h2>Selon l’autoradio</h2><p class="note" style="margin:0 0 4px">Totaux de tout l’historique de l’autoradio, même les trajets jamais synchronisés.</p><div class="g4">'+
     '<div><b>'+cu(S.n,'i')+'</b><small>Trajets</small></div><div><b>'+(S.km!=null?cu(S.km,'i')+'<u>km</u>':'–')+'</b><small>Distance</small></div>'+
     '<div><b>'+(S.l!=null?cu(S.l,'i')+'<u>L</u>':'–')+'</b><small>Carburant</small></div><div><b>'+(S.drive!=null?(S.drive>=36000?cu(S.drive/3600,'i')+'<u>h</u>':dur(S.drive)):'–')+'</b><small>Temps de conduite</small></div></div>'+
+    (S.l!=null?(function(){var ap=avgPaid(),eur=S.l*ap.p;return '<div class="lspent"><small>Argent dépensé en carburant</small><b>≈ '+cu(eur,'i')+'<u>€</u></b><span>Estimation : '+fi(S.l)+' L × '+ap.p.toFixed(3).replace('.',',')+' €/L ('+ap.src+')'+(S.km>0?' · environ '+f2(eur/S.km*100)+' € aux 100 km':'')+'</span></div>'})():'')+
     (S.since?'<p class="note">Depuis le '+new Date(S.since).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'.</p>':'')+'</div>';
   if(C||O){h+='<div class="card"><h2>Fiche de La Mathias</h2><div class="det">'+
     (O?row('Kilométrage',fi(O.km)+' km'):'')+(C&&C.fuel?row('Carburant',esc(C.fuel)):'')+(C&&C.cc?row('Cylindrée',f1(C.cc).replace(',0','')+' L'):'')+
@@ -2418,6 +2429,9 @@ function harmRow(){
     return '<button type="button" class="hm" data-hm="'+k+'" aria-pressed="'+(SET.harm===k)+'"><i style="background:radial-gradient(circle at 25% 25%,rgba('+H[2]+',.9),transparent 60%),radial-gradient(circle at 80% 80%,rgba('+H[3]+',.8),transparent 60%),#0b0820;box-shadow:inset 0 0 0 2px '+H[1]+'"></i><span>'+H[0]+'</span></button>'}).join('')+'</div></div>';
 }
 function harmWire(){Array.prototype.forEach.call(document.querySelectorAll('[data-hm]'),function(b){b.onclick=function(){var k=b.getAttribute('data-hm');SET.harm=SET.harm===k?'':k;if(SET.harm)SET.mapStyle=HARM[k][4];setSave();var y=window.scrollY;render();window.scrollTo(0,y)}})}
+/* feuille : symbole du score éco */
+var ECOI='<svg class="ecoi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15"/><path d="M5 19c3-4 6-7 10-9"/></svg>';
+function ecoPill(v){return '<span class="eco" data-s="'+eState(v)+'" title="Score éco">'+ECOI+v+'</span>'}
 function cmp(a,b,better){
   if(a==null||b==null||!b)return '';
   var pc=Math.round((a-b)/Math.abs(b)*100);if(!pc)return '<em>= mois précédent</em>';
@@ -2452,7 +2466,7 @@ function render(){
   /* dernier trajet (onglet Voiture) */
   if(L.length){
     var lr=L[0],ldt=new Date(lr.t0),lcons=lr.dist>.5&&lr.fuel>0?f1(lr.fuel/lr.dist*100)+' L/100':'–';
-    h+='<div class="card lt"><h2>Dernier trajet</h2><div class="t1" style="display:flex;justify-content:space-between;align-items:center"><b>'+dayLabel(ldt)+' · '+HF.format(ldt)+(lr.demo?'<span class="ptag dm">DÉMO</span>':'')+'</b><span class="eco" data-s="'+eState(lr.eco)+'">'+lr.eco+'</span></div>'+
+    h+='<div class="card lt"><h2>Dernier trajet</h2><div class="t1" style="display:flex;justify-content:space-between;align-items:center"><b>'+dayLabel(ldt)+' · '+HF.format(ldt)+(lr.demo?'<span class="ptag dm">DÉMO</span>':'')+'</b>'+ecoPill(lr.eco)+'</div>'+
       '<div class="sub" style="border:0;padding-top:6px"><span><b>'+f1(lr.dist)+'</b> km</span><span><b>'+dur(lr.dur)+'</b></span><span><b>'+lcons+'</b></span><span><b>'+f2(lr.fuel*priceOf(S))+'</b> €</span></div>'+(trackOf(lr)?mapBtn(lr.t0,trackOf(lr)):'')+'</div>';
   }
   h+=parkCard();
@@ -2485,7 +2499,7 @@ function render(){
     h+='<div class="g4"><div><b>'+cu(c.km,'i')+'<u>km</u></b><small>Distance</small>'+cmp(c.km,p&&p.km,0)+'</div>'+
       '<div><b>'+(c.cons!=null?cu(c.cons,'1'):'–')+'<u>L/100</u></b><small>Conso moyenne</small>'+cmp(c.cons,p&&p.cons,-1)+'</div>'+
       '<div><b>'+cu(c.cost,'i')+'<u>€</u></b><small>Carburant · '+f1(c.fuel)+' L</small>'+cmp(c.cost,p&&p.cost,-1)+'</div>'+
-      '<div><b>'+cu(c.eco,'n')+'<u>/100</u></b><small>Score éco</small>'+cmp(c.eco,p&&p.eco,1)+'</div></div>';
+      '<div><b>'+cu(c.eco,'n')+'<u>/100</u></b><small>'+ECOI+'Score éco</small>'+cmp(c.eco,p&&p.eco,1)+'</div></div>';
     h+=goalHtml(c.cons);
     h+='<div class="sub"><span><b>'+c.n+'</b> trajet'+(c.n>1?'s':'')+'</span><span><b>'+dur(c.dur)+'</b> au volant</span></div>';
     if(c.proKm>0)h+='<div class="prob"><span><span class="ptag">PRO</span> <b>'+f1(c.proKm)+' km</b> · '+c.proN+' trajet'+(c.proN>1?'s':'')+' ce mois</span><button type="button" class="btn ghost" id="proexp" data-y="'+d.getFullYear()+'" data-m="'+d.getMonth()+'">Exporter</button></div>';
@@ -2514,7 +2528,7 @@ function render(){
     if(dk!==lastDay){lastDay=dk;h+='<div class="day">'+dayLabel(dt)+'</div>'}
     var cons=r.dist>.5&&r.fuel>0?f1(r.fuel/r.dist*100)+' L/100':'–';
     var P=trackOf(r);
-    h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b><span class="eco" data-s="'+eState(r.eco)+'">'+r.eco+'</span></div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+(r.meas===true?'<i class="mb ok">mesurée</i>':r.meas===false?'<i class="mb">estimée</i>':'')+'</span><span>'+f2(r.fuel*tPrice(r,price))+' €</span>'+(r.demo?'<span class="ptag dm">DÉMO</span>':'')+(P?'<span class="tk-on">• tracé</span>':'')+(isPro(r)?'<span class="ptag">PRO</span>':tagOf(r)==='perso'?'<span class="ptag ps">PERSO</span>':'')+'</div>'+
+    h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b>'+ecoPill(r.eco)+'</div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+(r.meas===true?'<i class="mb ok">mesurée</i>':r.meas===false?'<i class="mb">estimée</i>':'')+'</span><span>'+f2(r.fuel*tPrice(r,price))+' €</span>'+(r.demo?'<span class="ptag dm">DÉMO</span>':'')+(P?'<span class="tk-on">• tracé</span>':'')+(isPro(r)?'<span class="ptag">PRO</span>':tagOf(r)==='perso'?'<span class="ptag ps">PERSO</span>':'')+'</div>'+
       '<div class="more det">'+(sample?'':'<div class="pps"><span>Type de trajet</span><span class="seg"><button type="button" data-pp="'+r.t0+'" data-v="perso" aria-pressed="'+!isPro(r)+'">Perso</button><button type="button" data-pp="'+r.t0+'" data-v="pro" aria-pressed="'+isPro(r)+'">Pro</button></span></div>')+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div>'+tripExtra(r,price)+'</div></div>';
   });
   if(L.length>SET.nTrips)h+='<p class="note" style="text-align:center">Les '+SET.nTrips+' derniers trajets sont affichés (modifiable dans Réglages).</p>';
