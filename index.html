@@ -777,7 +777,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.30.1';
+var APP_V='2.31';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1148,7 +1148,34 @@ function sb36(v){v=Math.round(v);return (v<0?'-':'')+Math.abs(v).toString(36)}
 function trackPts(s){if(!s)return null;var a=s.split('.'),la=0,lo=0,P=[];
   for(var i=0;i+1<a.length;i+=2){la+=parseInt(a[i],36)||0;lo+=parseInt(a[i+1],36)||0;P.push([la/1e4,lo/1e4])}
   return P.length>=2?P:null}
-function trackOf(r){var D=data();return r&&D.tracks?trackPts(D.tracks[r.t0]):null}
+/* 2.31 : quand le GPS de l'autoradio n'a envoyé que quelques points espacés (ligne droite),
+   on recale le tracé sur les routes avec OSRM (serveur FOSSGIS, 1 demande par seconde maximum), résultat gardé en mémoire */
+var SNAPK='sandero-snap',SNAP=null,SNQ={busy:false,last:0},OSRM='https://routing.openstreetmap.de/routed-car/route/v1/driving/';
+function snapLoad(){if(SNAP)return SNAP;try{SNAP=JSON.parse(localStorage.getItem(SNAPK)||'{}')}catch(e){SNAP={}}return SNAP}
+function snapSave(){try{localStorage.setItem(SNAPK,JSON.stringify(SNAP))}catch(e){}}
+function rawTrack(r){var D=data();return r&&D.tracks?trackPts(D.tracks[r.t0]):null}
+function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
+function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
+function trackOf(r){var P=rawTrack(r);if(!P)return null;if(sparse(P,r)){var S=snapped(r);if(S)return S}return P}
+function snapWait(){var w=Math.max(0,SNQ.last+1100-Date.now());return new Promise(function(ok){setTimeout(ok,w)})}
+function snapOne(r){
+  var P=rawTrack(r);if(!P)return Promise.reject();var n=P.length,W=[];
+  if(n<=25)W=P;else for(var i=0;i<25;i++)W.push(P[Math.round(i*(n-1)/24)]);
+  return snapWait().then(function(){SNQ.last=Date.now();
+    return fetch(OSRM+W.map(function(p){return p[1].toFixed(5)+','+p[0].toFixed(5)}).join(';')+'?overview=full&geometries=geojson&continue_straight=false')})
+  .then(function(x){if(!x.ok)throw new Error('http');return x.json()}).then(function(j){
+    var S=snapLoad(),rt=j&&j.code==='Ok'&&j.routes&&j.routes[0];
+    if(!rt||!rt.geometry||rt.geometry.coordinates.length<2){S[r.t0]={fail:1};snapSave();return false}
+    var km=rt.distance/1000;if(r.dist>0&&km>r.dist*1.8+.5){S[r.t0]={fail:1};snapSave();return false}
+    S[r.t0]={c:rt.geometry.coordinates.map(function(c){return [Math.round(c[1]*1e5)/1e5,Math.round(c[0]*1e5)/1e5]}),km:Math.round(km*100)/100};snapSave();return true});
+}
+function snapQueue(){
+  if(sample||SNQ.busy||!navigator.onLine&&navigator.onLine!==undefined)return;var S=snapLoad();
+  var L=list().filter(function(r){return !S[r.t0]&&sparse(rawTrack(r),r)}).slice(0,40);if(!L.length)return;
+  SNQ.busy=true;var ch=0;
+  (function nx(i){if(i>=L.length){SNQ.busy=false;if(ch){TMCACHE={};ANAC={};var free=$('#mapv').classList.contains('hide')&&$('#retro').classList.contains('hide')&&(!$('#sheet')||$('#sheet').classList.contains('hide'));if(free&&TAB!=='set'){var y=window.scrollY;render();window.scrollTo(0,y)}}return}
+    snapOne(L[i]).then(function(ok){if(ok)ch++;nx(i+1)},function(){SNQ.busy=false})})(0);
+}
 /* petit aperçu du tracé (dessiné en SVG, sans carte) */
 function mapBtn(t0,P){
   var a=1e9,b=-1e9,c=1e9,d=-1e9;P.forEach(function(p){if(p[0]<a)a=p[0];if(p[0]>b)b=p[0];if(p[1]<c)c=p[1];if(p[1]>d)d=p[1]});
@@ -1227,7 +1254,7 @@ var CSTOPS=[[4.5,[52,209,122]],[6,[255,214,10]],[8,[255,159,10]],[10,[255,59,48]
 function consoRGB(c){if(c<=CSTOPS[0][0])return CSTOPS[0][1];for(var i=1;i<CSTOPS.length;i++)if(c<=CSTOPS[i][0]){var a=CSTOPS[i-1],b=CSTOPS[i],t=(c-a[0])/(b[0]-a[0]);return [0,1,2].map(function(k){return Math.round(a[1][k]+(b[1][k]-a[1][k])*t)})}return CSTOPS[CSTOPS.length-1][1]}
 function consoCol(c){return 'rgb('+consoRGB(c).join(',')+')'}
 function detOf(r){
-  var D=data(),s=r&&D.details&&D.details[r.t0];if(!s)return null;
+  var D=data(),s=r&&D.details&&D.details[r.t0];if(!s||snapped(r))return null;
   var L=s.split(','),f=function(x){return (x||'').split('.').map(function(v){var n=v===''?null:parseInt(v,36);return n==null||isNaN(n)?null:n})};
   var o={c:f(L[0]).map(function(v){return v==null?null:v/10}),v:f(L[1]),t:f(L[2])};
   return o.c.concat(o.v,o.t).some(function(x){return x!=null})?o:null;
@@ -1545,12 +1572,13 @@ function showMap(bfn){
     }
   }).catch(function(){closeMap();toast('La carte n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500)});
 }
-function openMap(t0){
+function openMap(t0,noSnap){
   var r=data().trips[t0],P=trackOf(r);if(!P)return;
+  if(!noSnap&&!sample&&sparse(rawTrack(r),r)&&!snapLoad()[t0]){toast('Recalage du tracé sur les routes…');snapOne(r).then(function(){openMap(t0,1)},function(){openMap(t0,1)});return}
   rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');
   var dt=new Date(r.t0);
   $('#mapt').textContent=dayLabel(dt)+' · '+HF.format(dt);
-  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'');
+  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
   $('#mapapple').href='https://maps.apple.com/?saddr='+P[0].join(',')+'&daddr='+P[P.length-1].join(',')+'&dirflg=d';
   mapStyleBar();
   MAPM=routeModel(r,P);MAPC=P;CUR=MAPM.det?(MAPM.has?hungriest(MAPM):0):-1;
@@ -2700,6 +2728,7 @@ function render(){
   var pe=$('#proexp');if(pe)pe.onclick=function(){proExport(+pe.getAttribute('data-y'),+pe.getAttribute('data-m'))};
   Array.prototype.forEach.call(document.querySelectorAll('[data-ana]'),function(b){b.onclick=function(){ANAP=b.getAttribute('data-ana');var y=window.scrollY;render();window.scrollTo(0,y)}});
   if(TAB==='bilan')mmapMount();
+  setTimeout(snapQueue,1500);
   Array.prototype.forEach.call(document.querySelectorAll('[data-tmf]'),function(b){b.onclick=function(){TMF=b.getAttribute('data-tmf');var y=window.scrollY;render();window.scrollTo(0,y)}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(b){b.onclick=function(){openSpots(b.getAttribute('data-spot'))}});var wrb=$('#wrapb');if(wrb)wrb.onclick=function(){openWrap(+wrb.getAttribute('data-y'))};
   Array.prototype.forEach.call(document.querySelectorAll('.mapb'),function(b){b.onclick=function(e){e.stopPropagation();openMap(+b.getAttribute('data-t'))}});
