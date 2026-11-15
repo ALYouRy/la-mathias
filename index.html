@@ -710,6 +710,7 @@ button{font:inherit;color:inherit}
 .feb>div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;min-width:0}.feb b{font-size:10.5px;font-weight:700;color:var(--fg)}.feb i{width:70%;max-width:30px;border-radius:5px 5px 2px 2px;box-shadow:0 0 8px rgba(255,255,255,.08)}
 .feb span{font-size:10.5px;font-weight:700;color:var(--fg-2)}.feb small{font-size:9.5px;color:var(--fg-3)}
 .fe p{margin:8px 0 0;font-size:12.5px;color:var(--fg-2)}.fe .good{color:var(--good)}.fe .bad{color:#ffb340}
+.hs small.hsref{display:block;white-space:normal;margin-top:2px;font-size:11.5px;font-weight:600;color:var(--fg-3)}.hs small.hstip{display:block;white-space:normal;margin-top:4px;max-width:230px;margin-left:auto;font-size:11.5px;font-weight:600;line-height:1.35;color:var(--fg-2)}
 @media (prefers-reduced-motion:reduce){.pkpin{animation:none}.rtin{animation:none}}
 @media (prefers-reduced-motion:reduce){.md.ok .ring,.md.ok .uorb,.md.ok .uhalo,.md.ok .ust,.usky,.tl-u{animation:none!important}.md.ok .ust{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.md.ok.t-l .ring,.md.ok i::after,.tl-l{animation:none!important}}
@@ -780,7 +781,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.33';
+var APP_V='2.34';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2662,14 +2663,19 @@ function render(){
   if(HL){
     var rs=HL.rest!=null?(HL.rest>=12.4?['ok','bonne charge']:HL.rest>=12.1?['warn','à recharger']:['bad','faible']):null;
     var ru=HL.run!=null?(HL.run>15?['bad','surcharge']:HL.run>=13.3?['ok','l’alternateur charge bien']:HL.run>=12.9?['warn','charge un peu faible']:['bad','l’alternateur ne charge pas']):null;
-    var row2=function(l,v,st){return '<div><span>'+l+'</span><b'+(st?' class="hs-'+st+'"':'')+'>'+v+'</b></div>'};
+    /* 2.34 : une ligne par mesure, la bonne valeur entre parenthèses, un conseil si ce n'est pas bon */
+    var row2=function(l,v,st,ref,tip){return '<div><span>'+l+'</span><b'+(st?' class="hs-'+st+'"':'')+'>'+v+(ref?'<small class="hsref">('+ref+')</small>':'')+(tip&&st!=='ok'?'<small class="hstip">'+tip+'</small>':'')+'</b></div>'};
     var rows='';
-    if(rs||ru)rows+=row2('Batterie',(rs?f1(HL.rest)+' V à l’arrêt · '+rs[1]:'')+(rs&&ru?'<br>':'')+(ru?f1(HL.run)+' V moteur tournant':''),rs?rs[0]:ru[0]);
-    if(HL.dtc)rows+=row2('Voyant moteur',HL.dtc.length?HL.dtc.length+' code'+(HL.dtc.length>1?'s':'')+' : '+esc(HL.dtc.join(', ')):'aucun code défaut',HL.dtc.length?'bad':'ok');
+    if(rs)rows+=row2('Batterie à l’arrêt',f1(HL.rest)+' V · '+rs[1],rs[0],'bon : 12,4 V ou plus · pleine : 12,6 V',rs[0]==='warn'?'Un long trajet (30 min) ou un chargeur la remettra à niveau.':'Fais-la tester : elle risque de ne plus démarrer par temps froid.');
+    if(ru)rows+=row2('Charge de l’alternateur',f1(HL.run)+' V · '+(ru[0]==='ok'?'charge bien':ru[1]),ru[0],'bon : 13,3 à 15 V moteur tournant',ru[0]==='bad'&&HL.run>15?'Tension trop haute : fais vérifier le régulateur de l’alternateur.':'Fais vérifier l’alternateur et sa courroie.');
+    if(HL.dtc)rows+=row2('Voyant moteur',HL.dtc.length?HL.dtc.length+' code'+(HL.dtc.length>1?'s':'')+' : '+esc(HL.dtc.join(', ')):'aucun code défaut',HL.dtc.length?'bad':'ok','bon : aucun code');
+    var LT=list().filter(function(r){return r.tMax!=null&&!r.demo})[0];
+    if(LT){var tm=LT.tMax,lg=LT.dur>=15*60,ts=tm>110?'bad':tm>105?'warn':lg&&tm<75?'warn':'ok';
+      rows+=row2('Température moteur',tm+' °C max'+(LT.tAvg!=null?' · '+LT.tAvg+' °C en moyenne':''),ts,'bon : 85 à 105 °C une fois chaud',tm>105?'Surveille le liquide de refroidissement et le ventilateur.':'Sur un trajet de plus de 15 min, le moteur devrait chauffer davantage : thermostat à faire vérifier.')}
     if(HL.svc)rows+=row2('Prochain entretien',esc(HL.svc)+'<br><small>'+esc(HL.svcTxt)+'</small>',HL.svcS);
-    if(HL.precT)rows+=row2('Précision de la conso',esc(HL.precT),HL.prec==='o'?'ok':HL.prec==='w'?'warn':'');
+    if(HL.precT)rows+=row2('Précision de la conso',esc(HL.precT),HL.prec==='o'?'ok':HL.prec==='w'?'warn':'','idéal : calée sur tes pleins complets',HL.prec==='o'?'':'Fais un plein complet et saisis les litres sur l’autoradio, deux fois de suite.');
     var RO=radioOdo();if(RO)rows=row2('Kilométrage',fi(RO.km)+' km','')+rows;var DX=dtcRows();
-    if(rows)h+='<div class="card"><h2>Santé de la voiture</h2><div class="det hs">'+rows+'</div>'+DX+'<p class="note">Mesures de l’autoradio, au moment de la synchro ('+ago(HL.t)+').'+(HL.dtc&&HL.dtc.length&&!DX?' Détail des codes dans l’écran Diagnostic de l’autoradio.':'')+'</p></div>';
+    if(rows)h+='<div class="card"><h2>Santé de la voiture</h2><div class="det hs">'+rows+'</div>'+DX+'<p class="note">Mesures de l’autoradio, au moment de la synchro ('+ago(HL.t)+'). Température : dernier trajet, '+(LT?ago(LT.t0):'')+'. Valeurs de référence habituelles pour une voiture essence.'+(HL.dtc&&HL.dtc.length&&!DX?' Détail des codes dans l’écran Diagnostic de l’autoradio.':'')+'</p></div>';
   }
   h+=batCard()+tyreCard()+radioMaintCard();
   h+=maintCard();
