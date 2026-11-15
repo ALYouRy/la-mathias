@@ -777,7 +777,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.32';
+var APP_V='2.32.1';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2423,12 +2423,12 @@ function anaCard(){
 var MMAP=null;
 function monthMapCard(y,m){
   var L=realList().filter(function(r){var d=new Date(r.t0);return d.getFullYear()===y&&d.getMonth()===m&&trackOf(r)});if(!L.length)return '';
-  return '<div class="card"><h2>Carte du mois · '+L.length+' tracé'+(L.length>1?'s':'')+'</h2><div class="mmap" id="mmap" data-y="'+y+'" data-m="'+m+'"><div class="mmsel hide" id="mmsel"></div></div><p class="note">Les routes les plus prises ressortent plus lumineuses. Touche un trait pour choisir un trajet. Pour bouger la carte, utilise deux doigts.</p></div>';
+  return '<div class="card"><h2>Carte du mois · '+L.length+' tracé'+(L.length>1?'s':'')+'</h2><div class="mmap" id="mmap" data-y="'+y+'" data-m="'+m+'"><div class="mmsel hide" id="mmsel"></div></div><p class="note">Une couleur par trajet. Touche un trait pour choisir un trajet. Pour bouger la carte, utilise deux doigts.</p></div>';
 }
 function mmapMount(){
   var el=$('#mmap');if(!el)return;var y=+el.getAttribute('data-y'),m=+el.getAttribute('data-m');
   var L=realList().filter(function(r){var d=new Date(r.t0);return d.getFullYear()===y&&d.getMonth()===m&&trackOf(r)});if(!L.length)return;
-  var F=L.map(function(r){var P=trackOf(r);return {type:'Feature',properties:{t:r.t0},geometry:{type:'LineString',coordinates:P.map(function(p){return [p[1],p[0]]})}}}),all=[];L.forEach(function(r){all=all.concat(trackOf(r))});
+  var F=L.map(function(r,i){var P=trackOf(r);return {type:'Feature',properties:{t:r.t0,c:RCOL[i%RCOL.length]},geometry:{type:'LineString',coordinates:P.map(function(p){return [p[1],p[0]]})}}}),all=[];L.forEach(function(r){all=all.concat(trackOf(r))});
   Promise.all([maplibre(),styleFor(SET.mapStyle)]).then(function(res){
     var ml=res[0];if(!document.body.contains(el))return;
     var d=document.createElement('div');d.className='mm';el.insertBefore(d,el.firstChild);
@@ -2437,8 +2437,13 @@ function mmapMount(){
     var col=routeColors()[0];
     map.once('style.load',function(){
       map.addSource('mall',{type:'geojson',data:{type:'FeatureCollection',features:F}});
-      map.addLayer({id:'mall-glow',type:'line',source:'mall',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':col,'line-width':6,'line-blur':4,'line-opacity':.12}});
-      map.addLayer({id:'mall',type:'line',source:'mall',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':col,'line-width':2.2,'line-opacity':.32}});
+      var light=SET.mapStyle==='clair',LO={'line-cap':'round','line-join':'round'},WZ=function(a,b){return ['interpolate',['linear'],['zoom'],10,a,16,b]};
+      map.addSource('mdim',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[[[-180,-85],[180,-85],[180,85],[-180,85],[-180,-85]]]}}});
+      map.addLayer({id:'mdim',type:'fill',source:'mdim',paint:{'fill-color':light?'#ffffff':'#05031a','fill-opacity':light?.45:.68}});
+      map.addLayer({id:'mall-glow',type:'line',source:'mall',layout:LO,paint:{'line-color':light?col:['get','c'],'line-width':WZ(9,20),'line-blur':WZ(5,12),'line-opacity':light?.25:.45}});
+      map.addLayer({id:'mall-case',type:'line',source:'mall',layout:LO,paint:{'line-color':light?'#ffffff':'#03020f','line-width':WZ(5.5,10),'line-opacity':.8}});
+      map.addLayer({id:'mall',type:'line',source:'mall',layout:LO,paint:{'line-color':light?col:['get','c'],'line-width':WZ(3,6.5),'line-opacity':.92}});
+      map.addLayer({id:'mall-core',type:'line',source:'mall',layout:LO,paint:{'line-color':'#ffffff','line-width':WZ(.6,1.4),'line-opacity':light?0:.45}});
       map.addLayer({id:'mall-hit',type:'line',source:'mall',paint:{'line-color':'#000','line-width':18,'line-opacity':0}});
       map.addSource('msel',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
       map.addLayer({id:'msel-glow',type:'line',source:'msel',filter:['==',['geometry-type'],'LineString'],layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffffff','line-width':12,'line-blur':7,'line-opacity':.45}});
