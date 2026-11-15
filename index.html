@@ -735,6 +735,22 @@ button{font:inherit;color:inherit}
 .bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
 .bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 /* 2.38 */
+.mong{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mon{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 3px;border-radius:12px;border:1.5px solid;font:inherit;background:rgba(255,255,255,.03);min-width:0;position:relative}
+.mon em{font-style:normal;font-size:22px;position:relative;z-index:2}.mon span{font-size:9.5px;line-height:1.15;text-align:center;color:var(--fg-2);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;position:relative;z-index:2}.mon.r-x{filter:grayscale(1);opacity:.45}.mon.nw::after{content:'';position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#5ef0a0;box-shadow:0 0 6px #5ef0a0}
+.albx{display:flex;gap:6px;margin:6px 0}.albx span{flex:1;text-align:center;font-size:12px;padding:7px;border-radius:12px;background:rgba(255,255,255,.05);color:var(--fg-2)}.albx b{color:#fff}.cstat{margin:14px 0 4px}
+.acard>*{position:relative;z-index:2}.crv-sil.holo>*{position:relative;z-index:2}
+.aico{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;font-size:44px}
+.ssn{display:flex;justify-content:center;gap:2px;margin-top:3px;position:relative;z-index:2}.ssn i{font-style:normal;font-size:10px;filter:grayscale(1);opacity:.25}.ssn i.on{filter:none;opacity:1}
+.holo{position:relative;overflow:hidden}.holo::before{content:'';position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 30%,rgba(255,80,220,.35) 40%,rgba(80,240,255,.35) 47%,rgba(255,240,120,.35) 54%,rgba(120,255,160,.3) 60%,transparent 70%);animation:holo 3.2s linear infinite;pointer-events:none;mix-blend-mode:screen;z-index:1}
+@keyframes holo{from{transform:translateX(-35%)}to{transform:translateX(35%)}}
+.shy{position:absolute;top:4px;left:5px;font-style:normal;font-size:11px;z-index:2;filter:drop-shadow(0 0 4px rgba(255,255,255,.8))}
+.ficsh{margin:-4px 0 10px;font-size:13px;font-weight:700;background:linear-gradient(90deg,#ff3fd0,#2de2e6,#ffd24a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ficss{display:flex;align-items:center;gap:8px;margin:-2px 0 10px}.ficss .ssn{margin:0}.ficss .ssn i{font-size:17px}.ficss small{font-size:12px;color:var(--fg-3)}
+.monpin{font-size:30px;filter:drop-shadow(0 0 8px rgba(255,210,74,.8))}
+.crv-ico{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:96px;animation:cPop .9s .3s both}
+.crv-shy{margin:6px 0 0;font-size:13.5px;font-weight:800;background:linear-gradient(90deg,#ff3fd0,#2de2e6,#ffd24a,#ff3fd0);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shyM 2.5s linear infinite}
+@keyframes shyM{to{background-position:200% 0}}
+@media (prefers-reduced-motion:reduce){.holo::before,.crv-shy{animation:none}}
 .comq{background:rgba(94,240,160,.05);border-color:rgba(94,240,160,.2)}.comq>i b{background:linear-gradient(90deg,#34d17a,#2de2e6)}.comq .comch{max-height:120px}
 .comd.epc i b{background:linear-gradient(90deg,#ffd24a,#ff3fd0)}
 .comrec{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.comrec>div{padding:10px 8px;border-radius:14px;background:rgba(255,255,255,.05);text-align:center;min-width:0}.comrec em{font-style:normal;font-size:20px}.comrec small{display:block;font-size:10.5px;color:var(--fg-3);margin-top:2px}.comrec b{display:block;font-size:14px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.comrec span{display:block;font-size:10.5px;color:var(--fg-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -891,7 +907,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.42';
+var APP_V='2.43';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1926,12 +1942,13 @@ function trophyDefs(){
   var dtc0=(IN.dtc&&D.info&&!IN.dtc.length)||(D.health&&D.health.dtc&&!D.health.dtc.length)?1:0,mok=IN.maint&&IN.maint.length&&IN.maint.every(function(m){return m.st===0})?1:0,lvl=levelOf(lifeKm());
   var dk=Object.keys(days).sort(),streak=0,cur=0,prev=null;dk.forEach(function(k){var t=Date.parse(k);cur=prev!=null&&Math.round((t-prev)/864e5)===1?cur+1:1;if(cur>streak)streak=cur;prev=t});
   var fills=Object.keys(D.fills||{}).filter(function(k){return D.fills[k].full}).length,fq=freqData('all'),pass=fq.max||0,ent=entLoad().length,years=first?(Date.now()-first)/(365.25*864e5):0;
-  var comN=0,depN=0,outN=0,arrMax=0,arrAll=0,pct=0,qN=0,epV=0,epP=0,rareN=0,legN=0;
+  var comN=0,depN=0,outN=0,arrMax=0,arrAll=0,pct=0,qN=0,epV=0,epP=0,rareN=0,legN=0,monN=0,shN=0,s4=0;
   if(!sample){var CC=comLoad(),DP=comDeps();comN=Object.keys(CC.c).length;depN=DP.length;outN=DP.length>1?DP.slice(1).reduce(function(s,x){return s+x.v},0):0;
     if(DP[0]&&DP[0].tot)pct=DP[0].v/DP[0].tot*100;
     Object.keys(BIG).forEach(function(p){var n=arrList().filter(function(x){return x.p===p}).length;if(n>arrMax)arrMax=n;if(n>=BIG[p][1])arrAll=1});
     qN=qList().length;var ES=epciStat();if(ES){epV=ES.v;epP=ES.tot?ES.v/ES.tot*100:0}
-    comList().concat(arrList()).concat(qList()).forEach(function(x){var r=rarOf(comPop(x.code));if(r==='o'||r==='l'||r==='u')rareN++;if(r==='l'||r==='u')legN++})}
+    comList().concat(arrList()).concat(qList()).forEach(function(x){var r=cardRar(x.code);if(r==='o'||r==='l'||r==='u')rareN++;if(r==='l'||r==='u')legN++});
+    monN=Object.keys(monLoad().seen).length;comList().map(function(x){return x.code}).concat(arrList().map(function(x){return x.code}),qList().map(function(x){return x.code}),Object.keys(monLoad().seen).map(function(k){return 'm'+k})).forEach(function(c){if(shinyOf(c).length)shN++;if(seasonsOf(c).join('')==='1111')s4++})}
   var T=[
     ['Trajets','t1','Premier tour de roue','Synchronise ton premier trajet.','b','flag',L.length,1,'trajet'],
     ['Trajets','t10','Habitué du volant','Fais 10 trajets.','b','road',L.length,10,'trajets'],
@@ -1982,6 +1999,13 @@ function trophyDefs(){
     ['Explorations','epciHalf','Maître de la métropole','Traverse la moitié des communes de ta métropole.','l','crown',epP,50,'%'],
     ['Explorations','rare1','Carte rare','Trouve une carte Rare ou mieux (moins de 5 000 habitants).','a','star',rareN,1,'carte'],
     ['Explorations','leg1','Carte légendaire','Trouve une carte Légendaire ou Ultime (moins de 1 000 habitants).','o','star',legN,1,'carte'],
+    ['Explorations','mon5','Touriste du coin','Croise 5 monuments.','b','star',monN,5,'monuments'],
+    ['Explorations','mon15','Guide de Marseille','Croise 15 monuments.','o','star',monN,15,'monuments'],
+    ['Explorations','monAll','Tous les monuments','Croise tous les monuments de la liste.','u','crown',monN,MONS.length,'monuments'],
+    ['Explorations','shiny1','Carte brillante','Découvre une carte de nuit, sous la pluie ou un jour férié.','a','star',shN,1,'carte'],
+    ['Explorations','shiny10','Collectionneur brillant','Obtiens 10 cartes brillantes.','l','star',shN,10,'cartes'],
+    ['Explorations','ssn1','Les 4 saisons','Passe au même endroit en hiver, au printemps, en été et en automne.','o','crown',s4,1,'carte'],
+    ['Explorations','ssn10','Fidèle toute l’année','Obtiens 10 cartes 4 saisons.','l','crown',s4,10,'cartes'],
     ['Explorations','long','Grand voyage','Un trajet d’au moins 60 km.','a','map',maxD,60,'km'],
     ['Explorations','long300','Grande évasion','Un trajet d’au moins 150 km.','o','map',maxD,150,'km'],
     ['Explorations','wk','Escapade','Un trajet d’au moins 30 km le week-end.','b','sun',wk,1,'escapade'],
@@ -2983,10 +3007,16 @@ function comCard(){
   /* (31) frise */
   var TL=comTimeline();if(TL.length){var MO=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'],ic={c:'🏙️',a:'🏛️',q:'🏘️'};
     h+='<h3 class="sth">Tes découvertes</h3><div class="comtl">'+TL.map(function(g){return '<div class="tlr"><b>'+MO[g.m]+'<br><small>'+g.y+'</small></b><div>'+g.L.slice(0,10).map(function(x){return '<button type="button" data-com="'+x.code+'">'+ic[x.k]+' '+esc(x.n)+'</button>'}).join('')+(g.L.length>10?'<span>+ '+(g.L.length-10)+'</span>':'')+'</div></div>'}).join('')+'</div>'}
+  /* (38) monuments */
+  var MS=monLoad().seen,nM=Object.keys(MS).length;if(nM||comTrips().length){
+    h+='<h3 class="sth">Monuments croisés · '+nM+' / '+MONS.length+'</h3><div class="mong">'+MONS.slice().sort(function(a,b){return (MS[b[0]]?1:0)-(MS[a[0]]?1:0)}).map(function(m){var s=MS[m[0]],sh=s&&shinyOf('m'+m[0]).length;
+      return '<button type="button" class="mon r-'+(s?m[6]:'x')+(sh?' holo':'')+(s&&s.t>wk?' nw':'')+'" '+(s?'data-com="m'+m[0]+'"':'data-monx="'+esc(m[1])+'"')+'><em>'+m[2]+'</em><span>'+esc(m[1])+'</span></button>'}).join('')+'</div>'}
   /* (25) voisines */
   var N=comNear();if(N.length)h+='<h3 class="sth">À découvrir près de chez toi</h3><div class="comnb">'+N.map(function(x){return '<span><b>'+esc(x.n)+'</b><small>à '+(x.km<10?f1(x.km):fi(x.km))+' km</small></span>'}).join('')+'</div>';
   h+='<h3 class="sth">Toutes tes communes</h3><div class="comch">'+L.map(function(x){return '<button type="button" data-com="'+x.code+'"'+(x.t>wk?' class="nw"':'')+'>'+esc(x.n)+'</button>'}).join('')+'</div>';
   if(COMQ.busy&&COMQ.left)h+='<p class="note">Recherche en cours… encore '+COMQ.left+' trajet'+(COMQ.left>1?'s':'')+' à analyser.</p>';
+  var allC=comList().concat(arrList()).concat(qList()).map(function(x){return x.code}).concat(Object.keys(MS).map(function(k){return 'm'+k})),nS=0,n4=0;allC.forEach(function(c){if(shinyOf(c).length)nS++;if(seasonsOf(c).join('')==='1111')n4++});
+  h+='<div class="albx cstat"><span>✨ <b>'+nS+'</b> carte'+(nS>1?'s':'')+' brillante'+(nS>1?'s':'')+'</span><span>🍂 <b>'+n4+'</b> carte'+(n4>1?'s':'')+' 4 saisons</span></div>';
   h+='<div class="sbtns cbtns"><button type="button" class="btn" data-alb="1">🃏 Album</button><button type="button" class="btn" data-cmap="1">Carte des communes</button><button type="button" class="btn ghost" data-fog="1">Carte à dévoiler</button></div><p class="note">Touche un nom pour sa fiche. Communes : geo.api.gouv.fr · quartiers : OpenStreetMap · altitude : Open-Meteo. En vert : découvertes cette semaine.</p></div>';
   return h;
 }
@@ -3042,13 +3072,30 @@ function openComMap(){
 function closeComMap(){if(CMAP.map){try{CMAP.map.remove()}catch(e){}CMAP.map=null}var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow=''}
 /* (23) fiche d'une commune ou d'un arrondissement */
 var FICM=null;
+function shinyLine(code){var S=shinyOf(code);return S.length?'<p class="ficsh">✨ Carte brillante : découverte '+S.map(function(s){return s[1]+' '+s[2]}).join(', ')+'</p>':''}
+function seasonTxt(o){var n=o.reduce(function(a,b){return a+b},0);return n===4?'Les 4 saisons !':n+' saison'+(n>1?'s':'')+' sur 4'}
+function monSheet(code){
+  var m=monById(code.slice(1)),s=monLoad().seen[code.slice(1)];if(!m||!s)return;var DL={day:'numeric',month:'long',year:'numeric'},ss=seasonsOf(code);
+  sheetOpen(esc(m[1]),'<div class="ficmap" id="ficmap"></div><div class="fich"><b>'+m[2]+' Monument</b><span>Croisé le '+new Date(s.t).toLocaleDateString('fr-FR',DL)+'</span></div>'+
+    '<p class="ficr r-'+m[6]+'"><span>'+RAR[m[6]]+'</span>'+s.n+' passage'+(s.n>1?'s':'')+'</p>'+shinyLine(code)+'<div class="ficss">'+seasonRow(ss)+'<small>'+seasonTxt(ss)+'</small></div>'+
+    '<div class="det"><div><span>Dernier passage</span><b>'+cap(DF.format(new Date(s.last)))+'</b></div></div><p class="note">Compté quand un de tes tracés passe à moins de '+m[5]+' m du lieu (position approximative).</p>');
+  Promise.all([maplibre(),styleFor('neon')]).then(function(res){var ml=res[0],box=$('#ficmap');if(!box)return;if(FICM){try{FICM.remove()}catch(e){}}
+    var m2=new ml.Map({container:box,style:res[1],center:[m[4],m[3]],zoom:14.6,interactive:false,attributionControl:false,fadeDuration:0});FICM=m2;
+    m2.once('style.load',function(){var circ=[];for(var i=0;i<=48;i++){var a=i/48*2*Math.PI;circ.push([m[4]+m[5]/1000/111.2/Math.cos(m[3]*Math.PI/180)*Math.cos(a),m[3]+m[5]/1000/111.2*Math.sin(a)])}
+      m2.addSource('mc',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[circ]}}});
+      m2.addLayer({id:'mc',type:'fill',source:'mc',paint:{'fill-color':'#ffd24a','fill-opacity':.15}});m2.addLayer({id:'mc-l',type:'line',source:'mc',paint:{'line-color':'#ffd24a','line-width':2,'line-dasharray':[2,2]}});
+      var TR=comTrips().filter(function(r){return (s.T||[]).indexOf(r.t0)>=0}).slice(-20).map(function(r){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:lnglat(trackOf(r)||rawTrack(r))}}});
+      m2.addSource('ft',{type:'geojson',data:{type:'FeatureCollection',features:TR}});m2.addLayer({id:'ft',type:'line',source:'ft',paint:{'line-color':'#ff3fd0','line-width':2.4,'line-opacity':.85}});
+      var el=document.createElement('div');el.className='monpin';el.textContent=m[2];new ml.Marker({element:el}).setLngLat([m[4],m[3]]).addTo(m2);box.classList.add('live')})}).catch(function(){});
+}
 function comSheet(code){
+  if(code.charAt(0)==='m'){monSheet(code);return}
   var I=comInfo(code);if(!I)return;var isQ=I.kind==='q',S=(isQ?qStats().by[code.slice(1)]:comStats().by[code])||{n:0,km:0,fu:0,T:{}},pop=comPop(code),r=rarOf(pop);
   var DL={day:'numeric',month:'long',year:'numeric'},cons=S.km>1&&S.fu>0?S.fu/S.km*100:null,TT=Object.keys(S.T||{}).map(Number).sort(function(a,b){return b-a}),last=TT[0],d0=Math.min(I.t||1e15,S.first||1e15);
   var row=function(l,v){return '<div><span>'+l+'</span><b>'+v+'</b></div>'};
   sheetOpen(esc(I.full),'<div class="ficmap" id="ficmap"></div>'+
     '<div class="fich"><b>'+esc(I.sub)+'</b>'+(d0<1e15?'<span>Découverte le '+new Date(d0).toLocaleDateString('fr-FR',DL)+'</span>':'')+'</div>'+
-    '<p class="ficr r-'+r+'"><span>'+RAR[r]+'</span>'+(pop?fi(pop)+' habitants':'population inconnue')+'</p>'+
+    '<p class="ficr r-'+r+'"><span>'+RAR[r]+'</span>'+(pop?fi(pop)+' habitants':'population inconnue')+'</p>'+shinyLine(code)+'<div class="ficss">'+seasonRow(seasonsOf(code))+'<small>'+seasonTxt(seasonsOf(code))+'</small></div>'+
     '<div class="g4 ficg"><div><b>'+S.n+'</b><small>trajet'+(S.n>1?'s':'')+'</small></div><div><b>'+(S.km<10?f1(S.km):fi(S.km))+'</b><small>km roulés dedans</small></div><div><b'+(cons!=null?' style="color:'+consoCol(cons)+'"':'')+'>'+(cons!=null?f1(cons):'–')+'</b><small>L/100 moyen</small></div></div>'+
     '<div class="det">'+(last?row('Dernier passage',cap(DF.format(new Date(last)))):'')+row('Carburant estimé',f1(S.fu)+' L')+'</div>'+
     '<p class="note">Km et conso estimés : la part de chaque trajet passée dans '+esc(I.full)+'.</p>');
@@ -3116,10 +3163,11 @@ function qStats(){var D=qLoad(),key=Object.keys(D.trips).length;if(QS&&QS.key===
 function qList(){var D=qLoad();return Object.keys(D.first).filter(function(id){return D.Q[id]}).map(function(id){return {id:id,code:'q'+id,n:D.Q[id].n,t:D.first[id],pop:D.Q[id].pop}}).sort(function(a,b){return b.t-a.t})}
 /* ---------- 2.42 (29) : rareté, population et silhouettes ---------- */
 var RAR={b:'Courante',a:'Peu commune',o:'Rare',l:'Légendaire',u:'Ultime'};
+function cardRar(code){if(code.charAt(0)==='m'){var m=monById(code.slice(1));return m?m[6]:'b'}return rarOf(comPop(code))}
 function rarOf(pop){return !pop?'b':pop>=20000?'b':pop>=5000?'a':pop>=1000?'o':pop>=300?'l':'u'}
 function comPop(code){var C=comLoad();if(code.charAt(0)==='q'){var q=qLoad().Q[code.slice(1)];return q?q.pop:0}if(C.a[code])return C.a[code].pop||0;
   var d=C.c[code]&&C.c[code].d,cc=d&&C.deps[d]&&C.deps[d].cc;if(cc)for(var i=0;i<cc.length;i++)if(cc[i][0]===code)return cc[i][4]||0;return 0}
-function comInfo(code){var C=comLoad();if(code.charAt(0)==='q'){var q=qLoad().Q[code.slice(1)];if(!q)return null;return {kind:'q',n:q.n,full:q.n,sub:'Marseille'+(q.cp?' · '+q.cp:''),t:qLoad().first[code.slice(1)]}}
+function comInfo(code){var C=comLoad();if(code.charAt(0)==='m'){var m=monById(code.slice(1)),s=monLoad().seen[code.slice(1)];if(!m)return null;return {kind:'m',n:m[1],full:m[1],sub:'Monument',ico:m[2],t:s?s.t:0}}if(code.charAt(0)==='q'){var q=qLoad().Q[code.slice(1)];if(!q)return null;return {kind:'q',n:q.n,full:q.n,sub:'Marseille'+(q.cp?' · '+q.cp:''),t:qLoad().first[code.slice(1)]}}
   if(C.a[code]){var a=C.a[code];return {kind:'a',n:arrName(a.n),full:(BIG[a.p]?BIG[a.p][0]+' ':'')+arrName(a.n),sub:BIG[a.p]?BIG[a.p][0]:'',t:a.t}}
   var c=C.c[code];if(!c)return null;return {kind:'c',n:c.n,full:c.n,sub:C.deps[c.d]?C.deps[c.d].n:'',t:c.t}}
 function silPath(rings){var a=1e9,b=-1e9,c=1e9,d=-1e9;rings.forEach(function(R){R.forEach(function(p){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);d=Math.max(d,p[1])})});
@@ -3180,15 +3228,17 @@ function openAlbum(){
     var base={'13055':13201,'75056':75101,'69123':69381}[p];if(A.length||C.arrInit)for(var i=0;i<BIG[p][1];i++){var c=String(base+i);if(!have[c])locked.push({code:c,n:BIG[p][0]+' '+(i?i+1+'e':'1er'),k:'a'})}});
   qList().forEach(function(x){cards.push({code:x.code,n:x.n,k:'q',t:x.t})});
   Object.keys(D.Q).forEach(function(id){if(D.first[id]==null)locked.push({code:'q'+id,n:D.Q[id].n,k:'q'})});
-  var cnt={b:0,a:0,o:0,l:0,u:0};cards.forEach(function(x){x.r=rarOf(comPop(x.code));x.pop=comPop(x.code);cnt[x.r]++});
+  var MS=monLoad().seen;MONS.forEach(function(m){if(MS[m[0]])cards.push({code:'m'+m[0],n:m[1],k:'m',t:MS[m[0]].t,ico:m[2]});else locked.push({code:'m'+m[0],n:m[1],k:'m',ico:m[2],r:m[6]})});
+  var cnt={b:0,a:0,o:0,l:0,u:0};var nSh=0,n4=0;cards.forEach(function(x){x.r=cardRar(x.code);x.pop=x.k==='m'?0:comPop(x.code);x.sh=shinyOf(x.code);x.ss=seasonsOf(x.code);if(x.sh.length)nSh++;if(x.ss.join('')==='1111')n4++;cnt[x.r]++});
   var ord={u:0,l:1,o:2,a:3,b:4};cards.sort(function(a,b){return ord[a.r]-ord[b.r]||b.t-a.t});
-  var card=function(x,lock){return '<button type="button" class="acard r-'+(lock?'x':x.r)+(x.t>wk?' nw':'')+'" data-ac="'+x.code+'"'+(lock?' data-lock="1"':'')+'><svg viewBox="0 0 100 100" data-sil="'+x.code+'"></svg><b>'+(lock?'?':esc(x.n))+'</b><small>'+(lock?esc(x.n):RAR[x.r]+(x.pop?' · '+fi(x.pop)+' hab.':''))+'</small></button>'};
+  var card=function(x,lock){var pic=x.k==='m'?'<span class="aico">'+x.ico+'</span>':'<svg viewBox="0 0 100 100" data-sil="'+x.code+'"></svg>';
+    return '<button type="button" class="acard r-'+(lock?'x':x.r)+(!lock&&x.sh&&x.sh.length?' holo':'')+(x.t>wk?' nw':'')+'" data-ac="'+x.code+'"'+(lock?' data-lock="1"':'')+'>'+(!lock&&x.sh&&x.sh.length?'<em class="shy">'+x.sh.map(function(s){return s[1]}).join('')+'</em>':'')+pic+'<b>'+(lock?'?':esc(x.n))+'</b><small>'+(lock?esc(x.n)+(x.k==='m'?' · '+RAR[x.r]:''):RAR[x.r]+(x.pop?' · '+fi(x.pop)+' hab.':''))+'</small>'+(lock?'':seasonRow(x.ss))+'</button>'};
   var box=$('#fog');box.innerHTML='<div class="alb"><div class="albh"><div><small>Album</small><b>Tes cartes à collectionner</b></div><button type="button" class="wx" id="albx" aria-label="Fermer">✕</button></div>'+
     '<div class="albr">'+['u','l','o','a','b'].map(function(r){return '<span class="r-'+r+'"><b>'+cnt[r]+'</b>'+RAR[r]+'</span>'}).join('')+'</div>'+
-    '<p class="note">Rareté selon le nombre d’habitants : plus c’est petit, plus c’est rare. '+cards.length+' carte'+(cards.length>1?'s':'')+(locked.length?' · '+locked.length+' à trouver':'')+'.</p>'+
+    '<div class="albx"><span>✨ <b>'+nSh+'</b> brillante'+(nSh>1?'s':'')+'</span><span>🍂 <b>'+n4+'</b> carte'+(n4>1?'s':'')+' 4 saisons</span></div><p class="note">Rareté selon le nombre d’habitants (monuments : selon le lieu). Brillante ✨ = découverte de nuit 🌙, sous la pluie 🌧️ ou un jour férié 🎉. Les icônes ❄️🌸☀️🍂 s’allument pour chaque saison où tu y es passé. '+cards.length+' carte'+(cards.length>1?'s':'')+(locked.length?' · '+locked.length+' à trouver':'')+'.</p>'+
     '<div class="albg">'+cards.map(function(x){return card(x)}).join('')+'</div>'+(locked.length?'<h3 class="sth">À trouver</h3><div class="albg">'+locked.map(function(x){return card(x,1)}).join('')+'</div>':'')+'</div>';
   box.classList.remove('hide');document.body.style.overflow='hidden';$('#albx').onclick=closeAlbum;
-  box.querySelector('.alb').onclick=function(e){var b=e.target.closest('[data-ac]');if(!b)return;if(b.getAttribute('data-lock')){toast('Pas encore trouvée : passe par là en voiture !');return}var c=b.getAttribute('data-ac');closeAlbum();comSheet(c)};
+  box.querySelector('.alb').onclick=function(e){var b=e.target.closest('[data-ac]');if(!b)return;if(b.getAttribute('data-lock')){toast('Pas encore trouvé : passe par là en voiture !');return}var c=b.getAttribute('data-ac');closeAlbum();comSheet(c)};
   var Q=Array.prototype.slice.call(box.querySelectorAll('[data-sil]')),run=0,next=function(){var s=Q.shift();if(!s){run--;return}var code=s.getAttribute('data-sil');
     if(s.closest('[data-lock]')&&code.charAt(0)!=='q'){next();return}
     silOf(code).then(function(p){s.innerHTML='<path d="'+p+'"/>';next()}).catch(function(){next()})};
@@ -3197,18 +3247,60 @@ function openAlbum(){
 function closeAlbum(){var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow=''}
 /* ---------- 2.42 (30) : l'animation de découverte ---------- */
 function comRevealShow(o,el){
-  var I=comInfo(o.code);if(!I){celNext();return}var pop=comPop(o.code),r=rarOf(pop),rm=reduced(),C=comLoad();
-  var num=I.kind==='q'?qList().length:I.kind==='a'?arrList().length:comList().length,lab=I.kind==='q'?'Nouveau quartier':I.kind==='a'?'Nouvel arrondissement':'Nouvelle commune';
+  var I=comInfo(o.code);if(!I){celNext();return}var isM=I.kind==='m',pop=isM?0:comPop(o.code),r=cardRar(o.code),rm=reduced(),C=comLoad(),SH=shinyOf(o.code);
+  var num=isM?Object.keys(monLoad().seen).length:I.kind==='q'?qList().length:I.kind==='a'?arrList().length:comList().length,lab=isM?'Monument croisé':I.kind==='q'?'Nouveau quartier':I.kind==='a'?'Nouvel arrondissement':'Nouvelle commune';
   var h='<div class="cbg"></div>'+(r!=='b'?'<div class="cray t-'+r+'"></div>':'')+'<div class="cwave t-'+r+'"></div><div class="cpt">';
   if(!rm)for(var k=0;k<26;k++){var an=Math.random()*Math.PI*2,d=110+Math.random()*190;h+='<i class="c" style="--x:'+(Math.cos(an)*d).toFixed(0)+'px;--y:'+(Math.sin(an)*d).toFixed(0)+'px;--r:0deg;background:'+RCOL[k%RCOL.length]+';animation-delay:'+(.5+Math.random()*.4).toFixed(2)+'s;animation-duration:'+(1.4+Math.random()).toFixed(2)+'s;width:5px;height:5px"></i>'}
-  h+='</div><div class="crv"><span class="tl crv-tl r-'+r+'">'+lab+'</span><div class="crv-sil r-'+r+'"><svg viewBox="0 0 100 100" id="crvsvg"></svg></div>'+
+  h+='</div><div class="crv"><span class="tl crv-tl r-'+r+'">'+lab+'</span><div class="crv-sil r-'+r+(SH.length?' holo':'')+'">'+(isM?'<span class="crv-ico">'+I.ico+'</span>':'<svg viewBox="0 0 100 100" id="crvsvg"></svg>')+'</div>'+(SH.length?'<p class="crv-shy">✨ Version brillante : découverte '+SH.map(function(s){return s[1]+' '+s[2]}).join(', ')+'</p>':'')+
     '<h3>'+esc(I.full)+'</h3><p class="crv-sub">'+esc(I.sub)+'</p><p class="crv-rar r-'+r+'">'+RAR[r]+(pop?' · '+fi(pop)+' habitants':'')+'</p>'+
-    '<p class="crv-n">Carte n°'+num+' de ta collection'+(o.more>0?' · + '+o.more+' autre'+(o.more>1?'s':''):'')+'</p>'+
+    '<p class="crv-n">'+(isM?'Monument n°'+num+' sur '+MONS.length:'Carte n°'+num+' de ta collection')+(o.more>0?' · + '+o.more+' autre'+(o.more>1?'s':''):'')+'</p>'+
     '<div class="trv-b"><button type="button" class="btn" id="crvgo">Voir la fiche</button><button type="button" class="btn ghost" id="crvx">Fermer</button></div></div>';
   el.className='cele t-com';el.innerHTML=h;el.hidden=false;void el.offsetWidth;el.classList.add('on');
   $('#crvgo').onclick=function(e){e.stopPropagation();celClose();setTimeout(function(){comSheet(o.code)},420)};$('#crvx').onclick=function(e){e.stopPropagation();celClose()};
-  silOf(o.code).then(function(p){var s=$('#crvsvg');if(s)s.innerHTML='<path class="crv-f" d="'+p+'"/><path class="crv-s" pathLength="1" d="'+p+'"/>'}).catch(function(){});
+  if(!isM)silOf(o.code).then(function(p){var s=$('#crvsvg');if(s)s.innerHTML='<path class="crv-f" d="'+p+'"/><path class="crv-s" pathLength="1" d="'+p+'"/>'}).catch(function(){});
 }
+/* ---------- 2.43 (38) : monuments croisés (liste de lieux connus, coordonnées approximatives, rayon en m) ---------- */
+var MONK='sandero-monuments',MOND=null,
+MONS=[
+  ['vport','Vieux-Port','⚓',43.2951,5.3740,380,'b'],['cane','La Canebière','🛍️',43.2973,5.3800,220,'b'],['stch','Gare Saint-Charles','🚉',43.3027,5.3806,250,'b'],['timone','La Timone','🏥',43.2897,5.4009,300,'b'],
+  ['velo','Orange Vélodrome','🏟️',43.2698,5.3959,350,'a'],['docks','Les Docks de la Joliette','🏗️',43.3050,5.3667,230,'a'],['cma','Tour CMA CGM','🏙️',43.3130,5.3664,250,'a'],['long','Palais Longchamp','⛲',43.3046,5.3945,250,'a'],['prado','Plages du Prado','🏖️',43.2600,5.3740,400,'a'],['borely','Parc Borély','🌳',43.2590,5.3820,300,'a'],
+  ['ndg','Notre-Dame de la Garde','⛪',43.2840,5.3712,260,'o'],['mucem','Mucem et Fort Saint-Jean','🏛️',43.2966,5.3615,250,'o'],['pharo','Palais du Pharo','🏰',43.2925,5.3600,250,'o'],['svic','Abbaye Saint-Victor','⛪',43.2905,5.3655,200,'o'],['major','Cathédrale de la Major','⛪',43.2994,5.3654,200,'o'],
+  ['corbu','Cité radieuse','🏢',43.2613,5.3962,200,'o'],['cjul','Cours Julien','🎨',43.2938,5.3835,200,'o'],['corn','Corniche Kennedy','🌊',43.2853,5.3500,300,'o'],['prouge','Pointe Rouge','⛵',43.2440,5.3700,350,'o'],['estaque','L’Estaque','🎣',43.3630,5.3150,500,'o'],
+  ['allauch','Moulins d’Allauch','🌾',43.3360,5.4820,400,'o'],['aubagne','Centre d’Aubagne','🏺',43.2925,5.5700,400,'o'],['plan','Plan de Campagne','🛒',43.4170,5.3660,700,'o'],
+  ['goudes','Les Goudes','🏝️',43.2153,5.3480,500,'l'],['luminy','Luminy','🌲',43.2333,5.4377,500,'l'],['cassis','Port de Cassis','⛵',43.2140,5.5380,450,'l'],['ciotat','Vieux-Port de La Ciotat','🎬',43.1745,5.6070,450,'l'],
+  ['aix','Cours Mirabeau (Aix)','⛲',43.5265,5.4470,400,'l'],['martig','Miroir aux oiseaux (Martigues)','🪞',43.4040,5.0530,350,'l'],['aero','Aéroport Marseille Provence','✈️',43.4367,5.2150,900,'l'],
+  ['cretes','Route des Crêtes','🏔️',43.1990,5.5650,800,'u'],['callel','Callelongue','🌅',43.2120,5.3530,350,'u']];
+function monLoad(){if(MOND)return MOND;try{MOND=JSON.parse(localStorage.getItem(MONK)||'{}')}catch(e){MOND={}}MOND.seen=MOND.seen||{};MOND.trips=MOND.trips||{};return MOND}
+function monSave(){try{localStorage.setItem(MONK,JSON.stringify(MOND))}catch(e){}}
+function monScan(){
+  if(sample)return;var D=monLoad(),T=comTrips().filter(function(r){return !D.trips[r.t0]});if(!T.length)return;var first=!D.init,found=[];
+  T.forEach(function(r){var P=trackOf(r)||rawTrack(r),hit={};
+    densify(P,.05).forEach(function(p){MONS.forEach(function(m){if(hit[m[0]])return;if(Math.abs(p[0]-m[3])>.012||Math.abs(p[1]-m[4])>.016)return;if(hav(p,[m[3],m[4]])*1000<=m[5])hit[m[0]]=1})});
+    Object.keys(hit).forEach(function(id){var s=D.seen[id];if(!s){D.seen[id]={t:r.t0,n:1,last:r.t0,T:[r.t0]};found.push(id)}else{s.n++;if(r.t0<s.t)s.t=r.t0;if(r.t0>s.last)s.last=r.t0;s.T=(s.T||[]).concat([r.t0]).slice(-60)}});
+    D.trips[r.t0]=1});
+  D.init=1;monSave();
+  if(found.length&&!first)celebrate({kind:'com',code:'m'+found[0],more:found.length-1});
+}
+function monById(id){for(var i=0;i<MONS.length;i++)if(MONS[i][0]===id)return MONS[i];return null}
+/* ---------- 2.43 (39) : cartes brillantes (découverte de nuit, sous la pluie ou un jour férié) ---------- */
+function feries(y){var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  var P=new Date(y,mo-1,da),add=function(n){var x=new Date(P);x.setDate(x.getDate()+n);return ymd(x)};
+  return [y+'-01-01',add(1),y+'-05-01',y+'-05-08',add(39),add(50),y+'-07-14',y+'-08-15',y+'-11-01',y+'-11-11',y+'-12-25']}
+var FERC={};
+function isFerie(d){var y=d.getFullYear();if(!FERC[y])FERC[y]=feries(y);return FERC[y].indexOf(ymd(d))>=0}
+function discT(code){var I=comInfo(code);return I&&I.t||0}
+function shinyOf(code){var t=discT(code),r=t&&data().trips[t];if(!t)return [];var d=new Date(t),h=d.getHours(),out=[];
+  if(h>=21||h<6)out.push(['nuit','🌙','de nuit']);
+  if(r){var w=metOf(r);if(w&&w[1]>=.2)out.push(['pluie','🌧️','sous la pluie'])}
+  if(isFerie(d))out.push(['ferie','🎉','un jour férié']);
+  return out}
+/* ---------- 2.43 (40) : les 4 saisons ---------- */
+var SAI=[['hiver','❄️'],['printemps','🌸'],['été','☀️'],['automne','🍂']];
+function seasonOf(t){var m=new Date(t).getMonth();return m===11||m<2?0:m<5?1:m<8?2:3}
+function seasonsOf(code){var T=[];if(code.charAt(0)==='m'){var s=monLoad().seen[code.slice(1)];T=s?(s.T||[s.t]):[]}
+  else{var S=code.charAt(0)==='q'?qStats().by[code.slice(1)]:comStats().by[code];T=S?Object.keys(S.T||{}).map(Number):[]}
+  var o=[0,0,0,0];T.forEach(function(t){o[seasonOf(+t)]=1});return o}
+function seasonRow(o){return '<span class="ssn">'+SAI.map(function(s,i){return '<i class="'+(o[i]?'on':'')+'" title="'+s[0]+'">'+s[1]+'</i>'}).join('')+'</span>'}
 /* ---------- 2.38 (13) : carte à dévoiler (brouillard) ---------- */
 var FOG={map:null,raf:0},FG=250; /* cases de 0,004° */
 function fogCells(T){var S={},o=[];T.forEach(function(P){var add=[];densify(P,.12).forEach(function(p){var i=Math.round(p[0]*FG),j=Math.round(p[1]*FG);for(var a=-1;a<=1;a++)for(var b=-1;b<=1;b++){var k=(i+a)+','+(j+b);if(!S[k]){S[k]=1;add.push([i+a,j+b])}}});o.push(add)});return o}
@@ -3474,10 +3566,11 @@ function render(){
   Array.prototype.forEach.call(document.querySelectorAll('[data-ana]'),function(b){b.onclick=function(){ANAP=b.getAttribute('data-ana');var y=window.scrollY;render();window.scrollTo(0,y)}});
   if(TAB==='bilan')mmapMount();
   if(!sample)batAlertIsland();
-  setTimeout(snapQueue,1500);setTimeout(comQueue,2500);setTimeout(function(){if(COMQ.busy||ARQ.busy)return;arrPopQueue();altQueue();epciQueue();qQueue()},4200);
+  setTimeout(snapQueue,1500);setTimeout(comQueue,2500);setTimeout(function(){if(COMQ.busy||ARQ.busy)return;arrPopQueue();altQueue();epciQueue();qQueue()},4200);setTimeout(monScan,3000);
   Array.prototype.forEach.call(document.querySelectorAll('[data-fog]'),function(b){b.onclick=openFog});
   Array.prototype.forEach.call(document.querySelectorAll('[data-cmap]'),function(b){b.onclick=openComMap});
   Array.prototype.forEach.call(document.querySelectorAll('[data-alb]'),function(b){b.onclick=openAlbum});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-monx]'),function(b){b.onclick=function(){toast(b.getAttribute('data-monx')+' : pas encore croisé')}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-com]'),function(b){b.onclick=function(){comSheet(b.getAttribute('data-com'))}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-duel]'),function(b){b.onclick=function(){duelOpen(b.getAttribute('data-duel'))}});
   clockWire();
@@ -3503,6 +3596,7 @@ function lsMerge(L){
     else if(k==='sandero-niveau'){if((inc.l||0)>(cur.l||0))P(k,inc)}
     else if(k===COMK){['cells','deps','done','arr','sil','alt'].forEach(function(x){cur[x]=Object.assign({},inc[x]||{},cur[x]||{})});cur.c=cur.c||{};Object.keys(inc.c||{}).forEach(function(c){var a=cur.c[c],b=inc.c[c];if(!a||b.t<a.t)cur.c[c]=b});cur.a=cur.a||{};Object.keys(inc.a||{}).forEach(function(c){var a=cur.a[c],b=inc.a[c];if(!a||b.t<a.t)cur.a[c]=b});if(!cur.epci&&inc.epci)cur.epci=inc.epci;cur.init=cur.init||inc.init;P(k,cur);COM=null}
     else if(k===SNAPK){P(k,Object.assign({},inc,cur));SNAP=null}
+    else if(k===MONK){cur.seen=cur.seen||{};Object.keys(inc.seen||{}).forEach(function(i){var a=cur.seen[i],b=inc.seen[i];if(!a||b.t<a.t)cur.seen[i]=b});cur.trips=Object.assign({},inc.trips||{},cur.trips||{});cur.init=cur.init||inc.init;P(k,cur);MOND=null}
     else if(k===QK){cur.Q=Object.keys(cur.Q||{}).length?cur.Q:(inc.Q||{});cur.trips=Object.assign({},inc.trips||{},cur.trips||{});cur.first=cur.first||{};Object.keys(inc.first||{}).forEach(function(i){if(cur.first[i]==null||inc.first[i]<cur.first[i])cur.first[i]=inc.first[i]});cur.init=cur.init||inc.init;P(k,cur);QD=null}
     else if(Array.isArray(cur)&&Array.isArray(inc)){var seen={};cur.forEach(function(x){seen[JSON.stringify(x)]=1});inc.forEach(function(x){if(!seen[JSON.stringify(x)])cur.push(x)});P(k,cur)}
     else if(typeof cur==='object'&&typeof inc==='object'&&!Array.isArray(cur))P(k,Object.assign({},inc,cur));
