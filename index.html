@@ -728,7 +728,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.25';
+var APP_V='2.26';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1691,14 +1691,14 @@ function trophyDefs(){
   var F=D.favs||{};
   L.forEach(function(r){var d=new Date(r.t0),h=d.getHours(),dw=d.getDay();km+=r.dist;if(r.dist>maxD)maxD=r.dist;if(r.eco>best)best=r.eco;
     if(r.eco>=ECO_MIN){run++;if(run>rec)rec=run}else run=0;if(h<5){night++}if(h===5)early++;
-    if(r.dist>=20&&!r.hard&&!r.accel){zen=1;zenN++}if((dw===0||dw===6)&&r.dist>=50)wk++;
+    if(r.dist>=10&&!r.hard&&!r.accel){zen=1;zenN++}if((dw===0||dw===6)&&r.dist>=30)wk++;
     var mk=d.getFullYear()+'-'+d.getMonth(),M=months[mk]||(months[mk]={km:0,f:0});M.km+=r.dist;M.f+=r.fuel;if(D.tracks&&D.tracks[r.t0])tracks++;
-    days[ymd(d)]=1;var w=metOf(r);if(w){if(w[1]>=.3)rain++;if(w[0]<0)cold++;if(w[0]>=32)hot++}
+    days[ymd(d)]=1;var w=metOf(r);if(w){if(w[1]>=.3)rain++;if(w[0]<3)cold++;if(w[0]>=32)hot++}
     if(isPro(r))pro++;if(r.fav!=null&&F[r.fav]&&isWork(r.fav,F[r.fav]))work++;
-    if(!r.hard&&!r.accel)calmN++;if(r.dist>=30&&r.fuel>0){var cc=r.fuel/r.dist*100;if(cc<5)low5++;if(cc<4.5)low45++}dkm[ymd(d)]=(dkm[ymd(d)]||0)+r.dist;
-    var md=d.getMonth()+1,dd=d.getDate();if(md===12&&dd===25)xmas++;if((md===12&&dd===31)||(md===1&&dd===1))nye++;if(w&&w[1]>=.3)rainN++;if(w&&w[0]<0)coldN++;
+    if(!r.hard&&!r.accel)calmN++;if(r.dist>=20&&r.fuel>0){var cc=r.fuel/r.dist*100;if(cc<5.5)low5++;if(cc<5)low45++}dkm[ymd(d)]=(dkm[ymd(d)]||0)+r.dist;
+    var md=d.getMonth()+1,dd=d.getDate();if(md===12&&dd===25)xmas++;if((md===12&&dd===31)||(md===1&&dd===1))nye++;if(w&&w[1]>=.3)rainN++;if(w&&w[0]<3)coldN++;
     if(r.fav!=null){var B=favB[r.fav]||(favB[r.fav]={n:0,best:1e12});if(B.n>=2&&r.dur<B.best)favRec++;B.n++;if(r.dur<B.best)B.best=r.dur}});
-  var sob=0,sob55=0,gm=0,GL=D.info&&D.info.goal>0?D.info.goal:null;Object.keys(months).forEach(function(k){var M=months[k];if(M.km>=100){var c=M.f/M.km*100;if(c<6)sob++;if(c<5.5)sob55++;if(GL&&c<=GL)gm++}});
+  var sob=0,sob55=0,gm=0,GL=D.info&&D.info.goal>0?D.info.goal:null;Object.keys(months).forEach(function(k){var M=months[k];if(M.km>=100){var c=M.f/M.km*100;if(c<7)sob++;if(c<6)sob55++;if(GL&&c<=GL)gm++}});
   var dayMax=0;Object.keys(dkm).forEach(function(k){if(dkm[k]>dayMax)dayMax=dkm[k]});
   var IN=D.info||{},TY=IN.tyres||{},tyOk=['FL','FR','RL','RR'].filter(function(p){return TY[p]&&TY[p].d!=null&&TY[p].d>=3}).length,BT=(IN.bat||[]).filter(function(b){return !b.run}),batOk=BT.length&&BT[BT.length-1].v>=12.4?1:0;
   var dtc0=(IN.dtc&&D.info&&!IN.dtc.length)||(D.health&&D.health.dtc&&!D.health.dtc.length)?1:0,mok=IN.maint&&IN.maint.length&&IN.maint.every(function(m){return m.st===0})?1:0,lvl=levelOf(lifeKm());
@@ -1711,81 +1711,81 @@ function trophyDefs(){
     ['Trajets','t100','Centenaire','Fais 100 trajets.','a','road',L.length,100,'trajets'],
     ['Trajets','t250','Pilier de la route','Fais 250 trajets.','o','crown',L.length,250,'trajets'],
     ['Trajets','t500','Marathonien','Fais 500 trajets.','o','crown',L.length,500,'trajets'],
-    ['Trajets','t1000','Mille et une routes','Fais 1 000 trajets.','l','crown',L.length,1000,'trajets'],
+    ['Trajets','t1000','Six cents routes','Fais 600 trajets.','l','crown',L.length,600,'trajets'],
     ['Kilomètres','k100','Cent bornes','Parcours 100 km.','b','bolt',km,100,'km'],
     ['Kilomètres','k500','Demi-millier','Parcours 500 km.','b','bolt',km,500,'km'],
     ['Kilomètres','k1000','Mille kilomètres','Parcours 1 000 km.','a','bolt',km,1000,'km'],
-    ['Kilomètres','k5000','Tour de France','Parcours 5 000 km.','a','map',km,5000,'km'],
+    ['Kilomètres','k5000','Tour de France','Parcours 5 000 km.','o','map',km,5000,'km'],
     ['Kilomètres','k10000','Dix mille','Parcours 10 000 km.','o','map',km,10000,'km'],
-    ['Kilomètres','k25000','Grand voyageur','Parcours 25 000 km.','o','map',km,25000,'km'],
+    ['Kilomètres','k25000','Grand voyageur','Parcours 25 000 km.','l','map',km,25000,'km'],
     ['Kilomètres','k40000','Tour de la Terre','Parcours 40 075 km, la longueur de l’équateur.','l','map',km,40075,'km'],
     ['Éco-conduite','e5','Pied léger','5 trajets d’affilée avec un score éco ≥ 80.','b','leaf',rec,5,'d’affilée'],
     ['Éco-conduite','e10','Ceinture verte','10 trajets d’affilée avec un score éco ≥ 80.','a','leaf',rec,10,'d’affilée'],
     ['Éco-conduite','e20','Maître zen','20 trajets d’affilée avec un score éco ≥ 80.','o','leaf',rec,20,'d’affilée'],
-    ['Éco-conduite','e50','Nirvana','50 trajets d’affilée avec un score éco ≥ 80.','l','leaf',rec,50,'d’affilée'],
+    ['Éco-conduite','e50','Nirvana','30 trajets d’affilée avec un score éco ≥ 80.','l','leaf',rec,30,'d’affilée'],
     ['Éco-conduite','s90','Bon élève','Un trajet avec un score éco d’au moins 90.','b','star',best,90,'/100'],
     ['Éco-conduite','s95','Score parfait','Un trajet avec un score éco d’au moins 95.','a','star',best,95,'/100'],
-    ['Éco-conduite','s99','Perfection','Un trajet avec un score éco d’au moins 99.','l','star',best,99,'/100'],
-    ['Éco-conduite','zen','Conduite de velours','Un trajet d’au moins 20 km sans freinage brusque ni accélération vive.','b','feather',zenN,1,'trajet'],
-    ['Éco-conduite','zen10','Main de velours','10 trajets d’au moins 20 km sans freinage brusque ni accélération vive.','o','feather',zenN,10,'trajets'],
-    ['Éco-conduite','sob','Mois sobre','Un mois sous 6 L/100 (au moins 100 km).','a','leaf',sob,1,'mois'],
-    ['Éco-conduite','sob3','Saison sobre','3 mois sous 6 L/100 (au moins 100 km chacun).','o','leaf',sob,3,'mois'],
-    ['Éco-conduite','sob55','Économe de génie','Un mois sous 5,5 L/100 (au moins 100 km).','l','leaf',sob55,1,'mois'],
+    ['Éco-conduite','s99','Perfection','Un trajet avec un score éco d’au moins 98.','o','star',best,98,'/100'],
+    ['Éco-conduite','zen','Conduite de velours','Un trajet d’au moins 10 km sans freinage brusque ni accélération vive.','b','feather',zenN,1,'trajet'],
+    ['Éco-conduite','zen10','Main de velours','10 trajets d’au moins 10 km sans freinage brusque ni accélération vive.','a','feather',zenN,10,'trajets'],
+    ['Éco-conduite','sob','Mois sobre','Un mois sous 7 L/100 (au moins 100 km).','a','leaf',sob,1,'mois'],
+    ['Éco-conduite','sob3','Saison sobre','3 mois sous 7 L/100 (au moins 100 km chacun).','o','leaf',sob,3,'mois'],
+    ['Éco-conduite','sob55','Économe de génie','Un mois sous 6 L/100 (au moins 100 km).','l','leaf',sob55,1,'mois'],
     ['Explorations','g10','Cartographe','10 trajets avec leur tracé GPS.','b','pin',tracks,10,'tracés'],
     ['Explorations','g50','Géographe','50 trajets avec leur tracé GPS.','a','pin',tracks,50,'tracés'],
-    ['Explorations','g200','Atlas vivant','200 trajets avec leur tracé GPS.','o','pin',tracks,200,'tracés'],
+    ['Explorations','g200','Atlas vivant','150 trajets avec leur tracé GPS.','o','pin',tracks,150,'tracés'],
     ['Explorations','p10','Ma rue','Passe 10 fois au même endroit.','b','pin',pass,10,'passages'],
     ['Explorations','p50','Chez moi partout','Passe 50 fois au même endroit.','a','pin',pass,50,'passages'],
     ['Explorations','p200','Pavés usés','Passe 200 fois au même endroit.','o','pin',pass,200,'passages'],
-    ['Explorations','long','Grand voyage','Un trajet d’au moins 100 km.','a','map',maxD,100,'km'],
-    ['Explorations','long300','Grande évasion','Un trajet d’au moins 300 km.','o','map',maxD,300,'km'],
-    ['Explorations','wk','Escapade','Un trajet d’au moins 50 km le week-end.','b','sun',wk,1,'escapade'],
+    ['Explorations','long','Grand voyage','Un trajet d’au moins 60 km.','a','map',maxD,60,'km'],
+    ['Explorations','long300','Grande évasion','Un trajet d’au moins 150 km.','o','map',maxD,150,'km'],
+    ['Explorations','wk','Escapade','Un trajet d’au moins 30 km le week-end.','b','sun',wk,1,'escapade'],
     ['Moments','nuit','Oiseau de nuit','Un départ entre minuit et 5 h.','b','moon',night,1,'départ'],
-    ['Moments','nuit10','Chouette','10 départs entre minuit et 5 h.','a','moon',night,10,'départs'],
+    ['Moments','nuit10','Chouette','5 départs entre minuit et 5 h.','a','moon',night,5,'départs'],
     ['Moments','tot','Lève-tôt','Un départ entre 5 h et 6 h.','b','sun',early,1,'départ'],
     ['Moments','rain','Sous la pluie','Un trajet sous la pluie.','b','drop',rain,1,'trajet'],
-    ['Moments','cold','Grand froid','Un trajet sous 0 °C.','a','snow',cold,1,'trajet'],
+    ['Moments','cold','Grand froid','Un trajet sous 3 °C.','a','snow',cold,1,'trajet'],
     ['Moments','hot','Canicule','Un trajet à 32 °C ou plus.','a','fire',hot,1,'trajet'],
     ['Moments','d7','Semaine complète','Roule 7 jours d’affilée.','a','cal',streak,7,'jours'],
-    ['Moments','d30','Mois sans pause','Roule 30 jours d’affilée.','o','cal',streak,30,'jours'],
+    ['Moments','d30','Trois semaines sans pause','Roule 20 jours d’affilée.','o','cal',streak,20,'jours'],
     ['Moments','y1','Un an ensemble','Un an depuis ton premier trajet synchronisé.','o','cal',years,1,'an'],
     ['Moments','pro10','Professionnel','Marque 10 trajets comme « Pro ».','b','brief',pro,10,'trajets pro'],
     ['Moments','work100','Métro-boulot-auto','100 trajets domicile-travail.','a','brief',work,100,'trajets'],
     ['Records','rec1','Record battu','Bats ton meilleur temps sur un trajet favori.','b','ghost',favRec,1,'record'],
-    ['Records','rec10','Chasseur de fantômes','Bats 10 fois un record sur tes trajets favoris.','o','ghost',favRec,10,'records'],
+    ['Records','rec10','Chasseur de fantômes','Bats 5 fois un record sur tes trajets favoris.','a','ghost',favRec,5,'records'],
     ['Entretien et pleins','f1','Premier plein','Enregistre un plein complet sur l’autoradio.','b','fuel',fills,1,'plein'],
     ['Entretien et pleins','f10','Dix pleins','10 pleins complets enregistrés.','a','fuel',fills,10,'pleins'],
-    ['Entretien et pleins','f50','Pompiste','50 pleins complets enregistrés.','o','fuel',fills,50,'pleins'],
+    ['Entretien et pleins','f50','Pompiste','25 pleins complets enregistrés.','o','fuel',fills,25,'pleins'],
     ['Entretien et pleins','m1','Mécano','Ajoute une intervention au carnet d’entretien.','b','wrench',ent,1,'intervention'],
-    ['Entretien et pleins','m10','Voiture chouchoutée','10 interventions dans le carnet d’entretien.','a','wrench',ent,10,'interventions'],
+    ['Entretien et pleins','m10','Voiture chouchoutée','5 interventions dans le carnet d’entretien.','a','wrench',ent,5,'interventions'],
     ['Niveaux','lv25','En route','Atteins le niveau 25.','b','crown',lvl,25,'niveau'],
     ['Niveaux','lv50','Mi-chemin','Atteins le niveau 50.','a','crown',lvl,50,'niveau'],
     ['Niveaux','lv100','Centurion','Atteins le niveau 100.','o','crown',lvl,100,'niveau'],
     ['Niveaux','lv200','Immortel','Atteins le niveau 200, le maximum.','l','crown',lvl,200,'niveau'],
     ['Kilomètres','k2000','Deux mille bornes','Parcours 2 000 km.','a','bolt',km,2000,'km'],
-    ['Kilomètres','k15000','Quinze mille','Parcours 15 000 km.','o','map',km,15000,'km'],
+    ['Kilomètres','k15000','Quinze mille','Parcours 15 000 km.','l','map',km,15000,'km'],
     ['Éco-conduite','e3','Premiers pas zen','3 trajets d’affilée avec un score éco ≥ 80.','b','leaf',rec,3,'d’affilée'],
-    ['Éco-conduite','calm50','Sans à-coups','50 trajets sans freinage brusque ni accélération vive.','a','feather',calmN,50,'trajets'],
-    ['Éco-conduite','calm200','Pilote de velours','200 trajets sans freinage brusque ni accélération vive.','o','feather',calmN,200,'trajets'],
-    ['Éco-conduite','low5','Petit appétit','Un trajet d’au moins 30 km sous 5 L/100.','a','drop',low5,1,'trajet'],
-    ['Éco-conduite','low45','Sobriété extrême','Un trajet d’au moins 30 km sous 4,5 L/100.','o','drop',low45,1,'trajet'],
+    ['Éco-conduite','calm50','Sans à-coups','30 trajets sans freinage brusque ni accélération vive.','a','feather',calmN,30,'trajets'],
+    ['Éco-conduite','calm200','Pilote de velours','100 trajets sans freinage brusque ni accélération vive.','o','feather',calmN,100,'trajets'],
+    ['Éco-conduite','low5','Petit appétit','Un trajet d’au moins 20 km sous 5,5 L/100.','a','drop',low5,1,'trajet'],
+    ['Éco-conduite','low45','Sobriété extrême','Un trajet d’au moins 20 km sous 5 L/100.','o','drop',low45,1,'trajet'],
     ['Éco-conduite','goal1','Objectif tenu','Un mois sous ton objectif de conso (au moins 100 km). L’objectif se règle sur l’autoradio.','b','star',gm,1,'mois'],
-    ['Éco-conduite','goal6','Discipline de fer','6 mois sous ton objectif de conso (au moins 100 km chacun).','o','star',gm,6,'mois'],
-    ['Explorations','long500','Traversée de la France','Un trajet d’au moins 500 km.','l','map',maxD,500,'km'],
-    ['Explorations','day200','Grande journée','Roule 200 km dans la même journée.','a','sun',dayMax,200,'km'],
-    ['Explorations','day500','Journée sans fin','Roule 500 km dans la même journée.','o','sun',dayMax,500,'km'],
-    ['Explorations','wk10','Roi des escapades','10 trajets d’au moins 50 km le week-end.','a','sun',wk,10,'escapades'],
-    ['Moments','nuit50','Noctambule','50 départs entre minuit et 5 h.','o','moon',night,50,'départs'],
+    ['Éco-conduite','goal6','Discipline de fer','3 mois sous ton objectif de conso (au moins 100 km chacun).','o','star',gm,3,'mois'],
+    ['Explorations','long500','Grande traversée','Un trajet d’au moins 250 km.','l','map',maxD,250,'km'],
+    ['Explorations','day200','Grande journée','Roule 100 km dans la même journée.','a','sun',dayMax,100,'km'],
+    ['Explorations','day500','Journée sans fin','Roule 200 km dans la même journée.','o','sun',dayMax,200,'km'],
+    ['Explorations','wk10','Roi des escapades','10 trajets d’au moins 30 km le week-end.','a','sun',wk,10,'escapades'],
+    ['Moments','nuit50','Noctambule','15 départs entre minuit et 5 h.','o','moon',night,15,'départs'],
     ['Moments','xmas','Noël sur la route','Un trajet le 25 décembre.','a','star',xmas,1,'trajet'],
     ['Moments','nye','Réveillon au volant','Un trajet le 31 décembre ou le 1er janvier.','a','star',nye,1,'trajet'],
     ['Moments','rain10','Pluie battante','10 trajets sous la pluie.','a','drop',rainN,10,'trajets'],
-    ['Moments','cold10','Banquise','10 trajets sous 0 °C.','o','snow',coldN,10,'trajets'],
-    ['Moments','d14','Deux semaines non-stop','Roule 14 jours d’affilée.','a','cal',streak,14,'jours'],
-    ['Moments','d60','Increvable','Roule 60 jours d’affilée.','l','cal',streak,60,'jours'],
-    ['Moments','y3','Trois ans ensemble','Trois ans depuis ton premier trajet synchronisé.','l','cal',years,3,'ans'],
+    ['Moments','cold10','Banquise','5 trajets sous 3 °C.','a','snow',coldN,5,'trajets'],
+    ['Moments','d14','Dix jours non-stop','Roule 10 jours d’affilée.','a','cal',streak,10,'jours'],
+    ['Moments','d60','Increvable','Roule 30 jours d’affilée.','l','cal',streak,30,'jours'],
+    ['Moments','y3','Deux ans ensemble','Deux ans depuis ton premier trajet synchronisé.','l','cal',years,2,'ans'],
     ['Moments','pro50','Note de frais','Marque 50 trajets comme « Pro ».','a','brief',pro,50,'trajets pro'],
-    ['Records','rec25','Chasseur légendaire','Bats 25 fois un record sur tes trajets favoris.','l','ghost',favRec,25,'records'],
-    ['Entretien et pleins','f100','Pompiste de légende','100 pleins complets enregistrés.','l','fuel',fills,100,'pleins'],
+    ['Records','rec25','Chasseur légendaire','Bats 15 fois un record sur tes trajets favoris.','o','ghost',favRec,15,'records'],
+    ['Entretien et pleins','f100','Pompiste de légende','50 pleins complets enregistrés.','l','fuel',fills,50,'pleins'],
     ['Entretien et pleins','tyre','Bien chaussé','Les 4 pneus avec au moins 3 mm de profondeur (mesures saisies sur l’autoradio).','b','wrench',tyOk,4,'pneus'],
     ['Entretien et pleins','bat','Batterie au top','Dernière mesure moteur coupé à 12,4 V ou plus.','b','bolt',batOk,1,'mesure'],
     ['Entretien et pleins','dtc0','Zéro défaut','Aucun code défaut moteur à la dernière synchro.','a','wrench',dtc0,1,'contrôle'],
