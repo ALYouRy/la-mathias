@@ -846,7 +846,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.39';
+var APP_V='2.40';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1355,11 +1355,17 @@ function hungriest(M){
 function hasCar(){return !!(window.Car3D&&Car3D.marker)}
 function brgLL(a,b){var r=Math.PI/180;return (Math.atan2((b[0]-a[0])*Math.cos(a[1]*r),b[1]-a[1])*180/Math.PI+360)%360}
 function brgAt(P,i){var a=P[i];for(var j=i+1;j<P.length;j++)if(P[j][0]!==a[0]||P[j][1]!==a[1])return brgLL([a[1],a[0]],[P[j][1],P[j][0]]);for(j=i-1;j>=0;j--)if(P[j][0]!==a[0]||P[j][1]!==a[1])return brgLL([P[j][1],P[j][0]],[a[1],a[0]]);return null}
+function cumD(P){var D=[0];for(var i=1;i<P.length;i++)D.push(D[i-1]+hav(P[i-1],P[i]));return D}
+function posAt(P,D,x){if(x<=0)return P[0];var n=P.length-1;if(x>=D[n])return P[n];var lo=0,hi=n;while(hi-lo>1){var md=(lo+hi)>>1;if(D[md]<=x)lo=md;else hi=md}
+  var f=D[hi]>D[lo]?(x-D[lo])/(D[hi]-D[lo]):0;return [P[lo][0]+(P[hi][0]-P[lo][0])*f,P[lo][1]+(P[hi][1]-P[lo][1])*f]}
+/* cap de la route à la distance x (km) : on vise un point un peu devant, comme un conducteur */
+function headAt(P,D,x,back,ahead){var tot=D[D.length-1];if(tot<=0)return null;back=back==null?.006:back;ahead=ahead==null?.018:ahead;
+  var a=Math.max(0,Math.min(tot-ahead-back,x-back)),b=Math.min(tot,a+back+ahead),p=posAt(P,D,a),q=posAt(P,D,b);if(hav(p,q)<.002)return null;return brgLL([p[1],p[0]],[q[1],q[0]])}
 function carMarker(ml,m,px,tilt){
   if(!hasCar()||!ml)return null;var S=data().snap;if(S&&S.paint&&Car3D.paint)Car3D.paint(S.paint);
   var c=Car3D.marker(px||60),w=document.createElement('div');w.className='carmk';w.appendChild(c);
   var mk=new ml.Marker({element:w,anchor:'center'});mk._b=0;
-  mk.aimAt=function(b){if(b!=null&&!isNaN(b))mk._b=b;c.aim(((mk._b-m.getBearing())%360+360)%360,Math.max(m.getPitch(),tilt==null?40:tilt))};
+  mk.aimAt=function(b,smooth){if(b!=null&&!isNaN(b)){if(smooth&&mk._has){var dd=((b-mk._b+540)%360)-180;mk._b=(mk._b+dd*(typeof smooth==='number'?smooth:.22)+360)%360}else mk._b=b;mk._has=1}c.aim(((mk._b-m.getBearing())%360+360)%360,Math.max(m.getPitch(),tilt==null?40:tilt))};
   m.on('rotate',function(){mk.aimAt()});m.on('pitch',function(){mk.aimAt()});mk.aimAt();return mk;
 }
 function addCursor(m){
@@ -1373,7 +1379,7 @@ function xOf(M,i){var tot=M.d[M.d.length-1]||1;return M.d[i]/tot*1000}
 function curShow(o){
   if(MAP&&MAP.getSource('cur')){MAP.getSource('cur').setData({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[o.lon,o.lat]}});
     if(!MAP._car&&hasCar()){MAP._car=carMarker(window.maplibregl,MAP,62);if(MAP._car)MAP._car.setLngLat([o.lon,o.lat]).addTo(MAP)}
-    if(MAP._car){MAP._car.setLngLat([o.lon,o.lat]);MAP._car.aimAt(o.b)}}
+    if(MAP._car){MAP._car.setLngLat([o.lon,o.lat]);MAP._car.aimAt(o.b,o.sm)}}
   var h='<span class="pp"><b>'+f1(o.km)+'</b> km</span>';if(o.ms)h+='<span class="pp">'+HF.format(new Date(o.ms))+'</span>';
   if(o.v!=null)h+='<span class="pp"><b>'+Math.round(o.v)+'</b> km/h</span>';
   if(o.c!=null)h+='<span class="pp pc" style="--c:'+consoCol(o.c)+'"><b>'+f1(o.c)+'</b> L/100</span>';
@@ -1386,7 +1392,7 @@ function curShow(o){
 function setCursor(i,pan){
   var M=MAPM;if(!M||!M.det)return;i=Math.max(0,Math.min(M.P.length-1,i));CUR=i;var p=M.P[i];
   if(pan&&MAP&&!MAP.getBounds().contains([p[1],p[0]]))MAP.panTo([p[1],p[0]]);
-  curShow({lat:p[0],lon:p[1],b:brgAt(M.P,i),km:M.d[i],ms:M.tm[i],v:M.v[i],c:M.c[i],x:M._x?M._x[i]:null,yv:M._yv?M._yv[i]:null,yc:M._yc?M._yc[i]:null});
+  curShow({lat:p[0],lon:p[1],b:headAt(M.P,M.d,M.d[i]),km:M.d[i],ms:M.tm[i],v:M.v[i],c:M.c[i],x:M._x?M._x[i]:null,yv:M._yv?M._yv[i]:null,yc:M._yc?M._yc[i]:null});
 }
 /* ---------- 2.14 : rejouer un trajet ---------- */
 var MAPR=null,GH=null;
@@ -1440,7 +1446,8 @@ function rpFrame(now){
   var L=function(a,b){return a==null||b==null?(b!=null?b:a):a+(b-a)*f},lat=L(P[i][0],P[j][0]),lon=L(P[i][1],P[j][1]);
   var co=P.slice(0,i+1).map(function(p){return [p[1],p[0]]});co.push([lon,lat]);
   if(MAP.getSource('trail'))MAP.getSource('trail').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:co}});
-  curShow({lat:lat,lon:lon,b:brgAt(P,i),km:L(M.d[i],M.d[j]),ms:M.tm[0]?M.tm[0]+RP.t*1000:null,v:L(M.v[i],M.v[j]),c:M.c[j]!=null?M.c[j]:M.c[i],
+  var xk=L(M.d[i],M.d[j]);
+  curShow({lat:lat,lon:lon,b:headAt(P,M.d,xk),sm:.25,km:L(M.d[i],M.d[j]),ms:M.tm[0]?M.tm[0]+RP.t*1000:null,v:L(M.v[i],M.v[j]),c:M.c[j]!=null?M.c[j]:M.c[i],
     x:M._x?L(M._x[i],M._x[j]):null,yv:M._yv?L(M._yv[i],M._yv[j]):null,yc:M._yc?(M._yc[j]!=null?M._yc[j]:M._yc[i]):null});
   if(GH&&MAP.getSource('ghost')){var tg=Math.min(RP.t,GH.T[GH.T.length-1]),g=ghostAt(GH,tg);
     MAP.getSource('ghost').setData({type:'Feature',properties:{},geometry:{type:'Point',coordinates:[g.lon,g.lat]}});
@@ -1448,7 +1455,7 @@ function rpFrame(now){
     MAP.getSource('gtrail').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:gc}});
     ghostChip(L(M.d[i],M.d[j]),g.km,false)}
   var cam={center:[lon,lat]};
-  if(SET.map3d){var tb=rpBear(P,i);if(RP.b==null)RP.b=MAP.getBearing();var dd=((tb-RP.b+540)%360)-180;RP.b+=dd*.06;cam.bearing=RP.b}
+  if(SET.map3d){var tb=headAt(P,M.d,xk,.01,.05);if(tb==null)tb=rpBear(P,i);if(RP.b==null)RP.b=MAP.getBearing();var dd=((tb-RP.b+540)%360)-180;RP.b+=dd*.06;cam.bearing=RP.b}
   MAP.jumpTo(cam);
   if(RP.t>=RP.real){RP.on=false;RP.raf=0;rpBtn();CUR=P.length-1;if(GH)ghostChip(0,0,true);setTimeout(function(){if(RP.on||!MAP||!MAPC)return;MAP.setPaintProperty('trace','line-opacity',1);if(MAP.getSource('trail'))MAP.getSource('trail').setData({type:'FeatureCollection',features:[]});MAP.fitBounds(bnds(window.maplibregl,MAPC),{padding:48,duration:1200})},1400);return}
   RP.raf=requestAnimationFrame(rpFrame);
@@ -2965,11 +2972,12 @@ function tripRevealShow(o,el){
       m.addLayer({id:'tvp',type:'circle',source:'tvp',paint:{'circle-radius':7,'circle-color':['get','c'],'circle-stroke-color':'#fff','circle-stroke-width':2.5,'circle-blur':['get','b']}});
       box.classList.add('live');
       var car=carMarker(ml,m,52,48);if(car)car.setLngLat(LL[0]).addTo(m);
-      var t0=performance.now(),D0=rm?1:1800,pt=function(c,ll,b){return {type:'Feature',properties:{c:c,b:b||0},geometry:{type:'Point',coordinates:ll}}};
-      (function fr(t){if(!CEL.map)return;var k=Math.min(1,(t-t0)/D0),e=1-Math.pow(1-k,2),n=Math.max(2,Math.ceil(LL.length*e)),seg=LL.slice(0,n);
+      var DD=cumD(P),TOT=DD[DD.length-1];
+      var t0=performance.now(),D0=rm?1:2200,pt=function(c,ll,b){return {type:'Feature',properties:{c:c,b:b||0},geometry:{type:'Point',coordinates:ll}}};
+      (function fr(t){if(!CEL.map)return;var k=Math.min(1,(t-t0)/D0),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,x=TOT*e,seg=[];
+        for(var q=0;q<P.length&&DD[q]<x;q++)seg.push(LL[q]);var hp=posAt(P,DD,x),hd=[hp[1],hp[0]];seg.push(hd);if(seg.length<2)seg.push(hd);
         m.getSource('tv').setData({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:seg}});
-        var hd=seg[seg.length-1];
-        if(car){car.setLngLat(hd);var bi=Math.max(0,n-2);while(bi>0&&LL[bi][0]===hd[0]&&LL[bi][1]===hd[1])bi--;if(LL[bi][0]!==hd[0]||LL[bi][1]!==hd[1])car.aimAt(brgLL(LL[bi],hd))}
+        if(car){car.setLngLat(hd);var hb=headAt(P,DD,x,Math.max(.006,TOT*.004),Math.max(.018,TOT*.012));if(hb!=null)car.aimAt(hb,k>0?.2:0)}
         m.getSource('tvp').setData({type:'FeatureCollection',features:[pt('#34d17a',LL[0])].concat(car?[]:k<1?[pt('#ffffff',hd,.4)]:[pt('#ff4d6d',LL[LL.length-1])])});
         if(k<1)requestAnimationFrame(fr)})(t0);
     });
