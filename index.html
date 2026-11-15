@@ -728,7 +728,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.24';
+var APP_V='2.25';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1659,7 +1659,7 @@ function tabMapShow(){
         var n=b.properties.n,last=b.properties.last,d=new Date(last);
         TM.getSource('tm-hl').setData({type:'Feature',properties:{},geometry:b.geometry});
         var I=$('#tminfo');I.classList.remove('hide');
-        I.innerHTML='<b>'+(n>1?'Tu es passée ici '+n+' fois':'Tu es passée ici 1 fois')+'</b><small>'+(TMF==='all'?'':TMF==='year'?'cette année · ':'ce mois-ci · ')+'dernière fois : '+dayLabel(d).toLowerCase()+' à '+HF.format(d)+'</small><button type="button" class="btn ghost" id="tmgo">Voir ce trajet</button>';
+        I.innerHTML='<b>'+(n>1?'Tu es passé ici '+n+' fois':'Tu es passé ici 1 fois')+'</b><small>'+(TMF==='all'?'':TMF==='year'?'cette année · ':'ce mois-ci · ')+'dernière fois : '+dayLabel(d).toLowerCase()+' à '+HF.format(d)+'</small><button type="button" class="btn ghost" id="tmgo">Voir ce trajet</button>';
         $('#tmgo').onclick=function(){openMap(last)};
       });
       return;
@@ -1681,13 +1681,13 @@ var TRI={road:'<path d="M8 3 5 21M16 3l3 18M12 4v3M12 10v3M12 16v3"/>',star:'<pa
   map:'<path d="M9 4 3 6.2v13.6L9 18l6 2 6-2.2V4.2L15 6 9 4z"/><path d="M9 4v14M15 6v14"/>',pin:'<path d="M12 21s-6-5.4-6-11a6 6 0 0 1 12 0c0 5.6-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
   flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',fuel:'<path d="M5 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M4 20h12M15 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
   crown:'<path d="M4 18h16L18 8l-4 4-2-6-2 6-4-4z"/>',feather:'<path d="M20 4C10 4 6 10 6 18M6 18l-2 2M9 15h6M11 11h7"/>',bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>'};
-var TIER={b:['bronze','Bronze'],a:['argent','Argent'],o:['or','Or'],l:['legend','Légendaire'],u:['ultime','Ultime']},TCATS=['Trajets','Kilomètres','Éco-conduite','Explorations','Moments','Records','Entretien et pleins'];
+var TIER={b:['bronze','Bronze'],a:['argent','Argent'],o:['or','Or'],l:['legend','Légendaire'],u:['ultime','Ultime']},TCATS=['Niveaux','Trajets','Kilomètres','Éco-conduite','Explorations','Moments','Records','Entretien et pleins'];
 TRI.drop='<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>';TRI.snow='<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9 4.5l3 2 3-2M9 19.5l3-2 3 2"/>';
 TRI.fire='<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 3 2 0-2 0-4 0-6z"/>';TRI.cal='<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>';
 TRI.wrench='<path d="M14.5 5.5a4 4 0 0 0-4.9 5.3L4 16.4 7.6 20l5.6-5.6a4 4 0 0 0 5.3-4.9l-2.7 2.7-2.6-.7-.7-2.6z"/>';TRI.brief='<rect x="3.5" y="7" width="17" height="12" rx="2.5"/><path d="M9 7V5h6v2M3.5 12h17"/>';
 TRI.trophy='<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/>';TRI.ghost='<path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"/><circle cx="10" cy="11" r=".8"/><circle cx="14" cy="11" r=".8"/>';
 function trophyDefs(){
-  var D=data(),L=realList().slice().reverse(),km=0,run=0,rec=0,best=0,maxD=0,night=0,early=0,zen=0,zenN=0,wk=0,rain=0,cold=0,hot=0,pro=0,work=0,months={},tracks=0,days={},favB={},favRec=0,first=L.length?L[0].t0:null;
+  var calmN=0,low5=0,low45=0,dkm={},xmas=0,nye=0,rainN=0,coldN=0,D=data(),L=realList().slice().reverse(),km=0,run=0,rec=0,best=0,maxD=0,night=0,early=0,zen=0,zenN=0,wk=0,rain=0,cold=0,hot=0,pro=0,work=0,months={},tracks=0,days={},favB={},favRec=0,first=L.length?L[0].t0:null;
   var F=D.favs||{};
   L.forEach(function(r){var d=new Date(r.t0),h=d.getHours(),dw=d.getDay();km+=r.dist;if(r.dist>maxD)maxD=r.dist;if(r.eco>best)best=r.eco;
     if(r.eco>=ECO_MIN){run++;if(run>rec)rec=run}else run=0;if(h<5){night++}if(h===5)early++;
@@ -1695,30 +1695,35 @@ function trophyDefs(){
     var mk=d.getFullYear()+'-'+d.getMonth(),M=months[mk]||(months[mk]={km:0,f:0});M.km+=r.dist;M.f+=r.fuel;if(D.tracks&&D.tracks[r.t0])tracks++;
     days[ymd(d)]=1;var w=metOf(r);if(w){if(w[1]>=.3)rain++;if(w[0]<0)cold++;if(w[0]>=32)hot++}
     if(isPro(r))pro++;if(r.fav!=null&&F[r.fav]&&isWork(r.fav,F[r.fav]))work++;
+    if(!r.hard&&!r.accel)calmN++;if(r.dist>=30&&r.fuel>0){var cc=r.fuel/r.dist*100;if(cc<5)low5++;if(cc<4.5)low45++}dkm[ymd(d)]=(dkm[ymd(d)]||0)+r.dist;
+    var md=d.getMonth()+1,dd=d.getDate();if(md===12&&dd===25)xmas++;if((md===12&&dd===31)||(md===1&&dd===1))nye++;if(w&&w[1]>=.3)rainN++;if(w&&w[0]<0)coldN++;
     if(r.fav!=null){var B=favB[r.fav]||(favB[r.fav]={n:0,best:1e12});if(B.n>=2&&r.dur<B.best)favRec++;B.n++;if(r.dur<B.best)B.best=r.dur}});
-  var sob=0,sob55=0;Object.keys(months).forEach(function(k){var M=months[k];if(M.km>=100){var c=M.f/M.km*100;if(c<6)sob++;if(c<5.5)sob55++}});
+  var sob=0,sob55=0,gm=0,GL=D.info&&D.info.goal>0?D.info.goal:null;Object.keys(months).forEach(function(k){var M=months[k];if(M.km>=100){var c=M.f/M.km*100;if(c<6)sob++;if(c<5.5)sob55++;if(GL&&c<=GL)gm++}});
+  var dayMax=0;Object.keys(dkm).forEach(function(k){if(dkm[k]>dayMax)dayMax=dkm[k]});
+  var IN=D.info||{},TY=IN.tyres||{},tyOk=['FL','FR','RL','RR'].filter(function(p){return TY[p]&&TY[p].d!=null&&TY[p].d>=3}).length,BT=(IN.bat||[]).filter(function(b){return !b.run}),batOk=BT.length&&BT[BT.length-1].v>=12.4?1:0;
+  var dtc0=(IN.dtc&&D.info&&!IN.dtc.length)||(D.health&&D.health.dtc&&!D.health.dtc.length)?1:0,mok=IN.maint&&IN.maint.length&&IN.maint.every(function(m){return m.st===0})?1:0,lvl=levelOf(lifeKm());
   var dk=Object.keys(days).sort(),streak=0,cur=0,prev=null;dk.forEach(function(k){var t=Date.parse(k);cur=prev!=null&&Math.round((t-prev)/864e5)===1?cur+1:1;if(cur>streak)streak=cur;prev=t});
   var fills=Object.keys(D.fills||{}).filter(function(k){return D.fills[k].full}).length,fq=freqData('all'),pass=fq.max||0,ent=entLoad().length,years=first?(Date.now()-first)/(365.25*864e5):0;
   var T=[
     ['Trajets','t1','Premier tour de roue','Synchronise ton premier trajet.','b','flag',L.length,1,'trajet'],
-    ['Trajets','t10','Habituée du volant','Fais 10 trajets.','b','road',L.length,10,'trajets'],
+    ['Trajets','t10','Habitué du volant','Fais 10 trajets.','b','road',L.length,10,'trajets'],
     ['Trajets','t50','Fidèle au poste','Fais 50 trajets.','a','road',L.length,50,'trajets'],
     ['Trajets','t100','Centenaire','Fais 100 trajets.','a','road',L.length,100,'trajets'],
     ['Trajets','t250','Pilier de la route','Fais 250 trajets.','o','crown',L.length,250,'trajets'],
-    ['Trajets','t500','Marathonienne','Fais 500 trajets.','o','crown',L.length,500,'trajets'],
+    ['Trajets','t500','Marathonien','Fais 500 trajets.','o','crown',L.length,500,'trajets'],
     ['Trajets','t1000','Mille et une routes','Fais 1 000 trajets.','l','crown',L.length,1000,'trajets'],
     ['Kilomètres','k100','Cent bornes','Parcours 100 km.','b','bolt',km,100,'km'],
     ['Kilomètres','k500','Demi-millier','Parcours 500 km.','b','bolt',km,500,'km'],
     ['Kilomètres','k1000','Mille kilomètres','Parcours 1 000 km.','a','bolt',km,1000,'km'],
     ['Kilomètres','k5000','Tour de France','Parcours 5 000 km.','a','map',km,5000,'km'],
     ['Kilomètres','k10000','Dix mille','Parcours 10 000 km.','o','map',km,10000,'km'],
-    ['Kilomètres','k25000','Grande voyageuse','Parcours 25 000 km.','o','map',km,25000,'km'],
+    ['Kilomètres','k25000','Grand voyageur','Parcours 25 000 km.','o','map',km,25000,'km'],
     ['Kilomètres','k40000','Tour de la Terre','Parcours 40 075 km, la longueur de l’équateur.','l','map',km,40075,'km'],
     ['Éco-conduite','e5','Pied léger','5 trajets d’affilée avec un score éco ≥ 80.','b','leaf',rec,5,'d’affilée'],
     ['Éco-conduite','e10','Ceinture verte','10 trajets d’affilée avec un score éco ≥ 80.','a','leaf',rec,10,'d’affilée'],
     ['Éco-conduite','e20','Maître zen','20 trajets d’affilée avec un score éco ≥ 80.','o','leaf',rec,20,'d’affilée'],
     ['Éco-conduite','e50','Nirvana','50 trajets d’affilée avec un score éco ≥ 80.','l','leaf',rec,50,'d’affilée'],
-    ['Éco-conduite','s90','Bonne élève','Un trajet avec un score éco d’au moins 90.','b','star',best,90,'/100'],
+    ['Éco-conduite','s90','Bon élève','Un trajet avec un score éco d’au moins 90.','b','star',best,90,'/100'],
     ['Éco-conduite','s95','Score parfait','Un trajet avec un score éco d’au moins 95.','a','star',best,95,'/100'],
     ['Éco-conduite','s99','Perfection','Un trajet avec un score éco d’au moins 99.','l','star',best,99,'/100'],
     ['Éco-conduite','zen','Conduite de velours','Un trajet d’au moins 20 km sans freinage brusque ni accélération vive.','b','feather',zenN,1,'trajet'],
@@ -1744,15 +1749,47 @@ function trophyDefs(){
     ['Moments','d7','Semaine complète','Roule 7 jours d’affilée.','a','cal',streak,7,'jours'],
     ['Moments','d30','Mois sans pause','Roule 30 jours d’affilée.','o','cal',streak,30,'jours'],
     ['Moments','y1','Un an ensemble','Un an depuis ton premier trajet synchronisé.','o','cal',years,1,'an'],
-    ['Moments','pro10','Professionnelle','Marque 10 trajets comme « Pro ».','b','brief',pro,10,'trajets pro'],
+    ['Moments','pro10','Professionnel','Marque 10 trajets comme « Pro ».','b','brief',pro,10,'trajets pro'],
     ['Moments','work100','Métro-boulot-auto','100 trajets domicile-travail.','a','brief',work,100,'trajets'],
     ['Records','rec1','Record battu','Bats ton meilleur temps sur un trajet favori.','b','ghost',favRec,1,'record'],
-    ['Records','rec10','Chasseuse de fantômes','Bats 10 fois un record sur tes trajets favoris.','o','ghost',favRec,10,'records'],
+    ['Records','rec10','Chasseur de fantômes','Bats 10 fois un record sur tes trajets favoris.','o','ghost',favRec,10,'records'],
     ['Entretien et pleins','f1','Premier plein','Enregistre un plein complet sur l’autoradio.','b','fuel',fills,1,'plein'],
     ['Entretien et pleins','f10','Dix pleins','10 pleins complets enregistrés.','a','fuel',fills,10,'pleins'],
     ['Entretien et pleins','f50','Pompiste','50 pleins complets enregistrés.','o','fuel',fills,50,'pleins'],
     ['Entretien et pleins','m1','Mécano','Ajoute une intervention au carnet d’entretien.','b','wrench',ent,1,'intervention'],
-    ['Entretien et pleins','m10','Voiture chouchoutée','10 interventions dans le carnet d’entretien.','a','wrench',ent,10,'interventions']
+    ['Entretien et pleins','m10','Voiture chouchoutée','10 interventions dans le carnet d’entretien.','a','wrench',ent,10,'interventions'],
+    ['Niveaux','lv25','En route','Atteins le niveau 25.','b','crown',lvl,25,'niveau'],
+    ['Niveaux','lv50','Mi-chemin','Atteins le niveau 50.','a','crown',lvl,50,'niveau'],
+    ['Niveaux','lv100','Centurion','Atteins le niveau 100.','o','crown',lvl,100,'niveau'],
+    ['Niveaux','lv200','Immortel','Atteins le niveau 200, le maximum.','l','crown',lvl,200,'niveau'],
+    ['Kilomètres','k2000','Deux mille bornes','Parcours 2 000 km.','a','bolt',km,2000,'km'],
+    ['Kilomètres','k15000','Quinze mille','Parcours 15 000 km.','o','map',km,15000,'km'],
+    ['Éco-conduite','e3','Premiers pas zen','3 trajets d’affilée avec un score éco ≥ 80.','b','leaf',rec,3,'d’affilée'],
+    ['Éco-conduite','calm50','Sans à-coups','50 trajets sans freinage brusque ni accélération vive.','a','feather',calmN,50,'trajets'],
+    ['Éco-conduite','calm200','Pilote de velours','200 trajets sans freinage brusque ni accélération vive.','o','feather',calmN,200,'trajets'],
+    ['Éco-conduite','low5','Petit appétit','Un trajet d’au moins 30 km sous 5 L/100.','a','drop',low5,1,'trajet'],
+    ['Éco-conduite','low45','Sobriété extrême','Un trajet d’au moins 30 km sous 4,5 L/100.','o','drop',low45,1,'trajet'],
+    ['Éco-conduite','goal1','Objectif tenu','Un mois sous ton objectif de conso (au moins 100 km). L’objectif se règle sur l’autoradio.','b','star',gm,1,'mois'],
+    ['Éco-conduite','goal6','Discipline de fer','6 mois sous ton objectif de conso (au moins 100 km chacun).','o','star',gm,6,'mois'],
+    ['Explorations','long500','Traversée de la France','Un trajet d’au moins 500 km.','l','map',maxD,500,'km'],
+    ['Explorations','day200','Grande journée','Roule 200 km dans la même journée.','a','sun',dayMax,200,'km'],
+    ['Explorations','day500','Journée sans fin','Roule 500 km dans la même journée.','o','sun',dayMax,500,'km'],
+    ['Explorations','wk10','Roi des escapades','10 trajets d’au moins 50 km le week-end.','a','sun',wk,10,'escapades'],
+    ['Moments','nuit50','Noctambule','50 départs entre minuit et 5 h.','o','moon',night,50,'départs'],
+    ['Moments','xmas','Noël sur la route','Un trajet le 25 décembre.','a','star',xmas,1,'trajet'],
+    ['Moments','nye','Réveillon au volant','Un trajet le 31 décembre ou le 1er janvier.','a','star',nye,1,'trajet'],
+    ['Moments','rain10','Pluie battante','10 trajets sous la pluie.','a','drop',rainN,10,'trajets'],
+    ['Moments','cold10','Banquise','10 trajets sous 0 °C.','o','snow',coldN,10,'trajets'],
+    ['Moments','d14','Deux semaines non-stop','Roule 14 jours d’affilée.','a','cal',streak,14,'jours'],
+    ['Moments','d60','Increvable','Roule 60 jours d’affilée.','l','cal',streak,60,'jours'],
+    ['Moments','y3','Trois ans ensemble','Trois ans depuis ton premier trajet synchronisé.','l','cal',years,3,'ans'],
+    ['Moments','pro50','Note de frais','Marque 50 trajets comme « Pro ».','a','brief',pro,50,'trajets pro'],
+    ['Records','rec25','Chasseur légendaire','Bats 25 fois un record sur tes trajets favoris.','l','ghost',favRec,25,'records'],
+    ['Entretien et pleins','f100','Pompiste de légende','100 pleins complets enregistrés.','l','fuel',fills,100,'pleins'],
+    ['Entretien et pleins','tyre','Bien chaussé','Les 4 pneus avec au moins 3 mm de profondeur (mesures saisies sur l’autoradio).','b','wrench',tyOk,4,'pneus'],
+    ['Entretien et pleins','bat','Batterie au top','Dernière mesure moteur coupé à 12,4 V ou plus.','b','bolt',batOk,1,'mesure'],
+    ['Entretien et pleins','dtc0','Zéro défaut','Aucun code défaut moteur à la dernière synchro.','a','wrench',dtc0,1,'contrôle'],
+    ['Entretien et pleins','mok','Carnet à jour','Tout l’entretien suivi par l’autoradio est à jour.','a','wrench',mok,1,'carnet']
   ].map(function(t){return {cat:t[0],id:t[1],name:t[2],how:t[3],tier:t[4],icon:t[5],val:t[6],goal:t[7],unit:t[8],ok:t[6]>=t[7]}});
   var nOr=T.filter(function(t){return t.ok&&t.tier==='o'}).length,nO=T.filter(function(t){return t.tier==='o'}).length;
   if(sample)T.forEach(function(t){t.ok=true});
@@ -1769,7 +1806,7 @@ function trophyCheck(T){
   return st;
 }
 function medal(t,big){var pc=Math.max(0,Math.min(1,t.val/t.goal)),u=t.tier==='u',ns={b:0,a:1,o:2,l:3,u:5}[t.tier]||0;return '<span class="md t-'+t.tier+(t.ok?' ok':'')+(big?' big':'')+'" style="--p:'+(pc*360).toFixed(0)+'deg">'+(t.tier!=='b'?'<span class="uhalo"></span>':'')+'<span class="ring"></span><i>'+(u?'<span class="usky"></span>':'')+'<svg viewBox="0 0 24 24">'+(TRI[t.icon]||TRI.star)+'</svg></i>'+(u?'<span class="uorb"><b></b></span>':'')+[1,2,3,4,5].slice(0,ns).map(function(k){return '<span class="ust s'+k+'"></span>'}).join('')+'</span>'}
-function progTxt(t){var v=t.unit==='km'?fi(Math.min(t.val,t.goal)):t.unit==='an'?f1(Math.min(t.val,t.goal)):Math.floor(Math.min(t.val,t.goal));return v+' / '+(t.unit==='km'?fi(t.goal):t.goal)+' '+t.unit}
+function progTxt(t){var v=t.unit==='km'?fi(Math.min(t.val,t.goal)):t.unit==='an'||t.unit==='ans'?f1(Math.min(t.val,t.goal)):Math.floor(Math.min(t.val,t.goal));return v+' / '+(t.unit==='km'?fi(t.goal):t.goal)+' '+t.unit}
 function trophyCard(){
   var T=trophyDefs(),st=trophyCheck(T)||{},ok=T.filter(function(t){return t.ok}),c={b:0,a:0,o:0,l:0,u:0};ok.forEach(function(t){c[t.tier]++});
   var next=T.filter(function(t){return !t.ok}).sort(function(a,b){return b.val/b.goal-a.val/a.goal})[0];
@@ -1937,19 +1974,23 @@ function mtForm(id){
 }
 /* ---------- 2.18 : statistiques à vie ---------- */
 var LCH=[
+  ['Niveaux','Niveau',['lv25','lv50','lv100','lv200'],function(v){return 'niveau '+v}],
+  ['Explorations','Le plus de km en un jour',['day200','day500'],function(v){return f1(v)+' km'}],
+  ['Éco-conduite','Trajets sans à-coups',['calm50','calm200'],function(v){return fi(v)}],
+  ['Moments','Trajets sous la pluie',['rain','rain10'],function(v){return fi(v)}],
   ['Trajets','Trajets synchronisés',['t1','t10','t50','t100','t250','t500','t1000'],function(v){return fi(v)}],
-  ['Kilomètres','Kilomètres parcourus',['k100','k500','k1000','k5000','k10000','k25000','k40000'],function(v){return fi(v)+' km'}],
-  ['Explorations','Plus long trajet',['long','long300'],function(v){return f1(v)+' km'}],
-  ['Éco-conduite','Meilleure série éco (≥ 80)',['e5','e10','e20','e50'],function(v){return v+' d’affilée'}],
+  ['Kilomètres','Kilomètres parcourus',['k100','k500','k1000','k2000','k5000','k10000','k15000','k25000','k40000'],function(v){return fi(v)+' km'}],
+  ['Explorations','Plus long trajet',['long','long300','long500'],function(v){return f1(v)+' km'}],
+  ['Éco-conduite','Meilleure série éco (≥ 80)',['e3','e5','e10','e20','e50'],function(v){return v+' d’affilée'}],
   ['Éco-conduite','Meilleur score éco',['s90','s95','s99'],function(v){return v+' / 100'}],
   ['Éco-conduite','Trajets tout en douceur',['zen','zen10'],function(v){return fi(v)}],
   ['Éco-conduite','Mois sous 6 L/100',['sob','sob3'],function(v){return fi(v)}],
-  ['Moments','Plus longue série de jours',['d7','d30'],function(v){return v+' jour'+(v>1?'s':'')}],
-  ['Moments','Départs de nuit',['nuit','nuit10'],function(v){return fi(v)}],
+  ['Moments','Plus longue série de jours',['d7','d14','d30','d60'],function(v){return v+' jour'+(v>1?'s':'')}],
+  ['Moments','Départs de nuit',['nuit','nuit10','nuit50'],function(v){return fi(v)}],
   ['Explorations','Trajets avec tracé GPS',['g10','g50','g200'],function(v){return fi(v)}],
   ['Explorations','Endroit le plus fréquenté',['p10','p50','p200'],function(v){return fi(v)+' passages'}],
-  ['Records','Records battus (fantôme)',['rec1','rec10'],function(v){return fi(v)}],
-  ['Entretien et pleins','Pleins complets',['f1','f10','f50'],function(v){return fi(v)}],
+  ['Records','Records battus (fantôme)',['rec1','rec10','rec25'],function(v){return fi(v)}],
+  ['Entretien et pleins','Pleins complets',['f1','f10','f50','f100'],function(v){return fi(v)}],
   ['Entretien et pleins','Interventions au carnet',['m1','m10'],function(v){return fi(v)}]
 ];
 function lifeStats(){
@@ -2151,11 +2192,11 @@ function tripExtra(r,P){
   return h;
 }
 /* ---------- 2.22 : niveaux (km) et célébrations ---------- */
-var LVMAX=200,RANKS=[[1,'Apprentie'],[5,'Conductrice'],[10,'Routière'],[15,'Habituée du bitume'],[20,'Voyageuse'],[25,'Pilote urbaine'],[30,'Baroudeuse'],[35,'Dompteuse de ronds-points'],
-  [40,'Exploratrice'],[45,'Chasseuse de bornes'],[50,'Reine de l’asphalte'],[55,'Croqueuse de kilomètres'],[60,'Nomade'],[65,'Capitaine de route'],[70,'Pilote aguerrie'],[75,'Grande voyageuse'],
-  [80,'Maîtresse du volant'],[85,'Aventurière'],[90,'Vagabonde des routes'],[95,'Étoile du périph'],[100,'Centenaire de la route'],[105,'Gardienne des nationales'],[110,'Conquérante'],[115,'Reine des départementales'],
-  [120,'Légende de la route'],[125,'Comète'],[130,'Phare de la nuit'],[135,'Fusée'],[140,'Infatigable'],[145,'Héroïne de la route'],[150,'Mythe vivant'],[155,'Tornade'],[160,'Titanesque'],[165,'Souveraine'],[170,'Éternelle voyageuse'],[175,'Astre'],
-  [180,'Constellation'],[185,'Nébuleuse'],[190,'Galaxie'],[195,'Supernova'],[200,'Immortelle']].map(function(x){x[2]=x[0]<40?'b':x[0]<80?'a':x[0]<120?'o':x[0]<180?'l':'u';return x});
+var LVMAX=200,RANKS=[[1,'Apprenti'],[5,'Conducteur'],[10,'Routier'],[15,'Habitué du bitume'],[20,'Voyageur'],[25,'Pilote urbain'],[30,'Baroudeur'],[35,'Dompteur de ronds-points'],
+  [40,'Explorateur'],[45,'Chasseur de bornes'],[50,'Roi de l’asphalte'],[55,'Croqueur de kilomètres'],[60,'Nomade'],[65,'Capitaine de route'],[70,'Pilote aguerri'],[75,'Grand voyageur'],
+  [80,'Maître du volant'],[85,'Aventurier'],[90,'Vagabond des routes'],[95,'Étoile du périph'],[100,'Centenaire de la route'],[105,'Gardien des nationales'],[110,'Conquérant'],[115,'Roi des départementales'],
+  [120,'Légende de la route'],[125,'Comète'],[130,'Phare de la nuit'],[135,'Fusée'],[140,'Infatigable'],[145,'Héros de la route'],[150,'Mythe vivant'],[155,'Tornade'],[160,'Titanesque'],[165,'Souverain'],[170,'Éternel voyageur'],[175,'Astre'],
+  [180,'Constellation'],[185,'Nébuleuse'],[190,'Galaxie'],[195,'Supernova'],[200,'Immortel']].map(function(x){x[2]=x[0]<40?'b':x[0]<80?'a':x[0]<120?'o':x[0]<180?'l':'u';return x});
 /* niveau 200 = 20 000 km ; chaque niveau demande un peu plus que le précédent */
 function kmFor(L){return L<=1?0:Math.round(20000*Math.pow((L-1)/(LVMAX-1),1.6))}
 function levelOf(km){var L=1;while(L<LVMAX&&kmFor(L+1)<=km)L++;return L}
