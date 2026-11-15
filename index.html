@@ -747,7 +747,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.28';
+var APP_V='2.29';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2103,7 +2103,7 @@ function parseInfo(str,t){
   str.split('_').forEach(function(x){var a=x.split('.'),k=a[0];
     if(k==='c')I.car={fuel:dec(a[1]),cc:o36(a[2])!=null?o36(a[2])/10:null,red:o36(a[3]),tank:o36(a[4]),corr:o36(a[5])!=null?o36(a[5])/1000:null,tyre:dec(a[6]||'')};
     else if(k==='o')I.odo=o36(a[1]);
-    else if(k==='s'){var sc=o36(a[4]);I.tot={n:o36(a[1]),km:o36(a[2])!=null?o36(a[2])/10:null,l:o36(a[3])!=null?o36(a[3])/100:null,since:sc==null?null:sc>1e9?sc*1000:t-sc*1000,drive:o36(a[5])}}
+    else if(k==='s'){var sc=o36(a[4]);I.tot={n:o36(a[1]),km:o36(a[2])!=null?o36(a[2])/10:null,l:o36(a[3])!=null?o36(a[3])/100:null,since:sc==null?null:sc>1e9?sc*1000:t-sc*1000,drive:o36(a[5]),eur:o36(a[6])!=null?o36(a[6])/100:null}}
     else if(k==='p'&&a[1]&&a[2])I.park={lat:o36(a[1])/1e5,lon:o36(a[2])/1e5,t:o36(a[3])!=null?o36(a[3])*1000:null};
     else if(k==='m'&&a[1])I.maint.push({id:a[1],st:a[2]===''||a[2]==null?null:+a[2],km:o36(a[3]),days:o36(a[4]),name:dec(a[5]||''),ikm:o36(a[6]),imo:o36(a[7])});
     else if(k==='t'&&a[1])I.tyres[a[1]]={p:o36(a[2])!=null?o36(a[2])/10:null,d:o36(a[3])!=null?o36(a[3])/10:null};
@@ -2197,7 +2197,8 @@ function radioLifeCard(){
   if(S&&S.n!=null)h+='<div class="card"><h2>Selon l’autoradio</h2><p class="note" style="margin:0 0 4px">Totaux de tout l’historique de l’autoradio, même les trajets jamais synchronisés.</p><div class="g4">'+
     '<div><b>'+cu(S.n,'i')+'</b><small>Trajets</small></div><div><b>'+(S.km!=null?cu(S.km,'i')+'<u>km</u>':'–')+'</b><small>Distance</small></div>'+
     '<div><b>'+(S.l!=null?cu(S.l,'i')+'<u>L</u>':'–')+'</b><small>Carburant</small></div><div><b>'+(S.drive!=null?(S.drive>=36000?cu(S.drive/3600,'i')+'<u>h</u>':dur(S.drive)):'–')+'</b><small>Temps de conduite</small></div></div>'+
-    (S.l!=null?(function(){var ap=avgPaid(),eur=S.l*ap.p;return '<div class="lspent"><small>Argent dépensé en carburant</small><b>≈ '+cu(eur,'i')+'<u>€</u></b><span>Estimation : '+fi(S.l)+' L × '+ap.p.toFixed(3).replace('.',',')+' €/L ('+ap.src+')'+(S.km>0?' · environ '+f2(eur/S.km*100)+' € aux 100 km':'')+'</span></div>'})():'')+
+    (S.eur!=null?'<div class="lspent"><small>Dépensé en carburant'+(S.since?' depuis le '+new Date(S.since).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'')+'</small><b>'+S.eur.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+'<u>€</u></b><span>Montant calculé par l’autoradio avec les prix réellement payés'+(S.km>0?' · '+f2(S.eur/S.km*100)+' € aux 100 km':'')+'</span></div>'
+     :(S.l!=null?(function(){var ap=avgPaid(),eur=S.l*ap.p;return '<div class="lspent"><small>Argent dépensé en carburant</small><b>≈ '+cu(eur,'i')+'<u>€</u></b><span>Estimation : '+fi(S.l)+' L × '+ap.p.toFixed(3).replace('.',',')+' €/L ('+ap.src+')'+(S.km>0?' · environ '+f2(eur/S.km*100)+' € aux 100 km':'')+'</span></div>'})():''))+
     (S.since?'<p class="note">Depuis le '+new Date(S.since).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+'.</p>':'')+'</div>';
   if(C||O){h+='<div class="card"><h2>Fiche de La Mathias</h2><div class="det">'+
     (O?row('Kilométrage',fi(O.km)+' km'):'')+(C&&C.fuel?row('Carburant',esc(C.fuel)):'')+(C&&C.cc?row('Cylindrée',f1(C.cc).replace(',0','')+' L'):'')+
