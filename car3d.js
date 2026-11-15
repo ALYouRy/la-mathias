@@ -196,7 +196,8 @@ function load(buf){
     var m=H.mats[p.m];
     var PV=H.piv,wm=null;
     if(PV&&p.g.charAt(0)==='w'&&p.g.charAt(1)==='F'&&PV[p.g]&&PV[p.g].length>2)wm=M4.pivot(PV[p.g][0],PV[p.g][1],PV[p.g][2],M4.ry((PV.steer||16)*Math.PI/180));
-    GL3.parts.push({g:{bp:buf3(gl,gl.ARRAY_BUFFER,P),bn:buf3(gl,gl.ARRAY_BUFFER,N),bc:null,bi:buf3(gl,gl.ELEMENT_ARRAY_BUFFER,idx),cnt:p.c},col:m.col,refl:m.refl,shin:m.shin,alpha:m.alpha,paint:m.role==='paint',m:wm,role:p.r||''});
+    GL3.parts.push({g:{bp:buf3(gl,gl.ARRAY_BUFFER,P),bn:buf3(gl,gl.ARRAY_BUFFER,N),bc:null,bi:buf3(gl,gl.ELEMENT_ARRAY_BUFFER,idx),cnt:p.c},col:m.col,refl:m.refl,shin:m.shin,alpha:m.alpha,paint:m.role==='paint',m:wm,role:p.r||'',grp:p.g});
+    if(PV)GL3.piv=PV;
   });
   [[2.064,0.505],[-1.905,0.42]].forEach(function(q){GL3.parts.push({g:upload(gl,finishN(gBox(q[0],q[1],0,0.031,0.122,0.534))),col:[0.02,0.02,0.025],refl:0.1,shin:20,alpha:1})});
   var sg={p:[-3.2,0.003,-2,3.2,0.003,-2,3.2,0.003,2,-3.2,0.003,2],i:[0,2,1,0,3,2],n:[0,1,0,0,1,0,0,1,0,0,1,0]};
@@ -236,6 +237,20 @@ function init(cv){
   try{plateInit(gl)}catch(e){PLATE.prog=null}
 }
 var F3a=new Float32Array(3),F3c=new Float32Array(3),F3e=new Float32Array(3),NOEM=new Float32Array(3),Z12=new Float32Array(12);
+/* ouverture des portes et du hayon : 0 = fermé, 1 = ouvert ; portes avant, puis arrière, puis hayon */
+var DOOR={v:0,from:0,to:0,t0:0,dur:1.25},DM={};
+var DOPEN={fl:[-65,0],fr:[65,0],rl:[-62,.14],rr:[62,.14],tg:[-78,.28]};
+function doorEase(k,open){return open?1-Math.pow(1-k,3)*(1-k*.0):k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2}
+function doorUpdate(now){
+  var P=GL3.piv;DM={};if(!P||V.cine)return;
+  var T=(now-DOOR.t0)/1000,open=DOOR.to>DOOR.from;
+  Object.keys(DOPEN).forEach(function(g){
+    var a=DOPEN[g],k=DOOR.t0?Math.max(0,Math.min(1,(T-(open?a[1]:.28-a[1]))/DOOR.dur)):1,e=doorEase(k,open),v=DOOR.from+(DOOR.to-DOOR.from)*e;
+    if(v<=0.001)return;var ang=a[0]*v*Math.PI/180,pv=P[g];if(!pv)return;
+    DM[g]=g==='tg'?M4.pivot(pv[0],pv[1],pv[2],M4.rz(ang)):M4.pivot(pv[0],0,pv[1],M4.ry(ang));
+  });
+  DOOR.v=(DOOR.t0&&T<DOOR.dur+.3)?.5:DOOR.to;
+}
 function frame(now){
   V.raf=0;
   var gl=V.gl,cv=V.cv;if(!gl||!V.ready)return;
@@ -247,7 +262,7 @@ function frame(now){
     V.yaw=C.y0+(C.y1-C.y0)*e;V.pitch=C.p0+(C.p1-C.p0)*e;V.dist=C.d0+(C.d1-C.d0)*e;V.vy=0;V.idle=0;
     V.tail=tc>0.55?Math.min(1,(tc-0.55)/0.25):0;
     V.head=tc<0.95?0:tc<1.07?1:tc<1.2?0.08:tc<1.32?1:1;
-    if(tc>=C.dur){var res=C.res;V.cine=null;res&&res()}
+    if(tc>=C.dur){var res=C.res;V.cine=null;DOOR.from=DOOR.to;DOOR.t0=0;res&&res()}
   }
   /* appel de phares : deux éclats, puis les feux s'éteignent */
   if(V.flash){
@@ -263,6 +278,7 @@ function frame(now){
   var dpr=Math.min(window.devicePixelRatio||1,2),cw=cv.clientWidth,ch=cv.clientHeight;
   if(!cw||!ch){loop();return}
   var W=Math.round(cw*dpr),H=Math.round(ch*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+  doorUpdate(now);
   gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   var tgt=[0,0.62,0],cp=Math.cos(V.pitch),ang=-V.yaw-0.1,d=V.dist*Math.max(1,1.7/(W/H));
   var eye=[tgt[0]+d*cp*Math.cos(ang),tgt[1]+d*Math.sin(V.pitch),tgt[2]+d*cp*Math.sin(ang)];
@@ -273,7 +289,7 @@ function frame(now){
   gl.uniform3fv(u.uPL,Z12);gl.uniform3fv(u.uPC,Z12);gl.uniform3fv(u.uEmis,NOEM);
   var paint=[V.paint[0]/255,V.paint[1]/255,V.paint[2]/255];
   function draw(o){
-    var g=o.g,m=o.m||M4.id();
+    var g=o.g,m=(o.grp&&DM[o.grp])||o.m||M4.id();
     gl.uniformMatrix4fv(u.uM,false,f16(m));
     gl.uniform3fv(u.uColor,f3(F3a,o.paint?paint:o.col));
     gl.uniform1f(u.uRefl,o.paint?0.92:o.refl);gl.uniform1f(u.uShin,o.paint?150:o.shin);
@@ -325,6 +341,8 @@ window.Car3D={
     });
   },
   lights:function(h,t){V.head=h||0;V.tail=t||0},
+  /* ouvre (true) ou ferme (false) les portes et le hayon ; instant = sans animation */
+  doors:function(open,instant){var to=open?1:0;if(V.cine)instant=true;if(instant){DOOR.from=to;DOOR.to=to;DOOR.t0=0}else if(DOOR.to!==to){DOOR.from=DOOR.to;DOOR.to=to;DOOR.t0=performance.now()}V.idle=0;loop()},
   flash:function(){V.flash={t0:performance.now(),tail:V.tail||0};loop()},
   mount:function(cv,opt){
     opt=opt||{};
