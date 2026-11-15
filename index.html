@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,6 +20,8 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font)}
+/* 2.36 : page fixe : pas de zoom au pincement ni au double-toucher, pas de glissement sur le côté, pas de rebond */
+html,body{overflow-x:hidden;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}body{touch-action:pan-x pan-y;width:100%}
 body{min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 92px);
   background:radial-gradient(700px 500px at 10% -10%,rgba(var(--g1),.16),transparent 60%),radial-gradient(600px 500px at 100% 100%,rgba(var(--g2),.10),transparent 60%),var(--bg);background-attachment:fixed}
 button{font:inherit;color:inherit}
@@ -801,7 +803,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.35';
+var APP_V='2.36';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -3019,6 +3021,11 @@ function lockDraw(){var l=lockState(),b=$('#lock');b.classList.toggle('open',!l)
 $('#lock').onclick=function(){try{localStorage.setItem(LOCKK,lockState()?'0':'1')}catch(e){}lockDraw();var lk=lockState();if(window.Car3D&&Car3D.doors)Car3D.doors(!lk);island({icon:lk?'lock':'unlock',pop:true,tone:lk?'good':'warn',title:lk?'Verrouillée':'Ouverte',sub:(data().snap&&data().snap.name&&data().snap.name!=='Sandero'?data().snap.name:'La Mathias'),ms:1700});var b=$('#lock');b.classList.remove('pulse');void b.offsetWidth;b.classList.add('pulse');if(navigator.vibrate)navigator.vibrate(12)};
 lockDraw();
 $('#scanb').onclick=scan;
+/* bloque le zoom de Safari (pincement, double-toucher), sauf sur les cartes et la voiture 3D qui gèrent leurs propres gestes */
+(function(){var free=function(t){return t&&t.closest&&t.closest('.maplibregl-map,#car-gl,#profs,canvas')};
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){document.addEventListener(ev,function(e){if(!free(e.target))e.preventDefault()},{passive:false})});
+  document.addEventListener('touchmove',function(e){if(e.touches.length>1&&!free(e.target))e.preventDefault()},{passive:false});
+})();
 document.addEventListener('click',function(e){var r=e.target.closest&&e.target.closest('.fprow');if(!r||e.target.closest('a'))return;location.href=r.getAttribute('data-wz')});
 $('#cele').onclick=celClose;
 $('#lvc').onclick=function(){TAB='vie';try{localStorage.setItem('sandero-phone-tab','vie')}catch(e){}window.scrollTo(0,0);ANIM=true;render()};
