@@ -117,7 +117,8 @@ button{font:inherit;color:inherit}
 .tabs svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabs button[aria-selected="true"]{color:var(--accent)}
 .tabs button[aria-selected="true"] svg{filter:drop-shadow(0 0 6px rgba(var(--accent-rgb),.55))}
-.hd-r{display:flex;align-items:center;gap:10px}
+.hd-r{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.hd>div:first-child{flex:1 1 auto;min-width:0}.hd small{overflow-wrap:anywhere}.hd .lvc{max-width:100%}
 .qrb{width:40px;height:40px;border-radius:13px;border:1px solid var(--line);background:var(--surface-2);display:flex;align-items:center;justify-content:center;padding:0}
 .qrb svg{width:22px;height:22px;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round}
 .ttl{margin:4px 2px 12px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
@@ -742,7 +743,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.27';
+var APP_V='2.27.1';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
