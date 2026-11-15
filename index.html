@@ -711,6 +711,26 @@ button{font:inherit;color:inherit}
 .feb span{font-size:10.5px;font-weight:700;color:var(--fg-2)}.feb small{font-size:9.5px;color:var(--fg-3)}
 .fe p{margin:8px 0 0;font-size:12.5px;color:var(--fg-2)}.fe .good{color:var(--good)}.fe .bad{color:#ffb340}
 .hs small.hsref{display:block;white-space:normal;margin-top:2px;font-size:11.5px;font-weight:600;color:var(--fg-3)}.hs small.hstip{display:block;white-space:normal;margin-top:4px;max-width:230px;margin-left:auto;font-size:11.5px;font-weight:600;line-height:1.35;color:var(--fg-2)}
+/* 2.35 */
+.hst{display:flex;gap:16px;align-items:center;margin-top:8px}.hsr{position:relative;flex:0 0 auto;width:96px;height:96px;display:flex;align-items:center;justify-content:center}
+.hsr svg{position:absolute;inset:0;transform:rotate(-90deg)}.hsr circle{fill:none;stroke-width:8;stroke-linecap:round}.hsr .t{stroke:var(--track)}.hsr .v{filter:drop-shadow(0 0 6px currentColor)}
+.hsr b{font-size:32px;font-weight:800;letter-spacing:-.03em}.hsr small{position:absolute;bottom:22px;font-size:10.5px;color:var(--fg-3);font-weight:700}
+.hst>div>b{display:block;font-size:22px;font-weight:750}.hst p{margin:4px 0 0;font-size:13px;color:var(--fg-2);line-height:1.45}.hst p span{color:var(--fg)}
+.hsg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.hsg>div{display:flex;gap:8px;align-items:flex-start;padding:9px 10px;border-radius:12px;background:var(--surface-2);font-size:12.5px;font-weight:650}
+.hsg i{flex:0 0 auto;width:8px;height:8px;border-radius:50%;margin-top:5px;background:var(--good);box-shadow:0 0 6px var(--good)}.hsg .warn i{background:#ffb340;box-shadow:0 0 6px #ffb340}.hsg .bad i{background:#ff4d4f;box-shadow:0 0 6px #ff4d4f}
+.hsg small{display:block;font-size:11px;font-weight:600;color:var(--fg-3);margin-top:1px}
+.hsh{margin-top:14px}.hsh>small{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-3)}.hsh>div{display:flex;gap:6px;align-items:flex-end;height:80px;margin-top:6px}
+.hsh span{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}.hsh span b{font-size:10.5px}.hsh span i{width:60%;max-width:26px;border-radius:5px 5px 2px 2px}.hsh span u{text-decoration:none;font-size:10px;color:var(--fg-3);font-weight:700}
+.snc-t{margin:4px 0 0;font-size:14px;color:var(--fg-2)}.snc-t b{font-size:20px}
+.snb{position:relative;height:74px;margin:6px 6px 0}.snbar{position:absolute;left:0;right:0;top:40px;height:8px;border-radius:5px;background:linear-gradient(90deg,#34d17a,#ffd24a 50%,#ff8a3c 75%,#ff4d4f)}
+.snb i.o{position:absolute;top:37px;width:4px;height:14px;margin-left:-2px;border-radius:2px;background:rgba(255,255,255,.55)}
+.snb em{position:absolute;top:0;font-style:normal;transform:translateX(-50%);text-align:center}.snb em span{display:block;font-size:10px;font-weight:700;line-height:1.2;color:var(--fg-3);white-space:nowrap}
+.snb em::after{content:"";position:absolute;left:50%;top:30px;width:2px;height:24px;margin-left:-1px;background:var(--fg-3)}.snb em.y span{color:var(--accent);font-size:11.5px}.snb em.y::after{width:4px;margin-left:-2px;height:28px;top:30px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.snb{height:104px}.snb em.y{top:34px}.snb em.y::after{top:0;height:22px}.snb em.y span{position:absolute;top:26px;left:50%;transform:translateX(-50%)}
+.snx{display:flex;justify-content:space-between;font-size:10.5px;color:var(--fg-3);margin:0 6px 4px;font-weight:700}
+.bac{border-color:rgba(255,179,64,.5)}.bac h2{color:#ffb340}.bat-t{margin:4px 0 10px;font-size:14px;line-height:1.5;color:var(--fg-2)}.bat-t b{color:var(--fg)}
+.bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
+.bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 @media (prefers-reduced-motion:reduce){.pkpin{animation:none}.rtin{animation:none}}
 @media (prefers-reduced-motion:reduce){.md.ok .ring,.md.ok .uorb,.md.ok .uhalo,.md.ok .ust,.usky,.tl-u{animation:none!important}.md.ok .ust{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.md.ok.t-l .ring,.md.ok i::after,.tl-l{animation:none!important}}
@@ -781,7 +801,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.34';
+var APP_V='2.35';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2619,6 +2639,81 @@ function favEvo(T){
   if(a.c!=null&&z.c!=null){var dc=z.c-a.c,dd=Math.round((z.d-a.d)/60);h+='<p>'+cap(since(a.k))+' : <b class="'+(Math.abs(dc)<.05?'':dc<0?'good':'bad')+'">'+(Math.abs(dc)<.05?'conso stable':(dc<=0?'−':'+')+f1(Math.abs(dc))+' L/100')+'</b>'+(Math.abs(dd)>=1?' et <b class="'+(dd<=0?'good':'bad')+'">'+(dd<=0?'−':'+')+Math.abs(dd)+' min</b> en moyenne':'')+'.</p>'}
   return h+'</div>';
 }
+/* ---------- 2.35 : bulletin santé, comparaison Sandero, alerte batterie avant l'hiver ---------- */
+var SHK='sandero-sante-hist',BHK='sandero-bat-hist',BWK='sandero-bat-alerte';
+function lin(v,a,b,va,vb){return v<=a?va:v>=b?vb:va+(v-a)/(b-a)*(vb-va)}
+function healthScore(){
+  var D=data(),HL=D.health,I=D.info||{},C=[];if(!HL&&!D.info)return null;
+  var add=function(k,lbl,w,v,txt){if(v==null||isNaN(v))return;C.push({k:k,l:lbl,w:w,v:Math.max(0,Math.min(1,v)),t:txt})};
+  if(HL&&HL.rest!=null)add('bat','Batterie',20,HL.rest>=12.6?1:HL.rest>=12.4?lin(HL.rest,12.4,12.6,.85,1):HL.rest>=12.2?lin(HL.rest,12.2,12.4,.55,.85):lin(HL.rest,11.8,12.2,0,.55),f1(HL.rest)+' V à l’arrêt');
+  if(HL&&HL.run!=null)add('alt','Alternateur',15,HL.run>15?.3:HL.run>=13.3?1:lin(HL.run,12.8,13.3,0,1),f1(HL.run)+' V moteur tournant');
+  var dc=HL&&HL.dtc?HL.dtc.length:(I.dtc?I.dtc.length:null);if(dc!=null)add('dtc','Codes défaut',20,1-dc*.5,dc?dc+' code'+(dc>1?'s':''):'aucun code');
+  var LT=list().filter(function(r){return r.tMax!=null&&!r.demo})[0];if(LT){var tm=LT.tMax;add('tmp','Température moteur',10,tm>110?0:tm>105?.5:(LT.dur>=900&&tm<75)?.5:1,tm+' °C max')}
+  var TY=I.tyres||{},ds=['FL','FR','RL','RR'].map(function(p){return TY[p]&&TY[p].d}).filter(function(x){return x!=null});
+  if(ds.length){var md=Math.min.apply(null,ds),tv=md<1.6?0:lin(md,1.6,4,.3,1);[['FL','FR'],['RL','RR']].forEach(function(q){var a=TY[q[0]],b=TY[q[1]];if(a&&b&&a.p!=null&&b.p!=null&&Math.abs(a.p-b.p)>.2)tv-=.15});add('pn','Pneus',15,tv,'le plus usé : '+f1(md)+' mm')}
+  var K=I.brakes||{},bv=[];['pf','rf','df'].forEach(function(k){var x=K[k];if(x&&x.th!=null&&x.min!=null){var m=k==='df'?1:1.5;bv.push(x.th<=x.min?0:x.th<x.min+m?.5:1)}});
+  if(bv.length)add('fr','Freins',10,bv.reduce(function(a,b){return a+b},0)/bv.length,bv.every(function(v){return v===1})?'tout est bon':'à surveiller');
+  var M=(I.maint||[]).filter(function(m){return m.st!=null});if(M.length){var mv=M.map(function(m){return m.st===2?0:m.st===1?.7:1});var late=M.filter(function(m){return m.st===2}).length;add('ent','Entretien',10,mv.reduce(function(a,b){return a+b},0)/mv.length,late?late+' dépassé'+(late>1?'s':''):'à jour')}
+  if(C.length<2)return null;
+  var W=C.reduce(function(a,c){return a+c.w},0),S=Math.round(C.reduce(function(a,c){return a+c.w*c.v},0)/W*100);
+  C.forEach(function(c){c.lost=Math.round(c.w*(1-c.v)/W*100)});
+  var g=S>=90?['Excellente','ok']:S>=75?['Bonne','ok']:S>=60?['Correcte','warn']:S>=40?['À surveiller','warn']:['Mauvaise','bad'];
+  return {s:S,g:g[0],st:g[1],C:C,t:HL?HL.t:(D.info&&D.info.t)};
+}
+function healthHist(H){if(sample||!H)return {};var o={};try{o=JSON.parse(localStorage.getItem(SHK)||'{}')}catch(e){}var d=new Date(H.t||Date.now()),k=d.getFullYear()+'-'+p2(d.getMonth()+1);
+  if(o[k]!==H.s){o[k]=H.s;var ks=Object.keys(o).sort();while(ks.length>12)delete o[ks.shift()];try{localStorage.setItem(SHK,JSON.stringify(o))}catch(e){}}return o}
+function healthCard(){
+  var H=healthScore();if(!H)return '';var hist=healthHist(H),ks=Object.keys(hist).sort(),R=2*Math.PI*44,col=H.st==='ok'?'var(--good)':H.st==='warn'?'#ffb340':'#ff4d4f';
+  var lost=H.C.filter(function(c){return c.lost>0}).sort(function(a,b){return b.lost-a.lost});
+  var h='<div class="card hsc"><h2>Bulletin santé de La Mathias</h2><div class="hst"><div class="hsr"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="t"/><circle cx="50" cy="50" r="44" class="v" style="stroke:'+col+';stroke-dasharray:'+(R*H.s/100).toFixed(1)+' '+R.toFixed(1)+'"/></svg><b>'+H.s+'</b><small>/100</small></div>'+
+    '<div><b class="hs-'+H.st+'">'+H.g+'</b><p>'+(lost.length?'Points perdus : '+lost.slice(0,3).map(function(c){return '<span>'+c.l.toLowerCase()+' −'+c.lost+'</span>'}).join(', '):'Rien à signaler.')+'</p></div></div>';
+  h+='<div class="hsg">'+H.C.map(function(c){var s=c.v>=.85?'ok':c.v>=.5?'warn':'bad';return '<div class="'+s+'"><i></i><span>'+c.l+'<small>'+c.t+'</small></span></div>'}).join('')+'</div>';
+  if(ks.length>=2){var mx=100;h+='<div class="hsh"><small>Évolution</small><div>'+ks.map(function(k){var v=hist[k],c=v>=75?'var(--good)':v>=60?'#ffb340':'#ff4d4f';return '<span><b>'+v+'</b><i style="height:'+Math.max(6,v/mx*100).toFixed(0)+'%;background:'+c+'"></i><u>'+new Date(+k.slice(0,4),+k.slice(5)-1,1).toLocaleDateString('fr-FR',{month:'short'}).replace('.','')+'</u></span>'}).join('')+'</div></div>'}
+  return h+'<p class="note">Note calculée avec les mesures de l’autoradio : batterie 20 pts, codes défaut 20, alternateur 15, pneus 15, température 10, freins 10, entretien 10. Seules les mesures disponibles comptent.</p></div>';
+}
+/* comparaison avec les autres Sandero 1.2 16v 75 ch */
+var SREF={off:{m:5.9,u:7.6,e:4.9},own:[5.3,5.5,6.32,6.5,6.95,7,7,7.85]};
+function sanderoCard(){
+  var L=realList(),now=Date.now(),R=L.filter(function(r){return now-r.t0<90*864e5}),km=0,f=0,city=0;if(R.length<5)R=L;
+  R.forEach(function(r){km+=r.dist;f+=r.fuel;if(r.dur>0&&r.dist/(r.dur/3600)<35)city+=r.dist});if(km<20||f<=0)return '';
+  var c=f/km*100,sh=city/km,O=SREF.own.slice().sort(function(a,b){return a-b}),med=(O[3]+O[4])/2,better=O.filter(function(x){return x>c}).length;
+  var fac=med/SREF.off.m,exp=(SREF.off.u*sh+SREF.off.e*(1-sh))*fac,lo=4,hi=9,X=function(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100)).toFixed(1)+'%'};
+  var d=c-exp,st=d<=-.2?'ok':d<=.4?'':'warn';
+  return '<div class="card snc"><h2>Comparée aux autres Sandero</h2><p class="snc-t">Ta conso : <b class="hs-'+(c<=med?'ok':'warn')+'">'+f1(c)+' L/100</b>'+(R===L?'':' (3 derniers mois)')+'</p>'+
+    '<div class="snb"><div class="snbar"></div>'+O.map(function(v){return '<i class="o" style="left:'+X(v)+'"></i>'}).join('')+
+    '<em class="m" style="left:'+X(SREF.off.m)+'"><span>officiel<br>'+f1(SREF.off.m)+'</span></em><em class="d" style="left:'+X(med)+'"><span>propriétaires<br>'+f1(med)+'</span></em><em class="y" style="left:'+X(c)+'"><span>toi<br>'+f1(c)+'</span></em></div>'+
+    '<div class="snx"><span>4</span><span>9 L/100</span></div><div class="det">'+
+    '<div><span>Tu consommes moins que</span><b>'+better+' propriétaire'+(better>1?'s':'')+' sur '+O.length+'</b></div>'+
+    '<div><span>Attendu pour tes trajets<small class="lsm">'+Math.round(sh*100)+' % de tes km en ville (moins de 35 km/h de moyenne)</small></span><b class="hs-'+st+'">≈ '+f1(exp)+' L/100</b></div></div>'+
+    '<p class="note">Sandero 1.2 16v 75 ch (2008-2013), essence. Officiel : '+f1(SREF.off.m)+' mixte, '+f1(SREF.off.u)+' en ville, '+f1(SREF.off.e)+' sur route. Propriétaires : 8 relevés publics (Spritmonitor, fiches-auto, Caradisiac), de '+f1(O[0])+' à '+f1(O[7])+' L/100. « Attendu » : le mélange ville/route officiel de tes trajets, corrigé de l’écart moyen entre l’officiel et la vraie vie (×'+fac.toFixed(2).replace('.',',')+'). C’est une estimation.</p></div>';
+}
+/* alerte batterie avant l'hiver */
+function batHist(){
+  var D=data(),o={};try{o=JSON.parse(localStorage.getItem(BHK)||'{}')}catch(e){}if(sample)o={};
+  var put=function(t,v){if(!(v>0))return;var k=ymd(new Date(t));if(o[k]==null||v<o[k])o[k]=Math.round(v*100)/100};
+  if(D.health&&D.health.rest!=null)put(D.health.t,D.health.rest);
+  ((D.info&&D.info.bat)||[]).forEach(function(b){if(!b.run)put(b.t,b.v)});
+  var ks=Object.keys(o).sort();while(ks.length>30)delete o[ks.shift()];if(!sample)try{localStorage.setItem(BHK,JSON.stringify(o))}catch(e){}
+  return o;
+}
+function batAlert(){
+  var o=batHist(),ks=Object.keys(o).sort().slice(-5),mo=new Date().getMonth();if(!ks.length)return null;
+  var last=o[ks[ks.length-1]],low=ks.filter(function(k){return o[k]<12.4}),winter=mo>=9||mo<=2;
+  var last3=ks.slice(-3),all3=last3.length>=2&&last3.every(function(k){return o[k]<12.4});
+  if(!(winter&&last<12.4&&(all3||low.length>=2||last<=12.25)))return null;
+  return {last:last,days:ks.map(function(k){return [k,o[k]]}),n:low.length};
+}
+function batAlertCard(){
+  var A=batAlert();if(!A)return '';
+  return '<div class="card bac"><h2>Batterie faible avant l’hiver</h2><p class="bat-t">Ta batterie reste sous <b>12,4 V</b> à l’arrêt'+(A.n>1?' depuis '+A.n+' jours de mesure':'')+'. Le froid réduit la puissance disponible au démarrage : c’est le moment de t’en occuper.</p>'+
+    '<div class="bad-d">'+A.days.map(function(x){var v=x[1];return '<span class="'+(v>=12.4?'ok':v>=12.2?'warn':'bad')+'"><b>'+f2(v)+' V</b><small>'+new Date(x[0]+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'})+'</small></span>'}).join('')+'</div>'+
+    '<div class="alp"><small>Ce qui aide</small><ul><li>Un <b>trajet d’au moins 30 min</b> pour la recharger.</li><li>Un <b>chargeur de batterie</b> une nuit, si tu fais surtout de petits trajets.</li><li>La faire <b>tester dans un centre auto</b> : c’est rapide, et souvent gratuit.</li><li>Si elle a plus de 5 ans, prévoir son <b>remplacement</b> avant les grands froids.</li></ul></div>'+
+    '<p class="note">Plus basse mesure moteur coupé de chaque jour, d’après l’autoradio. Bonne valeur : 12,4 V ou plus.</p></div>';
+}
+function batAlertIsland(){
+  var A=batAlert();if(!A)return;var k=ymd(new Date());try{if(localStorage.getItem(BWK)===k)return;localStorage.setItem(BWK,k)}catch(e){}
+  setTimeout(function(){island({fallback:1,icon:'warn',pop:true,tone:'warn',title:'Batterie faible : '+f1(A.last)+' V',sub:'Pense à la recharger avant le froid',ms:4200})},1800);
+}
 function cmp(a,b,better){
   if(a==null||b==null||!b)return '';
   var pc=Math.round((a-b)/Math.abs(b)*100);if(!pc)return '<em>= mois précédent</em>';
@@ -2658,6 +2753,8 @@ function render(){
   }
   h+=parkCard();
   h+=alertCard();
+  h+=batAlertCard();
+  h+=healthCard();
   /* santé de la voiture */
   var HL=D.health;
   if(HL){
@@ -2677,7 +2774,7 @@ function render(){
     var RO=radioOdo();if(RO)rows=row2('Kilométrage',fi(RO.km)+' km','')+rows;var DX=dtcRows();
     if(rows)h+='<div class="card"><h2>Santé de la voiture</h2><div class="det hs">'+rows+'</div>'+DX+'<p class="note">Mesures de l’autoradio, au moment de la synchro ('+ago(HL.t)+'). Température : dernier trajet, '+(LT?ago(LT.t0):'')+'. Valeurs de référence habituelles pour une voiture essence.'+(HL.dtc&&HL.dtc.length&&!DX?' Détail des codes dans l’écran Diagnostic de l’autoradio.':'')+'</p></div>';
   }
-  h+=batCard()+tyreCard()+radioMaintCard();
+  h+=batCard()+tyreCard()+radioMaintCard()+sanderoCard();
   h+=maintCard();
   var T={car:h};h='';
   /* bilan du mois */
@@ -2742,6 +2839,7 @@ function render(){
   var pe=$('#proexp');if(pe)pe.onclick=function(){proExport(+pe.getAttribute('data-y'),+pe.getAttribute('data-m'))};
   Array.prototype.forEach.call(document.querySelectorAll('[data-ana]'),function(b){b.onclick=function(){ANAP=b.getAttribute('data-ana');var y=window.scrollY;render();window.scrollTo(0,y)}});
   if(TAB==='bilan')mmapMount();
+  if(!sample)batAlertIsland();
   setTimeout(snapQueue,1500);
   Array.prototype.forEach.call(document.querySelectorAll('[data-tmf]'),function(b){b.onclick=function(){TMF=b.getAttribute('data-tmf');var y=window.scrollY;render();window.scrollTo(0,y)}});
   Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(b){b.onclick=function(){openSpots(b.getAttribute('data-spot'))}});var wrb=$('#wrapb');if(wrb)wrb.onclick=function(){openWrap(+wrb.getAttribute('data-y'))};
