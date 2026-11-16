@@ -907,7 +907,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.45';
+var APP_V='2.46';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1310,7 +1310,7 @@ function snapQueue(){
    Les tracés reçus par QR sont arrondis à 1e-4° (≈ 11 m) et simplifiés : ils débordent des routes.
    On les recale sur les routes des tuiles OpenFreeMap (celles de la carte) avec un modèle de Markov caché
    (Newson & Krumm), puis on redessine le trajet en suivant la géométrie des routes. Résultat gardé en mémoire. */
-var MM={tpl:null,tiles:{},tn:0,busy:false},MMK='sandero-mm',MMD=null;
+var MM={tpl:null,tiles:{},tn:0,busy:false},MMK='sandero-mm2',MMD=null;try{localStorage.removeItem('sandero-mm')}catch(e){}
 /* --- lecture des tuiles vectorielles (format Mapbox Vector Tile = protobuf) --- */
 function PBR(b){this.b=b;this.p=0}
 PBR.prototype.v=function(){var b=this.b,r=0,s=1,c;do{c=b[this.p++];r+=(c&127)*s;s*=128}while(c>=128);return r};
@@ -1499,6 +1499,80 @@ function mmRun(P,G){
   var o2=[];out.forEach(function(p){var q=o2[o2.length-1];if(!q||q[0]!==p[0]||q[1]!==p[1])o2.push(p)});
   return {P:o2,ratio:matched/pts.length};
 }
+/* ---------- 2.46 : recalage adapté aux tracés QR (au plus 70 points, simplifiés) ----------
+   Chaque point reçu est une vraie position (à ≈ 10 m près). On pose chaque point sur une route proche,
+   puis on relie deux points par le plus court chemin sur les routes de la carte (Dijkstra),
+   en choisissant l'enchaînement le plus probable (Viterbi). Le trajet suit ainsi chaque rue entre deux points. */
+function mmHeap(){var a=[];return {push:function(d,n,p){a.push([d,n,p]);var i=a.length-1;while(i>0){var j=(i-1)>>1;if(a[j][0]<=a[i][0])break;var t=a[i];a[i]=a[j];a[j]=t;i=j}},
+  pop:function(){var top=a[0],l=a.pop();if(a.length){a[0]=l;var i=0;for(;;){var L=2*i+1,R=L+1,m=i;if(L<a.length&&a[L][0]<a[m][0])m=L;if(R<a.length&&a[R][0]<a[m][0])m=R;if(m===i)break;var t=a[i];a[i]=a[m];a[m]=t;i=m}}return top},size:function(){return a.length}}}
+/* plus courtes distances depuis la candidate a vers toutes les candidates B (une seule recherche) */
+function mmFrom(G,a,B,max){
+  var ea=G.E[a.e],D={},P={},H=mmHeap(),out=[];
+  var need={},left=0;B.forEach(function(b){var e=G.E[b.e];[e[0],e[1]].forEach(function(n){if(!need[n]){need[n]=1;left++}})});
+  var relax=function(n,d,p){if(D[n]!=null&&D[n]<=d)return;D[n]=d;P[n]=p;H.push(d,n,p)};
+  relax(ea[0],a.t*ea[2],-1);relax(ea[1],(1-a.t)*ea[2],-1);
+  var done={};
+  while(H.size()){var it=H.pop(),d=it[0],n=it[1];if(done[n])continue;done[n]=1;if(d>max)break;if(need[n]){need[n]=0;if(--left<=0)break}
+    var A=G.adj[n];for(var k=0;k<A.length;k++){var e=G.E[A[k]],m=e[0]===n?e[1]:e[0];if(!done[m])relax(m,d+e[2],n)}}
+  var path=function(n){var o=[];while(n!=null&&n!==-1){o.unshift(n);n=P[n]}return o};
+  B.forEach(function(b){var eb=G.E[b.e];
+    if(b.e===a.e){out.push({d:Math.abs(b.t-a.t)*eb[2],path:[]});return}
+    var c0=D[eb[0]]!=null?D[eb[0]]+b.t*eb[2]:Infinity,c1=D[eb[1]]!=null?D[eb[1]]+(1-b.t)*eb[2]:Infinity;
+    if(c0===Infinity&&c1===Infinity){out.push(null);return}
+    out.push(c0<=c1?{d:c0,path:path(eb[0])}:{d:c1,path:path(eb[1])})});
+  return out;
+}
+function mmMatch2(P,km){
+  if(!P||P.length<2)return Promise.resolve(null);
+  var la0=1e9,la1=-1e9,lo0=1e9,lo1=-1e9;P.forEach(function(p){if(p[0]<la0)la0=p[0];if(p[0]>la1)la1=p[0];if(p[1]<lo0)lo0=p[1];if(p[1]>lo1)lo1=p[1]});
+  var pad=.004,T=mmTilesFor(la0-pad,lo0-pad,la1+pad,lo1+pad);if(T.length>220)return Promise.resolve(null);
+  return Promise.all(T.map(function(t){return mmTile(t[0],t[1])})).then(function(L){
+    var miss=L.filter(function(x){return x===null}).length;if(miss>T.length*.3)return {err:'tuiles'};
+    var F=[];L.forEach(function(x){if(x)F=F.concat(x)});if(!F.length)return {err:'routes'};
+    return mmRun2(P,mmGraph(F,[(la0+la1)/2,(lo0+lo1)/2]),km);
+  });
+}
+function mmRun2(P,G,km){
+  var SIG=10,BETA=90;
+  var X=P.map(function(p){return [(p[1]-G.o[1])*G.kx,(p[0]-G.o[0])*G.ky]});
+  var C=X.map(function(q){var c=mmNear(G,q[0],q[1],28);if(!c.length)c=mmNear(G,q[0],q[1],60);return c});
+  var n=P.length,segs=[],cur=null,brk=[],k=0;
+  return new Promise(function(fin){(function chunk(){var t0=Date.now();
+  for(;k<n&&Date.now()-t0<25;k++){
+    var cs=C[k],em=cs.map(function(c){return -c.d*c.d/(2*SIG*SIG)});
+    if(!cs.length){brk.push(k+':aucune route');if(cur){segs.push(cur);cur=null}continue}
+    if(!cur){cur={k:[k],sc:em.slice(),bp:[null],rt:[null]};continue}
+    var kp=cur.k[cur.k.length-1],pc=C[kp],ch=Math.hypot(X[k][0]-X[kp][0],X[k][1]-X[kp][1]),max=ch*3+900;
+    var nsc=cs.map(function(){return -Infinity}),bp=cs.map(function(){return -1}),rt=cs.map(function(){return null});
+    pc.forEach(function(p,i){if(cur.sc[i]===-Infinity)return;var R=mmFrom(G,p,cs,max);
+      R.forEach(function(r,j){if(!r)return;var s=cur.sc[i]-Math.max(0,r.d-ch)/BETA-Math.max(0,ch-r.d-30)/10+em[j];if(s>nsc[j]){nsc[j]=s;bp[j]=i;rt[j]=r}})});
+    if(nsc.every(function(v){return v===-Infinity})){brk.push(k+':pas de chemin ('+Math.round(ch)+' m)');segs.push(cur);cur={k:[k],sc:em.slice(),bp:[null],rt:[null]};continue}
+    var mx=Math.max.apply(null,nsc);cur.k.push(k);cur.sc=nsc.map(function(v){return v-mx});cur.bp.push(bp);cur.rt.push(rt);
+  }
+  if(k<n){setTimeout(chunk,0);return}
+  if(cur)segs.push(cur);
+  /* reconstruction : on garde l'indice de chaque point reçu dans le tracé recalé (pour la conso et le temps) */
+  var out=[],W=new Array(n),matched=0,ll=function(x,y){return [G.o[0]+y/G.ky,G.o[1]+x/G.kx]},push=function(p){var q=out[out.length-1];if(!q||Math.abs(q[0]-p[0])>1e-7||Math.abs(q[1]-p[1])>1e-7)out.push(p)};
+  var done=0;
+  segs.forEach(function(sg){
+    var m=sg.k.length,bi=0;for(var j=1;j<sg.sc.length;j++)if(sg.sc[j]>sg.sc[bi])bi=j;
+    var chs=new Array(m);chs[m-1]=bi;for(var t=m-1;t>0;t--)chs[t-1]=sg.bp[t][chs[t]];
+    for(var i=done;i<sg.k[0];i++){push(P[i].slice());W[i]=out.length-1}
+    for(var t2=0;t2<m;t2++){var kk=sg.k[t2],c=C[kk][chs[t2]];
+      if(t2>0){var r=sg.rt[t2][chs[t2]];if(r)r.path.forEach(function(nid){var q=G.N[nid];push(ll(q[0],q[1]))})}
+      push(ll(c.x,c.y));W[kk]=out.length-1;matched++}
+    done=sg.k[m-1]+1;
+  });
+  for(var i3=done;i3<n;i3++){push(P[i3].slice());W[i3]=out.length-1}
+  var L=0;for(var z=1;z<out.length;z++)L+=hav(out[z-1],out[z]);
+  fin({P:out,W:W,ratio:matched/n,km:L,segs:segs.length,brk:brk});
+  })()});
+}
+/* simplification légère qui garde les points reçus (W) */
+function mmSimpW(P,W){var keep={};W.forEach(function(i){keep[i]=1});var out=[],map={},s=0;
+  var cuts=Object.keys(keep).map(Number).sort(function(a,b){return a-b});if(cuts[0]!==0)cuts.unshift(0);if(cuts[cuts.length-1]!==P.length-1)cuts.push(P.length-1);
+  for(var c=0;c+1<cuts.length;c++){var a=cuts[c],b=cuts[c+1],seg=dpSimp(P.slice(a,b+1),.000012);if(c===0){map[a]=0;out.push(seg[0])}for(var k=1;k<seg.length;k++)out.push(seg[k]);map[b]=out.length-1}
+  return {P:out,W:W.map(function(i){return map[i]})}}
 function mmLoad(){if(MMD)return MMD;try{MMD=JSON.parse(localStorage.getItem(MMK)||'{}')}catch(e){MMD={}}return MMD}
 function mmSave(){var D=mmLoad(),k=Object.keys(D).filter(function(x){return D[x].c}).map(Number).sort(function(a,b){return b-a});
   k.slice(180).forEach(function(x){delete D[x]});
@@ -1506,14 +1580,14 @@ function mmSave(){var D=mmLoad(),k=Object.keys(D).filter(function(x){return D[x]
 function mmEnc(P){var la=0,lo=0,o=[];P.forEach(function(p){var a=Math.round(p[0]*1e5),b=Math.round(p[1]*1e5);o.push(sb36(a-la),sb36(b-lo));la=a;lo=b});return o.join('.')}
 function mmDec(s){var a=s.split('.'),la=0,lo=0,P=[];for(var i=0;i+1<a.length;i+=2){la+=parseInt(a[i],36)||0;lo+=parseInt(a[i+1],36)||0;P.push([la/1e5,lo/1e5])}return P.length>=2?P:null}
 var MMC={};
-function mmOf(r){if(sample||!r||SET.mmOff)return null;var x=mmLoad()[r.t0];if(!x||!x.c)return null;if(MMC[r.t0]&&MMC[r.t0].s===x.c)return MMC[r.t0].P;var P=mmDec(x.c);MMC[r.t0]={s:x.c,P:P};return P}
+function mmInfo(r){if(sample||!r||SET.mmOff)return null;var x=mmLoad()[r.t0];if(!x||!x.c)return null;if(MMC[r.t0]&&MMC[r.t0].s===x.c)return MMC[r.t0];var P=mmDec(x.c),W=x.w?x.w.split('.').map(function(v){return parseInt(v,36)}):null;MMC[r.t0]={s:x.c,P:P,W:W};return MMC[r.t0]}
+function mmOf(r){var I=mmInfo(r);return I?I.P:null}
 function mmTrip(r){
   var P=rawTrack(r);if(!P||P.length<2)return Promise.resolve(false);
-  /* points plus serrés pour aider le recalage : un tous les 40 m le long du tracé reçu */
-  var Q=densify(P,.04).map(function(p){return [p[0]*1e5,p[1]*1e5,0,0,0]});
-  return mmMatch(Q).then(function(m){var D=mmLoad();
-    if(m&&m.ratio>=.6&&m.P.length>=2){var out=dpSimp(m.P.map(function(p){return [p[0]/1e5,p[1]/1e5]}),.000012);D[r.t0]={c:mmEnc(out),q:Math.round(m.ratio*100)};mmSave();return true}
-    D[r.t0]={fail:Date.now()};mmSave();return false});
+  return mmMatch2(P,r.dist).then(function(m){var D=mmLoad();
+    var okKm=m&&m.P&&(!(r.dist>0)||(m.km>=r.dist*.7-.3&&m.km<=r.dist*1.4+.5));
+    if(m&&m.P&&m.ratio>=.7&&okKm&&m.P.length>=2){var s=mmSimpW(m.P,m.W);D[r.t0]={c:mmEnc(s.P),w:s.W.map(function(i){return i.toString(36)}).join('.'),q:Math.round(m.ratio*100),km:Math.round(m.km*100)/100};mmSave();return true}
+    D[r.t0]={fail:Date.now(),why:m&&m.err?m.err:!m?'?':m.ratio<.7?'routes':'distance'};mmSave();return false});
 }
 function mmQueue(){
   if(sample||MM.busy||SET.mmOff)return;var D=mmLoad(),now=Date.now();
@@ -1605,17 +1679,31 @@ var CSTOPS=[[4.5,[52,209,122]],[6,[255,214,10]],[8,[255,159,10]],[10,[255,59,48]
 function consoRGB(c){if(c<=CSTOPS[0][0])return CSTOPS[0][1];for(var i=1;i<CSTOPS.length;i++)if(c<=CSTOPS[i][0]){var a=CSTOPS[i-1],b=CSTOPS[i],t=(c-a[0])/(b[0]-a[0]);return [0,1,2].map(function(k){return Math.round(a[1][k]+(b[1][k]-a[1][k])*t)})}return CSTOPS[CSTOPS.length-1][1]}
 function consoCol(c){return 'rgb('+consoRGB(c).join(',')+')'}
 function detOf(r){
-  var D=data(),s=r&&D.details&&D.details[r.t0];if(!s||snapped(r))return null;
+  var D=data(),s=r&&D.details&&D.details[r.t0];if(!s)return null;
   var L=s.split(','),f=function(x){return (x||'').split('.').map(function(v){var n=v===''?null:parseInt(v,36);return n==null||isNaN(n)?null:n})};
   var o={c:f(L[0]).map(function(v){return v==null?null:v/10}),v:f(L[1]),t:f(L[2])};
   return o.c.concat(o.v,o.t).some(function(x){return x!=null})?o:null;
 }
 function hav(a,b){var r=Math.PI/180,x=Math.sin((b[0]-a[0])*r/2),y=Math.sin((b[1]-a[1])*r/2),h=x*x+Math.cos(a[0]*r)*Math.cos(b[0]*r)*y*y;return 12742*Math.asin(Math.sqrt(h))}
 /* distances le long du tracé (recalées sur la distance du trajet), heure, vitesse et conso de chaque point */
+/* le détail (conso, vitesse, temps) est donné pour les points reçus : on le répartit sur le tracé affiché */
+function detMap(r,P,De){
+  if(!De||!r)return De;var Rw=rawTrack(r);if(!Rw||P===Rw||(P.length===Rw.length&&P[0][0]===Rw[0][0]&&P[P.length-1][1]===Rw[Rw.length-1][1]))return De;
+  var n=Rw.length,I=mmInfo(r),W=I&&I.P===P&&I.W&&I.W.length===n?I.W:null,dP=cumD(P),i,j;
+  if(!W){/* sans correspondance exacte : à la proportion de la distance */
+    var dR=cumD(Rw),tr=dR[n-1]||1,tp=dP[P.length-1]||1;W=[];for(i=0;i<n;i++){var x=dR[i]/tr*tp,lo=0;while(lo<P.length-1&&dP[lo+1]<=x)lo++;W.push(lo)}W[0]=0;W[n-1]=P.length-1;
+    for(i=1;i<n;i++)if(W[i]<W[i-1])W[i]=W[i-1]}
+  var o={c:new Array(P.length).fill(null),v:new Array(P.length).fill(null),t:new Array(P.length).fill(null)},lin=function(a,b,f){return a==null?b:b==null?a:a+(b-a)*f};
+  for(i=0;i<n;i++){var w=W[i];if(w==null)continue;o.c[w]=De.c[i];o.v[w]=De.v[i];if(i===0)o.t[w]=De.t[0];
+    if(i+1<n&&W[i+1]!=null&&W[i+1]>w){var w2=W[i+1],L=dP[w2]-dP[w]||1,T=De.t[i+1];
+      for(j=w+1;j<=w2;j++){var f=(dP[j]-dP[w])/L;if(j<w2){o.c[j]=lin(De.c[i],De.c[i+1],f);o.v[j]=lin(De.v[i],De.v[i+1],f)}o.t[j]=T==null?null:T*(dP[j]-dP[j-1])/L}}
+    else if(i+1<n&&W[i+1]===w&&De.t[i+1]!=null){o.t[w]=(o.t[w]||0)+De.t[i+1]}}
+  return o;
+}
 function routeModel(r,P){
   var d=[0],i;for(i=1;i<P.length;i++)d.push(d[i-1]+hav(P[i-1],P[i]));
   var tot=d[d.length-1],k=(r&&r.dist>0&&tot>0&&r.dist/tot>.6&&r.dist/tot<1.6)?r.dist/tot:1;
-  var De=detOf(r),M={P:P,d:d.map(function(x){return x*k}),c:[],v:[],tm:[]},acc=0;
+  var De=detMap(r,P,detOf(r)),M={P:P,d:d.map(function(x){return x*k}),c:[],v:[],tm:[]},acc=0;
   for(i=0;i<P.length;i++){var t=De?De.t[i]:null;if(t!=null)acc+=t;M.c.push(De&&De.c[i]!=null?De.c[i]:null);M.v.push(De&&De.v[i]!=null?De.v[i]:null);M.tm.push(De&&t!=null&&r?r.t0+acc*1000:null)}
   M.has=M.c.some(function(x){return x!=null});M.hasV=M.v.some(function(x){return x!=null});M.det=M.has||M.hasV;
   return M;
