@@ -907,7 +907,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.44';
+var APP_V='2.45';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1286,7 +1286,7 @@ function snapSave(){try{localStorage.setItem(SNAPK,JSON.stringify(SNAP))}catch(e
 function rawTrack(r){var D=data();return r&&D.tracks?trackPts(D.tracks[r.t0]):null}
 function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
 function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
-function trackOf(r){var P=rawTrack(r);if(!P)return null;if(sparse(P,r)){var S=snapped(r);if(S)return S}return P}
+function trackOf(r){var P=rawTrack(r);if(!P)return null;var M=mmOf(r);if(M)return M;if(sparse(P,r)){var S=snapped(r);if(S)return S}return P}
 function snapWait(){var w=Math.max(0,SNQ.last+1100-Date.now());return new Promise(function(ok){setTimeout(ok,w)})}
 function snapOne(r){
   var P=rawTrack(r);if(!P)return Promise.reject();var n=P.length,W=[];
@@ -1306,6 +1306,227 @@ function snapQueue(){
   (function nx(i){if(i>=L.length){SNQ.busy=false;if(ch){TMCACHE={};ANAC={};var free=$('#mapv').classList.contains('hide')&&$('#retro').classList.contains('hide')&&(!$('#sheet')||$('#sheet').classList.contains('hide'));if(free&&TAB!=='set'){var y=window.scrollY;render();window.scrollTo(0,y)}}return}
     snapOne(L[i]).then(function(ok){if(ok)ch++;nx(i+1)},function(){SNQ.busy=false})})(0);
 }
+/* ---------- 2.45 : tracés posés exactement sur les routes de la carte (même méthode que l'autoradio 4.2) ----------
+   Les tracés reçus par QR sont arrondis à 1e-4° (≈ 11 m) et simplifiés : ils débordent des routes.
+   On les recale sur les routes des tuiles OpenFreeMap (celles de la carte) avec un modèle de Markov caché
+   (Newson & Krumm), puis on redessine le trajet en suivant la géométrie des routes. Résultat gardé en mémoire. */
+var MM={tpl:null,tiles:{},tn:0,busy:false},MMK='sandero-mm',MMD=null;
+/* --- lecture des tuiles vectorielles (format Mapbox Vector Tile = protobuf) --- */
+function PBR(b){this.b=b;this.p=0}
+PBR.prototype.v=function(){var b=this.b,r=0,s=1,c;do{c=b[this.p++];r+=(c&127)*s;s*=128}while(c>=128);return r};
+PBR.prototype.sk=function(w){if(w===0)this.v();else if(w===1)this.p+=8;else if(w===2){var l=this.v();this.p+=l}else if(w===5)this.p+=4};
+PBR.prototype.str=function(l){var s='',e=this.p+l;while(this.p<e)s+=String.fromCharCode(this.b[this.p++]);try{return decodeURIComponent(escape(s))}catch(x){return s}};
+var MMROAD={motorway:1,trunk:1,primary:1,secondary:1,tertiary:1,minor:1,service:1,busway:1};
+function mvtRoads(b,z,tx,ty){
+  var R=new PBR(b),out=[];
+  while(R.p<b.length){var tg=R.v(),f=tg>>3,w=tg&7;
+    if(f===3&&w===2){var l=R.v(),e=R.p+l,lay=mvtLayer(R,e,z,tx,ty);R.p=e;if(lay)out=out.concat(lay)}else R.sk(w)}
+  return out;
+}
+function mvtLayer(R,end,z,tx,ty){
+  var name='',feats=[],keys=[],vals=[],ext=4096,st=R.p;
+  /* 1re passe : nom ; on saute les couches inutiles */
+  while(R.p<end){var tg=R.v(),f=tg>>3,w=tg&7;
+    if(f===1&&w===2){name=R.str(R.v());if(name!=='transportation')return null}
+    else if(f===2&&w===2){var l=R.v();feats.push([R.p,R.p+l]);R.p+=l}
+    else if(f===3&&w===2){keys.push(R.str(R.v()))}
+    else if(f===4&&w===2){var l2=R.v(),e2=R.p+l2,val=null;while(R.p<e2){var t2=R.v(),f2=t2>>3,w2=t2&7;if(f2===1&&w2===2)val=R.str(R.v());else if(w2===0)val=R.v();else R.sk(w2)}vals.push(val)}
+    else if(f===5&&w===0)ext=R.v();
+    else R.sk(w)}
+  if(name!=='transportation')return null;
+  var ci=keys.indexOf('class'),oi=keys.indexOf('oneway'),n=Math.pow(2,z),res=[];
+  feats.forEach(function(fr){
+    R.p=fr[0];var tags=null,type=0,geo=null;
+    while(R.p<fr[1]){var tg=R.v(),f=tg>>3,w=tg&7;
+      if(f===2&&w===2){var l=R.v(),e=R.p+l;tags=[];while(R.p<e)tags.push(R.v())}
+      else if(f===3&&w===0)type=R.v();
+      else if(f===4&&w===2){var l3=R.v(),e3=R.p+l3;geo=[];while(R.p<e3)geo.push(R.v())}
+      else R.sk(w)}
+    if(type!==2||!tags||!geo)return;
+    var cls=null,one=0;for(var i=0;i+1<tags.length;i+=2){if(tags[i]===ci)cls=vals[tags[i+1]];else if(tags[i]===oi)one=vals[tags[i+1]]}
+    if(!MMROAD[cls])return;
+    /* géométrie : commandes MoveTo / LineTo, coordonnées en zigzag, relatives */
+    var x=0,y=0,i2=0,line=null;
+    while(i2<geo.length){var c=geo[i2++],id=c&7,cnt=c>>3;
+      if(id===1||id===2){for(var k=0;k<cnt;k++){var dx=geo[i2++],dy=geo[i2++];x+=(dx>>>1)^-(dx&1);y+=(dy>>>1)^-(dy&1);
+        var lon=(tx+x/ext)/n*360-180,yy=(ty+y/ext)/n,lat=Math.atan(Math.sinh(Math.PI*(1-2*yy)))*180/Math.PI;
+        if(id===1){if(line&&line.length>1)res.push({c:cls,o:one,g:line});line=[[lon,lat]]}else line.push([lon,lat])}}
+      else if(id===7){}}
+    if(line&&line.length>1)res.push({c:cls,o:one,g:line});
+  });
+  return res;
+}
+/* --- tuiles : adresse lue une fois, puis gardées en mémoire (zoom 14, toutes les routes) --- */
+function mmTpl(){if(MM.tpl)return Promise.resolve(MM.tpl);return fetch('https://tiles.openfreemap.org/planet').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){MM.tpl=j.tiles[0];return MM.tpl})}
+function mmGunzip(u8){
+  if(u8[0]!==0x1f||u8[1]!==0x8b)return Promise.resolve(u8);
+  if(typeof DecompressionStream==='undefined')return Promise.reject(new Error('gzip'));
+  return new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer().then(function(a){return new Uint8Array(a)});
+}
+function mmTile(x,y){
+  var k=x+'/'+y,c=MM.tiles[k];if(c){c.t=++MM.tn;return c.p}
+  var p=mmTpl().then(function(tpl){return fetch(tpl.replace('{z}','14').replace('{x}',x).replace('{y}',y))})
+    .then(function(r){if(!r.ok)throw 0;return r.arrayBuffer()}).then(function(a){return mmGunzip(new Uint8Array(a))})
+    .then(function(u8){return mvtClip(mvtRoads(u8,14,x,y),x,y)}).catch(function(){delete MM.tiles[k];return null});
+  MM.tiles[k]={p:p,t:++MM.tn};
+  var ks=Object.keys(MM.tiles);if(ks.length>120){ks.sort(function(a,b){return MM.tiles[a].t-MM.tiles[b].t});ks.slice(0,30).forEach(function(z){delete MM.tiles[z]})}
+  return p;
+}
+/* chaque tuile est coupée à ses bords exacts : les routes des tuiles voisines se raccordent */
+function mvtClip(L,tx,ty){
+  var n=16384,lo0=tx/n*360-180,lo1=(tx+1)/n*360-180,la=function(yy){return Math.atan(Math.sinh(Math.PI*(1-2*yy/n)))*180/Math.PI},la1=la(ty),la0=la(ty+1);
+  function inb(p){return p[0]>=lo0&&p[0]<=lo1&&p[1]>=la0&&p[1]<=la1}
+  function cut(a,b){/* point où le segment a→b sort/entre dans la tuile */
+    var t0=0,t1=1,dx=b[0]-a[0],dy=b[1]-a[1],P=[-dx,dx,-dy,dy],Q=[a[0]-lo0,lo1-a[0],a[1]-la0,la1-a[1]];
+    for(var i=0;i<4;i++){if(P[i]===0){if(Q[i]<0)return null}else{var r=Q[i]/P[i];if(P[i]<0){if(r>t1)return null;if(r>t0)t0=r}else{if(r<t0)return null;if(r<t1)t1=r}}}
+    return [[a[0]+t0*dx,a[1]+t0*dy],[a[0]+t1*dx,a[1]+t1*dy]];
+  }
+  var out=[];
+  (L||[]).forEach(function(f){var cur=null;
+    for(var i=1;i<f.g.length;i++){var s=cut(f.g[i-1],f.g[i]);
+      if(!s){if(cur&&cur.length>1)out.push({c:f.c,o:f.o,g:cur});cur=null;continue}
+      if(!cur)cur=[s[0]];else if(Math.abs(cur[cur.length-1][0]-s[0][0])>1e-9||Math.abs(cur[cur.length-1][1]-s[0][1])>1e-9){if(cur.length>1)out.push({c:f.c,o:f.o,g:cur});cur=[s[0]]}
+      cur.push(s[1]);if(!inb(f.g[i])){if(cur.length>1)out.push({c:f.c,o:f.o,g:cur});cur=null}}
+    if(cur&&cur.length>1)out.push({c:f.c,o:f.o,g:cur});
+  });
+  return out;
+}
+function mmTilesFor(la0,lo0,la1,lo1){
+  var n=16384,x0=Math.floor((lo0+180)/360*n),x1=Math.floor((lo1+180)/360*n);
+  var yf=function(a){var r=a*Math.PI/180;return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n)};
+  var y0=yf(la1),y1=yf(la0),L=[];for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++)L.push([x,y]);return L;
+}
+/* --- graphe des routes (mètres, autour d'une origine) --- */
+function mmGraph(feats,o){
+  var kx=111320*Math.cos(o[0]*Math.PI/180),ky=110540,N=[],NI={},E=[],adj=[];
+  function node(p){var x=(p[0]-o[1])*kx,y=(p[1]-o[0])*ky,k=Math.round(x*2)+','+Math.round(y*2),i=NI[k];if(i==null){i=NI[k]=N.length;N.push([x,y]);adj.push([])}return i}
+  feats.forEach(function(f){var a=node(f.g[0]);
+    for(var i=1;i<f.g.length;i++){var b=node(f.g[i]);if(a===b)continue;var A=N[a],B=N[b],len=Math.hypot(B[0]-A[0],B[1]-A[1]);
+      var e=E.length;E.push([a,b,len,f.o||0]);adj[a].push(e);adj[b].push(e);a=b}});
+  /* raccords entre tuiles : bouts de route libres à moins de 3 m l'un de l'autre */
+  var G={};N.forEach(function(p,i){if(adj[i].length===1){var k=Math.floor(p[0]/4)+','+Math.floor(p[1]/4);(G[k]=G[k]||[]).push(i)}});
+  N.forEach(function(p,i){if(adj[i].length!==1)return;var cx=Math.floor(p[0]/4),cy=Math.floor(p[1]/4);
+    for(var dx=-1;dx<=1;dx++)for(var dy=-1;dy<=1;dy++)(G[(cx+dx)+','+(cy+dy)]||[]).forEach(function(j){if(j<=i)return;var q=N[j],d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<3){var e=E.length;E.push([i,j,d,0]);adj[i].push(e);adj[j].push(e)}})});
+  /* index spatial : cases de 50 m */
+  var IX={};E.forEach(function(e,i){var A=N[e[0]],B=N[e[1]],x0=Math.floor(Math.min(A[0],B[0])/50),x1=Math.floor(Math.max(A[0],B[0])/50),y0=Math.floor(Math.min(A[1],B[1])/50),y1=Math.floor(Math.max(A[1],B[1])/50);
+    for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++){var k=x+','+y;(IX[k]=IX[k]||[]).push(i)}});
+  return {N:N,E:E,adj:adj,IX:IX,kx:kx,ky:ky,o:o};
+}
+function mmNear(G,x,y,R){
+  var res=[],seen={},c0=Math.floor((x-R)/50),c1=Math.floor((x+R)/50),r0=Math.floor((y-R)/50),r1=Math.floor((y+R)/50);
+  for(var cx=c0;cx<=c1;cx++)for(var cy=r0;cy<=r1;cy++)(G.IX[cx+','+cy]||[]).forEach(function(ei){if(seen[ei])return;seen[ei]=1;
+    var e=G.E[ei],A=G.N[e[0]],B=G.N[e[1]],dx=B[0]-A[0],dy=B[1]-A[1],L2=dx*dx+dy*dy;if(!L2)return;
+    var t=Math.max(0,Math.min(1,((x-A[0])*dx+(y-A[1])*dy)/L2)),px=A[0]+t*dx,py=A[1]+t*dy,d=Math.hypot(x-px,y-py);
+    if(d<=R)res.push({e:ei,t:t,x:px,y:py,d:d,h:Math.atan2(dx,dy)})});
+  res.sort(function(a,b){return a.d-b.d});
+  /* une seule candidate par route (la plus proche) */
+  var out=[],used={};res.forEach(function(c){var e=G.E[c.e],k=Math.min(e[0],e[1])+'-'+Math.max(e[0],e[1]);if(out.length<7&&!used[c.e]){used[c.e]=1;out.push(c)}});
+  return out;
+}
+/* distance par la route entre deux candidates (Dijkstra borné), avec le chemin */
+function mmRoute(G,a,b,max){
+  if(a.e===b.e){var e=G.E[a.e];return {d:Math.abs(b.t-a.t)*e[2],path:[]}}
+  var ea=G.E[a.e],eb=G.E[b.e],D={},P={},H=[];
+  function push(n,d,p){if(D[n]!=null&&D[n]<=d)return;D[n]=d;P[n]=p;H.push([d,n])}
+  push(ea[0],a.t*ea[2],-1);push(ea[1],(1-a.t)*ea[2],-1);
+  var tgt={},best=Infinity,bestN=-1;tgt[eb[0]]=b.t*eb[2];tgt[eb[1]]=(1-b.t)*eb[2];
+  while(H.length){var mi=0;for(var i=1;i<H.length;i++)if(H[i][0]<H[mi][0])mi=i;var it=H[mi];H[mi]=H[H.length-1];H.pop();
+    var d=it[0],n=it[1];if(d>D[n])continue;if(d>max||d>=best)break;
+    if(tgt[n]!=null&&d+tgt[n]<best){best=d+tgt[n];bestN=n}
+    G.adj[n].forEach(function(ei){var e=G.E[ei],m=e[0]===n?e[1]:e[0];push(m,d+e[2],n)})}
+  if(bestN<0)return null;
+  var path=[],n2=bestN;while(n2!==-1&&n2!=null){path.unshift(n2);n2=P[n2]}
+  return {d:best,path:path};
+}
+/* --- recalage d'un tracé complet --- */
+function mmMatch(P){
+  if(!P||P.length<3)return Promise.resolve(null);
+  var la0=1e9,la1=-1e9,lo0=1e9,lo1=-1e9;P.forEach(function(p){var a=p[0]/1e5,o=p[1]/1e5;if(a<la0)la0=a;if(a>la1)la1=a;if(o<lo0)lo0=o;if(o>lo1)lo1=o});
+  var pad=0.0006,T=mmTilesFor(la0-pad,lo0-pad,la1+pad,lo1+pad);if(T.length>160)return Promise.resolve(null);
+  return Promise.all(T.map(function(t){return mmTile(t[0],t[1])})).then(function(L){
+    var miss=L.filter(function(x){return x===null}).length;if(miss>T.length*0.25)return null;
+    var F=[];L.forEach(function(x){if(x)F=F.concat(x)});if(!F.length)return null;
+    return mmRun(P,mmGraph(F,[(la0+la1)/2,(lo0+lo1)/2]));
+  });
+}
+function mmRun(P,G){
+  var SIG=9,BETA=12,R=40;
+  /* points de travail : un tous les 20 m environ */
+  var pts=[],last=null;P.forEach(function(p,i){var x=(p[1]/1e5-G.o[1])*G.kx,y=(p[0]/1e5-G.o[0])*G.ky;if(!last||Math.hypot(x-last[0],y-last[1])>=20||i===P.length-1){pts.push([x,y,i]);last=[x,y]}});
+  var C=pts.map(function(q){return mmNear(G,q[0],q[1],R)});
+  /* Viterbi, avec redémarrage si un passage n'a aucune route possible (parking, chemin non cartographié) */
+  var segs=[],cur=null;
+  for(var k=0;k<pts.length;k++){
+    var cs=C[k];if(!cs.length){if(cur)segs.push(cur);cur=null;continue}
+    var hd=null;if(k>0){var q0=pts[k-1],q1=pts[k];if(Math.hypot(q1[0]-q0[0],q1[1]-q0[1])>8)hd=Math.atan2(q1[0]-q0[0],q1[1]-q0[1])}
+    var em=cs.map(function(c){var s=-c.d*c.d/(2*SIG*SIG);if(hd!=null){var a=Math.abs(((c.h-hd)%Math.PI+Math.PI)%Math.PI);a=Math.min(a,Math.PI-a);s-=Math.pow(a/0.6,2)*0.5}return s});
+    if(!cur){cur={k:[k],sc:em.slice(),bp:[cs.map(function(){return -1})],rt:[cs.map(function(){return null})]};continue}
+    var kp=cur.k[cur.k.length-1],pc=C[kp],dd=Math.hypot(pts[k][0]-pts[kp][0],pts[k][1]-pts[kp][1]),max=dd*2.5+80;
+    var sc=[],bp=[],rt=[],any=false;
+    cs.forEach(function(c,j){var bs=-Infinity,bi=-1,br=null;
+      pc.forEach(function(p,i){if(cur.sc[i]===-Infinity)return;var r=mmRoute(G,p,c,max);if(!r)return;
+        var s=cur.sc[i]-Math.abs(r.d-dd)/BETA;if(s>bs){bs=s;bi=i;br=r}});
+      if(bi>=0){any=true;sc.push(bs+em[j])}else sc.push(-Infinity);bp.push(bi);rt.push(br)});
+    if(!any){segs.push(cur);cur={k:[k],sc:em.slice(),bp:[cs.map(function(){return -1})],rt:[cs.map(function(){return null})]};continue}
+    var mx=Math.max.apply(null,sc);sc=sc.map(function(v){return v-mx});
+    cur.k.push(k);cur.sc=sc;cur.bp.push(bp);cur.rt.push(rt);
+  }
+  if(cur)segs.push(cur);
+  /* reconstruction : le tracé suit la géométrie des routes entre deux points recalés */
+  var out=[],matched=0;
+  function attr(i){var p=P[i];return [p[2],p[3],p[4]]}
+  function add(x,y,a){var lat=G.o[0]+y/G.ky,lon=G.o[1]+x/G.kx;out.push([Math.round(lat*1e5),Math.round(lon*1e5),a[0],a[1],a[2]])}
+  var segK=0;
+  segs.forEach(function(sg){
+    var n=sg.k.length,bi=0;for(var j=1;j<sg.sc.length;j++)if(sg.sc[j]>sg.sc[bi])bi=j;
+    var ch=new Array(n);ch[n-1]=bi;for(var t=n-1;t>0;t--)ch[t-1]=sg.bp[t][ch[t]];
+    /* points bruts avant ce morceau (non recalés) */
+    var first=pts[sg.k[0]][2];for(var i=segK;i<first;i++)out.push(P[i].slice());
+    for(var t2=0;t2<n;t2++){
+      var kk=sg.k[t2],c=C[kk][ch[t2]];
+      if(t2>0){var r=sg.rt[t2][ch[t2]],pi0=pts[sg.k[t2-1]][2],pi1=pts[kk][2];
+        if(r&&r.path.length){var tot=0,pp=[];var prev=C[sg.k[t2-1]][ch[t2-1]];var px=prev.x,py=prev.y;
+          r.path.forEach(function(nid){var q=G.N[nid];tot+=Math.hypot(q[0]-px,q[1]-py);pp.push([q[0],q[1],tot]);px=q[0];py=q[1]});
+          tot+=Math.hypot(c.x-px,c.y-py);
+          pp.forEach(function(q){var f=tot>0?q[2]/tot:0,ii=Math.min(pi1,Math.max(pi0,Math.round(pi0+(pi1-pi0)*f)));add(q[0],q[1],attr(ii))})}}
+      add(c.x,c.y,attr(pts[kk][2]));matched++;
+    }
+    segK=pts[sg.k[n-1]][2]+1;
+  });
+  for(var i3=segK;i3<P.length;i3++)if(segs.length===0)out.push(P[i3].slice());
+  if(!matched||matched<pts.length*0.5)return null;
+  /* doublons consécutifs */
+  var o2=[];out.forEach(function(p){var q=o2[o2.length-1];if(!q||q[0]!==p[0]||q[1]!==p[1])o2.push(p)});
+  return {P:o2,ratio:matched/pts.length};
+}
+function mmLoad(){if(MMD)return MMD;try{MMD=JSON.parse(localStorage.getItem(MMK)||'{}')}catch(e){MMD={}}return MMD}
+function mmSave(){var D=mmLoad(),k=Object.keys(D).filter(function(x){return D[x].c}).map(Number).sort(function(a,b){return b-a});
+  k.slice(180).forEach(function(x){delete D[x]});
+  for(var tries=0;tries<4;tries++){try{localStorage.setItem(MMK,JSON.stringify(D));return}catch(e){k=Object.keys(D).filter(function(x){return D[x].c}).map(Number).sort(function(a,b){return b-a});k.slice(Math.floor(k.length*.7)).forEach(function(x){delete D[x]})}}}
+function mmEnc(P){var la=0,lo=0,o=[];P.forEach(function(p){var a=Math.round(p[0]*1e5),b=Math.round(p[1]*1e5);o.push(sb36(a-la),sb36(b-lo));la=a;lo=b});return o.join('.')}
+function mmDec(s){var a=s.split('.'),la=0,lo=0,P=[];for(var i=0;i+1<a.length;i+=2){la+=parseInt(a[i],36)||0;lo+=parseInt(a[i+1],36)||0;P.push([la/1e5,lo/1e5])}return P.length>=2?P:null}
+var MMC={};
+function mmOf(r){if(sample||!r||SET.mmOff)return null;var x=mmLoad()[r.t0];if(!x||!x.c)return null;if(MMC[r.t0]&&MMC[r.t0].s===x.c)return MMC[r.t0].P;var P=mmDec(x.c);MMC[r.t0]={s:x.c,P:P};return P}
+function mmTrip(r){
+  var P=rawTrack(r);if(!P||P.length<2)return Promise.resolve(false);
+  /* points plus serrés pour aider le recalage : un tous les 40 m le long du tracé reçu */
+  var Q=densify(P,.04).map(function(p){return [p[0]*1e5,p[1]*1e5,0,0,0]});
+  return mmMatch(Q).then(function(m){var D=mmLoad();
+    if(m&&m.ratio>=.6&&m.P.length>=2){var out=dpSimp(m.P.map(function(p){return [p[0]/1e5,p[1]/1e5]}),.000012);D[r.t0]={c:mmEnc(out),q:Math.round(m.ratio*100)};mmSave();return true}
+    D[r.t0]={fail:Date.now()};mmSave();return false});
+}
+function mmQueue(){
+  if(sample||MM.busy||SET.mmOff)return;var D=mmLoad(),now=Date.now();
+  var L=list().filter(function(r){var x=D[r.t0];return !r.demo&&rawTrack(r)&&(!x||(x.fail&&now-x.fail>3*864e5))}).sort(function(a,b){return b.t0-a.t0});
+  if(!L.length)return;MM.busy=true;var ch=0,i=0;
+  (function nx(){
+    if(i>=L.length||i>=12){MM.busy=false;if(ch)mmRefresh();if(i<L.length)setTimeout(mmQueue,3000);return}
+    var r=L[i++];mmTrip(r).then(function(ok){if(ok)ch++;setTimeout(nx,120)},function(){MM.busy=false;if(ch)mmRefresh()});
+  })();
+}
+function mmRefresh(){TMCACHE={};ANAC={};COMS=null;QS=null;
+  var free=$('#mapv').classList.contains('hide')&&$('#retro').classList.contains('hide')&&(!$('#sheet')||$('#sheet').classList.contains('hide'))&&$('#fog').classList.contains('hide');
+  var c=$('#cele');if(free&&TAB!=='set'&&(!c||c.hidden)){var y=window.scrollY;render();window.scrollTo(0,y)}}
 /* petit aperçu du tracé (dessiné en SVG, sans carte) */
 function mapBtn(t0,P){
   var a=1e9,b=-1e9,c=1e9,d=-1e9;P.forEach(function(p){if(p[0]<a)a=p[0];if(p[0]>b)b=p[0];if(p[1]<c)c=p[1];if(p[1]>d)d=p[1]});
@@ -3588,7 +3809,7 @@ function render(){
   Array.prototype.forEach.call(document.querySelectorAll('[data-ana]'),function(b){b.onclick=function(){ANAP=b.getAttribute('data-ana');var y=window.scrollY;render();window.scrollTo(0,y)}});
   if(TAB==='bilan')mmapMount();
   if(!sample)batAlertIsland();
-  setTimeout(snapQueue,1500);setTimeout(comQueue,2500);setTimeout(function(){if(COMQ.busy||ARQ.busy)return;arrPopQueue();altQueue();epciQueue();qQueue()},4200);setTimeout(monScan,3000);
+  setTimeout(snapQueue,1500);setTimeout(mmQueue,2000);setTimeout(comQueue,2500);setTimeout(function(){if(COMQ.busy||ARQ.busy)return;arrPopQueue();altQueue();epciQueue();qQueue()},4200);setTimeout(monScan,3000);
   Array.prototype.forEach.call(document.querySelectorAll('[data-fog]'),function(b){b.onclick=openFog});
   Array.prototype.forEach.call(document.querySelectorAll('[data-cmap]'),function(b){b.onclick=openComMap});
   Array.prototype.forEach.call(document.querySelectorAll('[data-alb]'),function(b){b.onclick=openAlbum});
