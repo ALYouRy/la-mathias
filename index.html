@@ -792,7 +792,7 @@ button{font:inherit;color:inherit}
 .comnb{display:grid;grid-template-columns:1fr 1fr;gap:6px}.comnb span{padding:8px 10px;border-radius:12px;border:1px dashed rgba(255,255,255,.14);background:rgba(255,255,255,.02)}.comnb b{display:block;font-size:13px}.comnb small{font-size:11.5px;color:var(--fg-3)}
 .comc .sbtns{display:flex;gap:8px}.comc .sbtns .btn{flex:1}
 .cmleg{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;font-size:11.5px;color:var(--fg-2)}.cmleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}.cmleg i.nv{background:#0d0a26;border:1px solid #3b3570}
-.fogp.cmp .fogbig b{font-size:46px}
+.fogp.cmp .fogbig b{font-size:46px}.cmerr{margin:8px 0 0!important;font-size:11px!important;color:#ffb340!important;word-break:break-word}#cmretry{margin-top:10px;width:100%}
 .ficmap{position:relative!important;height:210px;border-radius:18px;overflow:hidden;background:#0b0920;margin-bottom:12px}.ficmap canvas{opacity:0;transition:opacity .5s}.ficmap.live canvas{opacity:1}
 .ficg{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}.ficg b{font-size:22px!important}.ficg small{display:block;font-size:11px;color:var(--fg-3)}
 .fich{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:10px}.fich span{color:var(--fg-3)}.ficg{margin-bottom:10px}
@@ -907,7 +907,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.43';
+var APP_V='2.44';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -3022,9 +3022,15 @@ function comCard(){
 }
 /* contours (geo.api.gouv.fr, format GeoJSON), gardés le temps de la session */
 var CONT={};
-function getJ(u){if(CONT[u])return CONT[u];CONT[u]=fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()});CONT[u].catch(function(){delete CONT[u]});return CONT[u]}
-function contDep(d){return getJ(GEO+'departements/'+d+'/communes?format=geojson&geometry=contour&fields=nom,code')}
-function contOne(code,arr){return getJ(GEO+'communes/'+code+'?format=geojson&geometry=contour&fields=nom,code'+(arr?'&type=arrondissement-municipal':''))}
+function getJ(u){if(CONT[u])return CONT[u];CONT[u]=fetch(u).then(function(r){if(!r.ok){var e=new Error('HTTP '+r.status);e.st=r.status;throw e}return r.json()});CONT[u].catch(function(){delete CONT[u]});return CONT[u]}
+/* essaie plusieurs formes d'adresse (la 1re qui répond gagne) */
+function getAny(U){var i=0,last=null;return new Promise(function(ok,ko){(function nx(){if(i>=U.length){ko(last||new Error('aucune réponse'));return}getJ(U[i++]).then(function(j){if(j&&(j.features||j.geometry||j.type))ok(j);else{last=new Error('réponse vide');nx()}},function(e){last=e;nx()})})()})}
+function featOf(j){if(!j)return [];if(j.type==='FeatureCollection')return j.features||[];if(j.type==='Feature')return [j];if(j.geometry)return [{type:'Feature',properties:{nom:j.nom,code:j.code},geometry:j.geometry}];return []}
+function contDep(d){return getAny([GEO+'departements/'+d+'/communes?format=geojson&geometry=contour&fields=nom,code',GEO+'departements/'+d+'/communes?format=geojson&geometry=contour',GEO+'departements/'+d+'/communes?fields=nom,code,contour'].map(String)).then(function(j){
+  if(Array.isArray(j))return {type:'FeatureCollection',features:j.filter(function(x){return x.contour}).map(function(x){return {type:'Feature',properties:{nom:x.nom,code:x.code},geometry:x.contour}})};return j})}
+function contOne(code,arr){var t=arr?'&type=arrondissement-municipal':'';return getAny([GEO+'communes/'+code+'?format=geojson&geometry=contour&fields=nom,code'+t,GEO+'communes/'+code+'?format=geojson&geometry=contour'+t,GEO+'communes/'+code+'?fields=nom,code,contour'+t]).then(function(j){
+  if(j&&!j.type&&j.contour)return {type:'Feature',properties:{nom:j.nom,code:j.code||code},geometry:j.contour};var f=featOf(j)[0];if(f){f.properties=f.properties||{};f.properties.code=f.properties.code||code;f.properties.nom=f.properties.nom||j.nom}return f})}
+function settle(P){return Promise.all(P.map(function(p){return p.then(function(v){return {ok:1,v:v}},function(e){return {ok:0,e:e}})}))}
 function fcBounds(ml,F){var b=new ml.LngLatBounds(),walk=function(c){if(typeof c[0]==='number')b.extend(c);else c.forEach(walk)};F.forEach(function(f){if(f.geometry)walk(f.geometry.coordinates)});return b}
 /* (22) carte des communes coloriées */
 var CMAP={map:null};
@@ -3033,41 +3039,57 @@ function openComMap(){
   var box=$('#fog');box.innerHTML='<div class="fogmap" id="cmapm"></div><div class="fogvig"></div><button type="button" class="wx" id="cmapx" aria-label="Fermer">✕</button>'+
     '<div class="foghd"><small>Carte des communes</small><b>Colorie tout le département'+(Object.keys(qLoad().Q).length?' · zoome pour les quartiers':'')+'</b></div><div class="fogp cmp" id="cmapp"><p>Chargement des contours…</p></div>';
   box.classList.remove('hide');document.body.style.overflow='hidden';$('#cmapx').onclick=closeComMap;
-  Promise.all([maplibre(),styleFor('neon')].concat(D.slice(0,3).map(function(x){return contDep(x.d)}))).then(function(res){
-    var ml=res[0];if(box.classList.contains('hide'))return;var F=[];
-    res.slice(2).forEach(function(fc){(fc.features||[]).forEach(function(f){F.push(f)})});
-    var done=function(extra){
-      var bigOn={},P2={'132':'13055','751':'75056','693':'69123'};extra.forEach(function(f){bigOn[P2[String(f.properties.code).slice(0,3)]]=1});
-      F=F.filter(function(f){return !bigOn[f.properties.code]}).concat(extra);
-      var mx=1;F.forEach(function(f){var c=f.properties.code,v=!!(C.c[c]||C.a[c]),s=S.by[c];f.properties.v=v?1:0;f.properties.n=s?s.n:0;f.properties.nm=f.properties.nom;if(s&&s.n>mx)mx=s.n});
-      var vis=F.filter(function(f){return f.properties.v}),nv=vis.length,tot=F.length;
-      $('#cmapp').innerHTML='<div class="fogbig"><b>'+nv+'</b><u>/ '+tot+'</u></div><p>zones coloriées · touche une commune pour sa fiche</p><div class="cmleg"><span><i style="background:#2de2e6"></i>1 passage</span><span><i style="background:#b26bff"></i>quelques-uns</span><span><i style="background:#ff3fd0"></i>souvent</span><span><i class="nv"></i>à découvrir</span></div>';
-      var m=new ml.Map({container:'cmapm',style:res[1],bounds:fcBounds(ml,vis.length?vis:F),fitBoundsOptions:{padding:{top:110,bottom:220,left:24,right:24},maxZoom:12},attributionControl:false,fadeDuration:0,dragRotate:false,pitchWithRotate:false,touchPitch:false});
-      m.addControl(new ml.AttributionControl({compact:true}),'bottom-right');CMAP.map=m;
-      m.once('style.load',function(){
-        m.addSource('cm',{type:'geojson',data:{type:'FeatureCollection',features:F}});
-        var col=['interpolate',['linear'],['get','n'],0,'#2de2e6',Math.max(2,mx*.25),'#b26bff',Math.max(3,mx),'#ff3fd0'];
+  var errs=[],note=function(l,e){errs.push(l+' : '+(e&&e.message||'pas de réponse'))};
+  var codes=[],par={};Object.keys(BIG).forEach(function(p){if(!C.c[p]||C.arrOff)return;var base={'13055':13201,'75056':75101,'69123':69381}[p];for(var i=0;i<BIG[p][1];i++){codes.push(String(base+i));par[String(base+i)]=p}});
+  Promise.all([maplibre(),styleFor('neon')]).then(function(res){
+    var ml=res[0];if(box.classList.contains('hide'))return;
+    return settle(D.slice(0,3).map(function(x){return contDep(x.d)})).then(function(RD){
+      var F=[],missing=[];RD.forEach(function(r,i){if(r.ok)featOf(r.v).forEach(function(f){F.push(f)});else{note('Contours du '+D[i].d,r.e);missing.push(D[i].d)}});
+      /* secours : contours un par un des communes traversées */
+      var have={};F.forEach(function(f){have[f.properties&&f.properties.code]=1});
+      var one=Object.keys(C.c).filter(function(k){return !have[k]&&(!F.length||missing.indexOf(C.c[k].d)>=0)});
+      return settle(one.map(function(k){return contOne(k)})).then(function(RO){
+        RO.forEach(function(r,i){if(r.ok&&r.v&&r.v.geometry)F.push(r.v);else if(!r.ok&&i===0)note('Contour de '+C.c[one[i]].n,r.e)});
+        return settle(codes.map(function(c){return contOne(c,1)})).then(function(RA){
+          var ex=[];RA.forEach(function(r){if(r.ok&&r.v&&r.v.geometry&&par[r.v.properties.code])ex.push(r.v)});
+          draw(ml,res[1],F,ex);
+        });
+      });
+    });
+  }).catch(function(e){note('Carte',e);draw(null)});
+  function draw(ml,style,F,extra){
+    var pp=$('#cmapp');if(!pp||box.classList.contains('hide'))return;F=F||[];extra=extra||[];
+    var P2={'132':'13055','751':'75056','693':'69123'},bigOn={};extra.forEach(function(f){bigOn[P2[String(f.properties.code).slice(0,3)]]=1});
+    F=F.filter(function(f){return f&&f.geometry&&f.properties&&!bigOn[f.properties.code]}).concat(extra);
+    var mx=1;F.forEach(function(f){var c=f.properties.code,v=!!(C.c[c]||C.a[c]),s=S.by[c];f.properties.v=v?1:0;f.properties.n=s?s.n:0;if(s&&s.n>mx)mx=s.n});
+    var QD2=qLoad(),QF=Object.keys(QD2.Q).map(function(id){var q=QD2.Q[id];return {type:'Feature',properties:{code:'q'+id,nom:q.n,v:QD2.first[id]!=null?1:0},geometry:{type:'MultiPolygon',coordinates:q.r.map(function(R){return [R.map(function(p){return [p[1],p[0]]})]})}}});
+    var vis=F.filter(function(f){return f.properties.v}),nv=vis.length,tot=F.length,qv=QF.filter(function(f){return f.properties.v}).length;
+    var errTxt=errs.length?'<p class="cmerr">'+esc(errs.slice(0,3).join(' · '))+'</p>':'';
+    if(!ml||(!F.length&&!QF.length)){pp.innerHTML='<p>Carte indisponible pour le moment : le service des contours ne répond pas.</p>'+errTxt+'<button type="button" class="btn ghost" id="cmretry">Réessayer</button>';var rb=$('#cmretry');if(rb)rb.onclick=function(){CONT={};openComMap()};return}
+    pp.innerHTML=(tot?'<div class="fogbig"><b>'+nv+'</b><u>/ '+tot+'</u></div><p>zones coloriées'+(QF.length?' · '+qv+' / '+QF.length+' quartiers':'')+' · touche pour la fiche</p>':'<div class="fogbig"><b>'+qv+'</b><u>/ '+QF.length+'</u></div><p>quartiers de Marseille coloriés</p>')+
+      '<div class="cmleg"><span><i style="background:#2de2e6"></i>1 passage</span><span><i style="background:#b26bff"></i>quelques-uns</span><span><i style="background:#ff3fd0"></i>souvent</span><span><i class="nv"></i>à découvrir</span></div>'+errTxt;
+    var bf=vis.length?vis:F.length?F:QF.filter(function(f){return f.properties.v}).length?QF.filter(function(f){return f.properties.v}):QF;
+    var m;try{m=new ml.Map({container:'cmapm',style:style,bounds:fcBounds(ml,bf),fitBoundsOptions:{padding:{top:110,bottom:220,left:24,right:24},maxZoom:12.5},attributionControl:false,fadeDuration:0,dragRotate:false,pitchWithRotate:false,touchPitch:false})}
+    catch(e){pp.innerHTML+='<p class="cmerr">'+esc(e.message||String(e))+'</p>';return}
+    m.addControl(new ml.AttributionControl({compact:true}),'bottom-right');CMAP.map=m;
+    m.once('style.load',function(){
+      var col=['interpolate',['linear'],['get','n'],0,'#2de2e6',Math.max(2,mx*.25),'#b26bff',Math.max(3,mx),'#ff3fd0'];
+      if(F.length){m.addSource('cm',{type:'geojson',data:{type:'FeatureCollection',features:F}});
         m.addLayer({id:'cm-nv',type:'fill',source:'cm',filter:['==',['get','v'],0],paint:{'fill-color':'#0d0a26','fill-opacity':.72}});
         m.addLayer({id:'cm-v',type:'fill',source:'cm',filter:['==',['get','v'],1],paint:{'fill-color':col,'fill-opacity':0,'fill-opacity-transition':{duration:900}}});
         m.addLayer({id:'cm-l',type:'line',source:'cm',paint:{'line-color':['case',['==',['get','v'],1],col,'#3b3570'],'line-width':['case',['==',['get','v'],1],2,.8],'line-opacity':.9}});
         m.addLayer({id:'cm-g',type:'line',source:'cm',filter:['==',['get','v'],1],paint:{'line-color':col,'line-width':8,'line-blur':6,'line-opacity':.45}});
-        var QD2=qLoad();if(Object.keys(QD2.Q).length){var QF=Object.keys(QD2.Q).map(function(id){var q=QD2.Q[id];return {type:'Feature',properties:{code:'q'+id,nom:q.n,v:QD2.first[id]!=null?1:0},geometry:{type:'MultiPolygon',coordinates:q.r.map(function(R){return [R.map(function(p){return [p[1],p[0]]})]})}}});
-          m.addSource('qz',{type:'geojson',data:{type:'FeatureCollection',features:QF}});
-          m.addLayer({id:'qz-nv',type:'fill',source:'qz',minzoom:11.3,filter:['==',['get','v'],0],paint:{'fill-color':'#0d0a26','fill-opacity':.8}});
-          m.addLayer({id:'qz-v',type:'fill',source:'qz',minzoom:11.3,filter:['==',['get','v'],1],paint:{'fill-color':'#5ef0a0','fill-opacity':.32}});
-          m.addLayer({id:'qz-l',type:'line',source:'qz',minzoom:11.3,paint:{'line-color':['case',['==',['get','v'],1],'#5ef0a0','#3b3570'],'line-width':['case',['==',['get','v'],1],1.6,.7]}});
-          m.addLayer({id:'qz-t',type:'symbol',source:'qz',minzoom:12.6,filter:['==',['get','v'],1],layout:{'text-field':['get','nom'],'text-size':11,'text-font':['Noto Sans Regular']},paint:{'text-color':'#c9ffe0','text-halo-color':'#07051a','text-halo-width':1.4}});}
-        setTimeout(function(){if(CMAP.map)m.setPaintProperty('cm-v','fill-opacity',.42)},120);
-        m.on('click',function(e){var ly=['cm-v','cm-nv'].concat(m.getLayer('qz-v')?['qz-v','qz-nv']:[]),FS=m.queryRenderedFeatures(e.point,{layers:ly}),f=FS.filter(function(x){return /^qz/.test(x.layer.id)})[0]||FS[0];if(!f)return;var c=f.properties.code;
-          if(C.c[c]||C.a[c]||(c.charAt(0)==='q'&&qLoad().first[c.slice(1)]!=null)){closeComMap();comSheet(c)}else toast(f.properties.nom+' : pas encore traversé')});
-      });
-    };
-    var codes=[],par={};Object.keys(BIG).forEach(function(p){if(!C.c[p]||C.arrOff)return;var base={'13055':13201,'75056':75101,'69123':69381}[p];for(var i=0;i<BIG[p][1];i++){codes.push(String(base+i));par[String(base+i)]=p}});
-    if(!codes.length){done([]);return}
-    Promise.all(codes.map(function(c){return contOne(c,1).catch(function(){return null})})).then(function(R){
-      done(R.filter(function(f){return f&&f.geometry&&f.properties&&par[f.properties.code]}));
+        setTimeout(function(){if(CMAP.map)m.setPaintProperty('cm-v','fill-opacity',.42)},120)}
+      if(QF.length){var mz=F.length?11.3:0;
+        m.addSource('qz',{type:'geojson',data:{type:'FeatureCollection',features:QF}});
+        m.addLayer({id:'qz-nv',type:'fill',source:'qz',minzoom:mz,filter:['==',['get','v'],0],paint:{'fill-color':'#0d0a26','fill-opacity':.8}});
+        m.addLayer({id:'qz-v',type:'fill',source:'qz',minzoom:mz,filter:['==',['get','v'],1],paint:{'fill-color':'#5ef0a0','fill-opacity':.32}});
+        m.addLayer({id:'qz-l',type:'line',source:'qz',minzoom:mz,paint:{'line-color':['case',['==',['get','v'],1],'#5ef0a0','#3b3570'],'line-width':['case',['==',['get','v'],1],1.6,.7]}});
+        m.addLayer({id:'qz-t',type:'symbol',source:'qz',minzoom:Math.max(mz,12.6),filter:['==',['get','v'],1],layout:{'text-field':['get','nom'],'text-size':11,'text-font':['Noto Sans Regular']},paint:{'text-color':'#c9ffe0','text-halo-color':'#07051a','text-halo-width':1.4}})}
+      m.on('click',function(e){var ly=[];['qz-v','qz-nv','cm-v','cm-nv'].forEach(function(l){if(m.getLayer(l))ly.push(l)});var FS=m.queryRenderedFeatures(e.point,{layers:ly}),f=FS.filter(function(x){return /^qz/.test(x.layer.id)})[0]||FS[0];if(!f)return;var c=f.properties.code;
+        if(C.c[c]||C.a[c]||(c.charAt(0)==='q'&&qLoad().first[c.slice(1)]!=null)){closeComMap();comSheet(c)}else toast(f.properties.nom+' : pas encore traversé')});
     });
-  }).catch(function(){var p=$('#cmapp');if(p)p.innerHTML='<p>Carte indisponible pour le moment (pas de réponse du service).</p>'});
+  }
 }
 function closeComMap(){if(CMAP.map){try{CMAP.map.remove()}catch(e){}CMAP.map=null}var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow=''}
 /* (23) fiche d'une commune ou d'un arrondissement */
