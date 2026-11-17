@@ -735,6 +735,10 @@ button{font:inherit;color:inherit}
 .bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
 .bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 /* 2.38 */
+.fgz{margin:2px 0 8px!important;font-size:12.5px!important;color:var(--fg-2)}.fgz b{color:#ffd24a}
+.fgzb{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:4;transform:translate(-50%,-14px) scale(.9);opacity:0;pointer-events:none;padding:12px 18px;border-radius:18px;text-align:center;font-weight:800;font-size:16px;color:#1a1000;background:linear-gradient(90deg,#ffd24a,#ffe98a,#ffd24a);box-shadow:0 0 30px rgba(255,210,74,.7);transition:opacity .35s,transform .45s cubic-bezier(.2,1.4,.35,1);white-space:nowrap}
+.fgzb small{display:block;font-size:12px;font-weight:700;opacity:.8}.fgzb.on{opacity:1;transform:translate(-50%,0) scale(1)}
+.fog .foghd b{text-shadow:0 1px 8px rgba(10,6,30,.8)}
 .fogcv{position:absolute;left:0;top:0;pointer-events:none;z-index:1}.fog .foghd,.fog .fogp,.fog .wx{z-index:3}
 .fogp.fg2 .fogbig b{font-size:46px}.fogp.fg2 .fogbig u{font-size:14px;display:block;margin-top:-4px}
 .fgl{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;font-size:12.5px!important}.fgl i{display:inline-block;width:18px;height:4px;border-radius:3px}.fgc{background:#00e5ff;box-shadow:0 0 6px #00e5ff}.fgr{background:#ffd24a;box-shadow:0 0 6px #ffd24a;margin-left:8px}.fgl b{color:#5ef0a0}
@@ -911,7 +915,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.47';
+var APP_V='2.48';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -3641,7 +3645,38 @@ function seasonRow(o){return '<span class="ssn">'+SAI.map(function(s,i){return '
    Brouillard total dessiné dans un calque (canvas) au-dessus de la carte, effacé en douceur
    uniquement le long des routes empruntées (tracés recalés sur les routes). Les trajets brillent en néon,
    plus fort là où tu passes souvent ; le dernier trajet est en or. Dévoilement animé à l'ouverture. */
-var FOG={map:null,raf:0,cv:null,T:null,prog:1,anim:0,need:0};
+/* ---------- 2.48 : zones fermées découvertes (comme dans un jeu) ----------
+   Les routes prises sont tracées sur une grille (cases de ≈ 20 m, murs épaissis d'une case).
+   On remplit depuis le bord : tout ce qui n'est pas atteint est entouré par tes routes → zone découverte. */
+var FZK='sandero-zones';
+function fogZones(T){
+  if(!T.length)return null;var la0=1e9,la1=-1e9,lo0=1e9,lo1=-1e9;T.forEach(function(x){x.P.forEach(function(p){if(p[0]<la0)la0=p[0];if(p[0]>la1)la1=p[0];if(p[1]<lo0)lo0=p[1];if(p[1]>lo1)lo1=p[1]})});
+  var cs=20,ky=110540,kx=111320*Math.cos((la0+la1)/2*Math.PI/180),W=Math.ceil((lo1-lo0)*kx/cs)+5,H=Math.ceil((la1-la0)*ky/cs)+5;
+  if(W*H>3e6){var f=Math.sqrt(W*H/3e6);cs*=f;W=Math.ceil((lo1-lo0)*kx/cs)+5;H=Math.ceil((la1-la0)*ky/cs)+5}
+  var dLa=cs/ky,dLo=cs/kx,N0=la1+2*dLa,E0=lo0-2*dLo,G=new Uint8Array(W*H),set=function(i,j){if(i>=0&&j>=0&&i<H&&j<W)G[i*W+j]=1};
+  T.forEach(function(x){densify(x.P,cs/2500).forEach(function(p){var i=Math.floor((N0-p[0])/dLa),j=Math.floor((p[1]-E0)/dLo);set(i,j);set(i+1,j);set(i-1,j);set(i,j+1);set(i,j-1)})});
+  /* remplissage depuis le bord (4 voisins) */
+  var Q=new Int32Array(W*H),qh=0,qt=0,push=function(k){if(G[k]===0){G[k]=2;Q[qt++]=k}};
+  for(var j=0;j<W;j++){push(j);push((H-1)*W+j)}for(var i=0;i<H;i++){push(i*W);push(i*W+W-1)}
+  while(qh<qt){var k=Q[qh++],r=(k/W)|0,c=k-r*W;if(c>0)push(k-1);if(c<W-1)push(k+1);if(r>0)push(k-W);if(r<H-1)push(k+W)}
+  /* zones fermées : composantes de cases vides restantes (≥ 6 cases) */
+  var zones=0,cells=0,cv=document.createElement('canvas');cv.width=W;cv.height=H;var g=cv.getContext('2d'),img=g.createImageData(W,H),D=img.data;
+  for(var s=0;s<W*H;s++){if(G[s]!==0)continue;qh=qt=0;G[s]=3;Q[qt++]=s;
+    while(qh<qt){var k2=Q[qh++],r2=(k2/W)|0,c2=k2-r2*W,nb=[c2>0?k2-1:-1,c2<W-1?k2+1:-1,r2>0?k2-W:-1,r2<H-1?k2+W:-1];for(var z=0;z<4;z++){var nn=nb[z];if(nn>=0&&G[nn]===0){G[nn]=3;Q[qt++]=nn}}}
+    if(qt>=6){zones++;cells+=qt;for(var u=0;u<qt;u++){var p4=Q[u]*4;D[p4]=D[p4+1]=D[p4+2]=255;D[p4+3]=255}}}
+  g.putImageData(img,0,0);
+  /* version dorée pour l'éclat de découverte */
+  var gold=document.createElement('canvas');gold.width=W;gold.height=H;var gg=gold.getContext('2d');gg.drawImage(cv,0,0);gg.globalCompositeOperation='source-in';gg.fillStyle='#ffd24a';gg.fillRect(0,0,W,H);
+  return {mask:cv,gold:gold,N:N0,E:E0,S:N0-H*dLa,Wl:E0+W*dLo,zones:zones,km2:cells*cs*cs/1e6};
+}
+/* brume : texture nuageuse claire, dessinée une fois */
+var FOGTX=null;
+function fogTexture(){if(FOGTX)return FOGTX;var c=document.createElement('canvas');c.width=c.height=512;var g=c.getContext('2d');
+  g.fillStyle='#3d3666';g.fillRect(0,0,512,512);var rnd=function(a){return Math.random()*a};
+  for(var i=0;i<70;i++){var x=rnd(512),y=rnd(512),r=40+rnd(110),gr=g.createRadialGradient(x,y,0,x,y,r),cl=Math.random()<.5?'200,190,255':'150,140,210';gr.addColorStop(0,'rgba('+cl+','+(0.05+rnd(.09)).toFixed(3)+')');gr.addColorStop(1,'rgba('+cl+',0)');
+    [[0,0],[-512,0],[512,0],[0,-512],[0,512]].forEach(function(o){g.fillStyle=gr;g.save();g.translate(o[0],o[1]);g.fillRect(x-r,y-r,2*r,2*r);g.restore()})}
+  FOGTX=c;return c}
+var FOG={map:null,raf:0,cv:null,T:null,prog:1,anim:0,need:0,Z:null,zA:0,flash:0};
 function fogData(){
   var T=comTrips().map(function(r){var P=trackOf(r)||rawTrack(r);if(!P||P.length<2)return null;var L=lnglat(P),D=cumD(P),b=[1e9,1e9,-1e9,-1e9];
     L.forEach(function(c){if(c[0]<b[0])b[0]=c[0];if(c[1]<b[1])b[1]=c[1];if(c[0]>b[2])b[2]=c[0];if(c[1]>b[3])b[3]=c[1]});return {r:r,P:P,L:L,D:D,km:D[D.length-1],b:b}}).filter(Boolean);
@@ -3656,7 +3691,7 @@ function fogDraw(){
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px'}
   var g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.globalCompositeOperation='source-over';g.globalAlpha=1;g.shadowBlur=0;
   /* brouillard */
-  var gr=g.createRadialGradient(w/2,h*.45,0,w/2,h*.45,Math.max(w,h)*.8);gr.addColorStop(0,'#0b0820');gr.addColorStop(1,'#030209');g.fillStyle=gr;g.fillRect(0,0,w,h);
+  g.fillStyle=g.createPattern(fogTexture(),'repeat');g.fillRect(0,0,w,h);var vg=g.createRadialGradient(w/2,h*.45,Math.min(w,h)*.3,w/2,h*.45,Math.max(w,h)*.85);vg.addColorStop(0,'rgba(20,14,48,0)');vg.addColorStop(1,'rgba(20,14,48,.45)');g.fillStyle=vg;g.fillRect(0,0,w,h);
   var z=m.getZoom(),c=m.getCenter(),mpp=156543.03*Math.cos(c.lat*Math.PI/180)/Math.pow(2,z),rev=Math.max(9,Math.min(70,55/mpp));
   var vb=m.getBounds(),pad=.02,vx0=vb.getWest()-pad,vx1=vb.getEast()+pad,vy0=vb.getSouth()-pad,vy1=vb.getNorth()+pad;
   var all=FOG.T,budget=FOG.prog*FOG.tot,used=0,paths=[];
@@ -3669,6 +3704,8 @@ function fogDraw(){
   /* on efface le brouillard le long des routes, bords doux */
   g.globalCompositeOperation='destination-out';
   [[2.2,.18],[1.7,.35],[1.3,.6],[1,1]].forEach(function(s){g.globalAlpha=s[1];g.lineWidth=rev*s[0];paths.forEach(function(x){stroke(x.p)})});
+  var Z=FOG.Z;if(Z&&FOG.zA>0){var z0=m.project([Z.E,Z.N]),z1=m.project([Z.Wl,Z.S]);g.imageSmoothingEnabled=true;g.globalAlpha=FOG.zA;g.drawImage(Z.mask,z0.x,z0.y,z1.x-z0.x,z1.y-z0.y);
+    if(FOG.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=FOG.flash*.55;g.drawImage(Z.gold,z0.x,z0.y,z1.x-z0.x,z1.y-z0.y);g.globalCompositeOperation='destination-out'}g.globalAlpha=1}
   /* néon : plus lumineux là où on passe souvent */
   g.globalCompositeOperation='lighter';g.globalAlpha=1;
   var cw=Math.max(2.5,Math.min(6,rev*.16));g.strokeStyle='rgba(0,229,255,.07)';g.lineWidth=cw*3.5;paths.forEach(function(x){if(!x.last)stroke(x.p)});g.strokeStyle='rgba(0,229,255,.3)';g.lineWidth=cw;paths.forEach(function(x){if(!x.last)stroke(x.p)});
@@ -3682,16 +3719,23 @@ g.strokeStyle='rgba(200,250,255,.22)';g.lineWidth=1.3;paths.forEach(function(x){
 function fogLoop(){if(!FOG.map)return;fogDraw();FOG.raf=requestAnimationFrame(fogLoop)}
 function fogFit(last){var m=FOG.map;if(!m||!FOG.T.length)return;var ml=window.maplibregl,b=new ml.LngLatBounds(),S=last?[FOG.T[FOG.T.length-1]]:FOG.T;
   S.forEach(function(x){b.extend([x.b[0],x.b[1]]);b.extend([x.b[2],x.b[3]])});m.fitBounds(b,{padding:{top:120,bottom:250,left:30,right:30},maxZoom:15.5,duration:last?900:700})}
-function fogPlay(){if(reduced()){FOG.prog=1;return}var t0=performance.now(),Dur=Math.min(5200,1800+FOG.T.length*60);FOG.prog=0;cancelAnimationFrame(FOG.anim);
-  (function st(t){var k=Math.min(1,(t-t0)/Dur);FOG.prog=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;if(k<1)FOG.anim=requestAnimationFrame(st)})(t0)}
+function fogPlay(){var rm=reduced(),t0=performance.now(),Dur=rm?1:Math.min(5200,1800+FOG.T.length*60);FOG.prog=0;FOG.zA=0;FOG.flash=0;cancelAnimationFrame(FOG.anim);
+  (function st(t){var k=Math.min(1,(t-t0)/Dur);FOG.prog=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;if(k<1){FOG.anim=requestAnimationFrame(st);return}fogZonesPlay()})(t0)}
+function fogZonesPlay(){var Z=FOG.Z;if(!Z||!Z.zones){FOG.zA=1;return}var t0=performance.now(),nw=FOG.newZ;
+  if(nw>0){var b=$('#fgzb');if(b){b.innerHTML='🧩 '+(FOG.newN>1?FOG.newN+' nouvelles zones découvertes !':'Nouvelle zone découverte !')+'<small>+ '+(nw<.1?f2(nw):f1(nw))+' km² dévoilés</small>';b.classList.add('on');setTimeout(function(){b.classList.remove('on')},3600)}}
+  (function st(t){var k=Math.min(1,(t-t0)/(reduced()?1:1100));FOG.zA=1-Math.pow(1-k,3);FOG.flash=nw>0?Math.sin(Math.min(1,(t-t0)/1800)*Math.PI):0;if(k<1||(nw>0&&t-t0<1800))FOG.anim=requestAnimationFrame(st);else FOG.flash=0})(t0)}
 function openFog(){
   var FD=fogData();if(!FD.T.length){toast('Pas encore de tracé GPS.');return}
-  FOG.T=FD.T;FOG.tot=FD.tot;FOG.prog=0;
+  FOG.T=FD.T;FOG.tot=FD.tot;FOG.prog=0;FOG.zA=0;FOG.flash=0;FOG.Z=null;FOG.newZ=0;FOG.newN=0;
+  try{FOG.Z=fogZones(FD.T)}catch(e){FOG.Z=null}
+  var ZS={};try{ZS=JSON.parse(localStorage.getItem(FZK)||'null')}catch(e){ZS=null}
+  if(FOG.Z){if(ZS&&FOG.Z.km2>ZS.km2+.0004){FOG.newZ=FOG.Z.km2-ZS.km2;FOG.newN=Math.max(1,FOG.Z.zones-ZS.zones)}try{localStorage.setItem(FZK,JSON.stringify({km2:FOG.Z.km2,zones:FOG.Z.zones}))}catch(e){}}
   var nq=qList().length,nc=comList().length,last=FD.T[FD.T.length-1].r;
-  var box=$('#fog');box.innerHTML='<div class="fogmap" id="fogmap"></div><canvas class="fogcv" id="fogcv"></canvas><button type="button" class="wx" id="fogx" aria-label="Fermer">✕</button>'+
-    '<div class="foghd"><small>Carte à dévoiler</small><b>Seules les routes que tu as prises sont visibles</b></div>'+
+  var box=$('#fog');box.innerHTML='<div class="fogmap" id="fogmap"></div><canvas class="fogcv" id="fogcv"></canvas><div class="fgzb" id="fgzb"></div><button type="button" class="wx" id="fogx" aria-label="Fermer">✕</button>'+
+    '<div class="foghd"><small>Carte à dévoiler</small><b>Roule pour lever la brume · fais une boucle pour remplir une zone</b></div>'+
     '<div class="fogp fg2"><div class="fogbig"><b class="cu" id="fogkm">0</b><u>km de routes découvertes</u></div>'+
     '<p class="fgl"><i class="fgc"></i>tes routes <i class="fgr"></i>dernier trajet'+(FD.newLast>=.05?' · <b>+'+(FD.newLast<10?f1(FD.newLast):fi(FD.newLast))+' km</b> nouveaux':'')+'</p>'+
+    (FOG.Z?'<p class="fgz">🧩 <b>'+FOG.Z.zones+'</b> zone'+(FOG.Z.zones>1?'s':'')+' fermée'+(FOG.Z.zones>1?'s':'')+' découverte'+(FOG.Z.zones>1?'s':'')+' · '+(FOG.Z.km2<.1?f2(FOG.Z.km2):f1(FOG.Z.km2))+' km²'+(FOG.Z.zones?'':' — fais une boucle pour remplir une zone !')+'</p>':'')+
     '<div class="fogs"><span><b>'+FD.T.length+'</b> trajets</span><span><b>'+nc+'</b> commune'+(nc>1?'s':'')+'</span>'+(nq?'<span><b>'+nq+'</b> quartiers</span>':'<span><b>'+fi(FD.tot)+'</b> km roulés</span>')+'</div>'+
     '<div class="fgb"><button type="button" class="btn ghost" id="fgall">Tout voir</button><button type="button" class="btn ghost" id="fglast">Dernier trajet</button><button type="button" class="btn ghost" id="fgplay">▶ Rejouer</button></div></div>';
   box.classList.remove('hide');document.body.style.overflow='hidden';$('#fogx').onclick=closeFog;
