@@ -735,6 +735,13 @@ button{font:inherit;color:inherit}
 .bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
 .bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 /* 2.38 */
+.fogtab{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);margin-bottom:12px;background:#3d3666}.fogtab .fogmap{position:absolute!important;inset:0}.fogtab .fgzb{top:16px}
+.fgh .fgsub{margin:-4px 0 8px;font-size:12.5px;color:var(--fg-3)}.fgh .fgt{text-align:center}.fgh .fogbig b{font-size:36px;font-weight:800;letter-spacing:-.03em;color:#fff;text-shadow:0 0 18px rgba(0,229,255,.55)}.fgh .fogbig u{display:block;text-decoration:none;font-size:13px;font-weight:700;color:#7ff3ff;margin-top:-2px}
+.fgh .fgl,.fgh .fgz{margin:6px 0 0}.fgh .fogs{display:flex;gap:6px;margin-top:10px}.fgh .fogs span{flex:1;text-align:center;font-size:11px;color:var(--fg-3);padding:7px 2px;border-radius:12px;background:rgba(255,255,255,.05)}.fgh .fogs b{display:block;font-size:16px;color:#fff}.fgh .sbtns{margin-top:8px}
+.tabmap.tmfull{position:fixed!important;inset:0;z-index:85;margin:0;border-radius:0;border:0;height:auto!important}
+.tabmap.tmfull #tmc{top:calc(env(safe-area-inset-top,0px) + 112px)!important}
+.passbar{position:absolute;left:0;right:0;top:0;z-index:5;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;background:linear-gradient(#07051a,#07051aee)}
+.pbh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}.pbh small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7ff3ff}.pbh b{font-size:14px}.pbh .wx{position:static}
 .fgz{margin:2px 0 8px!important;font-size:12.5px!important;color:var(--fg-2)}.fgz b{color:#ffd24a}
 .fgzb{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:4;transform:translate(-50%,-14px) scale(.9);opacity:0;pointer-events:none;padding:12px 18px;border-radius:18px;text-align:center;font-weight:800;font-size:16px;color:#1a1000;background:linear-gradient(90deg,#ffd24a,#ffe98a,#ffd24a);box-shadow:0 0 30px rgba(255,210,74,.7);transition:opacity .35s,transform .45s cubic-bezier(.2,1.4,.35,1);white-space:nowrap}
 .fgzb small{display:block;font-size:12px;font-weight:700;opacity:.8}.fgzb.on{opacity:1;transform:translate(-50%,0) scale(1)}
@@ -874,7 +881,7 @@ button{font:inherit;color:inherit}
 
 <div class="car3d hide" id="car3d"><canvas id="car-gl" aria-label="Modèle 3D de la voiture"></canvas><button type="button" class="lock" id="lock" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor" fill-opacity=".18"/></svg><span id="lockt">Verrouillée</span></button><div class="hint" id="c3h">Fais glisser pour tourner la voiture</div></div>
 <div id="main"></div>
-<div class="tabmap hide" id="tabmap"><div id="tmc"></div><div class="tm-leg" id="tmleg"></div><button type="button" class="tm-3d" id="tm3d">3D</button><div class="tm-info hide" id="tminfo"></div></div>
+<div class="tabmap hide" id="tabmap"><div id="tmc"></div><div class="tm-leg" id="tmleg"></div><button type="button" class="tm-3d" id="tm3d">3D</button><div class="tm-info hide" id="tminfo"></div></div><div class="fogtab hide" id="fogtab"></div>
 
 <div class="topbar"></div><div class="isl" id="isl" role="status" aria-live="polite"><div class="ic"></div><div class="tx"><b></b><small></small></div><div class="rt"></div></div>
 <nav class="tabs hide" id="tabs" role="tablist">
@@ -915,7 +922,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.50';
+var APP_V='2.51';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2199,10 +2206,10 @@ function tmLayers(m){
   var mxn=Math.max(1,f.max||1);$('#tmleg').innerHTML='<b>Passages</b>'+TMST.filter(function(x){return x[0]<=mxn}).map(function(x,i,A){var nx=TMST[TMST.indexOf(x)+1];return '<span><i style="background:'+x[1]+';box-shadow:0 0 6px '+x[1]+'"></i>'+(nx?(nx[0]-1>x[0]?x[0]+'–'+(nx[0]-1):x[0]):x[0]+'+')+'</span>'}).join('');
 }
 function tmBounds(ml){var f=freqData(),b=new ml.LngLatBounds();f.fc.features.forEach(function(x){x.geometry.coordinates.forEach(function(c){b.extend(c)})});return b}
-function tmSize(){var el=$('#tabmap'),r=el.getBoundingClientRect(),tb=$('#tabs').offsetHeight||70;el.style.height=Math.max(320,window.innerHeight-r.top-window.scrollY-tb-14+window.scrollY)+'px';if(TM)TM.resize()}
+function tmSize(){var el=$('#tabmap');if(el.classList.contains('tmfull')){el.style.height='';if(TM)TM.resize();return}var r=el.getBoundingClientRect(),tb=$('#tabs').offsetHeight||70;el.style.height=Math.max(320,window.innerHeight-r.top-window.scrollY-tb-14+window.scrollY)+'px';if(TM)TM.resize()}
 function tabMapShow(){
   var el=$('#tabmap'),f=freqData();$('#tminfo').classList.add('hide');
-  if(!f.trips){el.classList.add('hide');return}
+  if(!f.trips){if(PASS.on){el.classList.remove('hide');return}el.classList.add('hide');return}
   el.classList.remove('hide');tmSize();$('#tm3d').setAttribute('aria-pressed',!!SET.map3d);
   Promise.all([maplibre(),styleFor(SET.mapStyle)]).then(function(res){
     var ml=res[0];if(TAB!=='map')return;
@@ -3730,37 +3737,64 @@ g.strokeStyle='rgba(200,250,255,.22)';g.lineWidth=1.3;paths.forEach(function(x){
 }
 function fogLoop(){if(!FOG.map)return;fogDraw();FOG.raf=requestAnimationFrame(fogLoop)}
 function fogFit(last){var m=FOG.map;if(!m||!FOG.T.length)return;var ml=window.maplibregl,b=new ml.LngLatBounds(),S=last?[FOG.T[FOG.T.length-1]]:FOG.T;
-  S.forEach(function(x){b.extend([x.b[0],x.b[1]]);b.extend([x.b[2],x.b[3]])});m.fitBounds(b,{padding:{top:120,bottom:250,left:30,right:30},maxZoom:15.5,duration:last?900:700})}
+  S.forEach(function(x){b.extend([x.b[0],x.b[1]]);b.extend([x.b[2],x.b[3]])});m.fitBounds(b,{padding:FOG.pad||{top:120,bottom:250,left:30,right:30},maxZoom:15.5,duration:last?900:700})}
 function fogPlay(){var rm=reduced(),t0=performance.now(),Dur=rm?1:Math.min(5200,1800+FOG.T.length*60);FOG.prog=0;FOG.zA=0;FOG.flash=0;cancelAnimationFrame(FOG.anim);
   (function st(t){var k=Math.min(1,(t-t0)/Dur);FOG.prog=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;if(k<1){FOG.anim=requestAnimationFrame(st);return}fogZonesPlay()})(t0)}
 function fogZonesPlay(){var Z=FOG.Z;if(!Z||!Z.zones){FOG.zA=1;return}var t0=performance.now(),nw=FOG.newZ;
   if(nw>0){var b=$('#fgzb');if(b){b.innerHTML='🧩 '+(FOG.newN>1?FOG.newN+' nouvelles zones découvertes !':'Nouvelle zone découverte !')+'<small>+ '+(nw<.1?f2(nw):f1(nw))+' km² dévoilés</small>';b.classList.add('on');setTimeout(function(){b.classList.remove('on')},3600)}}
   (function st(t){var k=Math.min(1,(t-t0)/(reduced()?1:1100));FOG.zA=1-Math.pow(1-k,3);FOG.flash=nw>0?Math.sin(Math.min(1,(t-t0)/1800)*Math.PI):0;if(k<1||(nw>0&&t-t0<1800))FOG.anim=requestAnimationFrame(st);else FOG.flash=0})(t0)}
-function openFog(){
-  var FD=fogData();if(!FD.T.length){toast('Pas encore de tracé GPS.');return}
-  FOG.T=FD.T;FOG.tot=FD.tot;FOG.prog=0;FOG.zA=0;FOG.flash=0;FOG.Z=null;FOG.newZ=0;FOG.newN=0;
-  try{FOG.Z=fogZones(FD.T)}catch(e){FOG.Z=null}
-  var ZS={};try{ZS=JSON.parse(localStorage.getItem(FZK)||'null')}catch(e){ZS=null}
-  if(FOG.Z){if(ZS&&FOG.Z.km2>ZS.km2+.0004){FOG.newZ=FOG.Z.km2-ZS.km2;FOG.newN=Math.max(1,FOG.Z.zones-ZS.zones)}try{localStorage.setItem(FZK,JSON.stringify({km2:FOG.Z.km2,zones:FOG.Z.zones}))}catch(e){}}
-  var nq=qList().length,nc=comList().length,last=FD.T[FD.T.length-1].r;
-  var box=$('#fog');box.innerHTML='<div class="fogmap" id="fogmap"></div><canvas class="fogcv" id="fogcv"></canvas><div class="fgzb" id="fgzb"></div><button type="button" class="wx" id="fogx" aria-label="Fermer">✕</button>'+
-    '<div class="foghd"><small>Carte à dévoiler</small><b>Roule pour lever la brume · fais une boucle pour remplir une zone</b></div>'+
-    '<div class="fogp fg2"><div class="fogbig"><b class="cu" id="fogkm">0</b><u>km de routes découvertes</u></div>'+
+/* ---------- 2.51 : la carte à dévoiler est dans l'onglet Carte ; la carte des passages s'ouvre en plein écran ---------- */
+var FOGC=null;
+function fogInfo(){var key=comTrips().length+'|'+Object.keys(mmLoad()).length+'|'+(sample?1:0);if(FOGC&&FOGC.key===key)return FOGC;
+  var FD=fogData(),Z=null;try{Z=FD.T.length?fogZones(FD.T):null}catch(e){Z=null}FOGC={key:key,FD:FD,Z:Z};return FOGC}
+function fogStats(){var I=fogInfo(),FD=I.FD,Z=I.Z,nq=qList().length,nc=comList().length;
+  return '<div class="fgt"><div class="fogbig"><b class="cu" data-v="'+FD.km+'" data-f="'+(FD.km<10?'1':'i')+'">'+(FD.km<10?f1(FD.km):fi(FD.km))+'</b><u>km de routes découvertes</u></div>'+
     '<p class="fgl"><i class="fgc"></i>tes routes <i class="fgr"></i>dernier trajet'+(FD.newLast>=.05?' · <b>+'+(FD.newLast<10?f1(FD.newLast):fi(FD.newLast))+' km</b> nouveaux':'')+'</p>'+
-    (FOG.Z?'<p class="fgz">🧩 <b>'+FOG.Z.zones+'</b> zone'+(FOG.Z.zones>1?'s':'')+' fermée'+(FOG.Z.zones>1?'s':'')+' découverte'+(FOG.Z.zones>1?'s':'')+' · '+(FOG.Z.km2<.1?f2(FOG.Z.km2):f1(FOG.Z.km2))+' km²'+(FOG.Z.zones?'':' — fais une boucle pour remplir une zone !')+'</p>':'')+
-    '<div class="fogs"><span><b>'+FD.T.length+'</b> trajets</span><span><b>'+nc+'</b> commune'+(nc>1?'s':'')+'</span>'+(nq?'<span><b>'+nq+'</b> quartiers</span>':'<span><b>'+fi(FD.tot)+'</b> km roulés</span>')+'</div>'+
-    '<div class="fgb"><button type="button" class="btn ghost" id="fgall">Tout voir</button><button type="button" class="btn ghost" id="fglast">Dernier trajet</button><button type="button" class="btn ghost" id="fgplay">▶ Rejouer</button></div></div>';
-  box.classList.remove('hide');document.body.style.overflow='hidden';$('#fogx').onclick=closeFog;
-  var el=$('#fogkm'),goal=FD.km,t0=performance.now();(function st(t){var k=reduced()?1:Math.min(1,(t-t0-300)/2400);if(k<0){requestAnimationFrame(st);return}var v=goal*(1-Math.pow(1-k,3));if(el)el.textContent=goal<10?f1(v):fi(v);if(k<1&&FOG.map!==false)requestAnimationFrame(st)})(t0);
-  Promise.all([maplibre(),styleFor('neon')]).then(function(res){
-    var ml=res[0];if(box.classList.contains('hide'))return;var flat=[];FD.T.forEach(function(x){flat.push([x.b[1],x.b[0]],[x.b[3],x.b[2]])});
-    var m=new ml.Map({container:'fogmap',style:res[1],bounds:bnds(ml,flat),fitBoundsOptions:{padding:{top:120,bottom:250,left:30,right:30},maxZoom:15},attributionControl:false,fadeDuration:0,dragRotate:false,pitchWithRotate:false,touchPitch:false});
-    m.addControl(new ml.AttributionControl({compact:true}),'bottom-right');FOG.map=m;FOG.cv=$('#fogcv');
-    m.once('load',function(){fogPlay()});fogLoop();
-    $('#fgall').onclick=function(){fogFit(false)};$('#fglast').onclick=function(){fogFit(true)};$('#fgplay').onclick=function(){fogFit(false);setTimeout(fogPlay,750)};
-  }).catch(function(){var b=$('#fogmap');if(b)b.innerHTML='<p class="note" style="padding:140px 24px;text-align:center">Carte indisponible pour le moment.</p>'});
+    (Z?'<p class="fgz">🧩 <b>'+Z.zones+'</b> zone'+(Z.zones>1?'s':'')+' fermée'+(Z.zones>1?'s':'')+' · '+(Z.km2<.1?f2(Z.km2):f1(Z.km2))+' km²'+(Z.zones?'':' — fais une boucle pour remplir une zone !')+'</p>':'')+
+    '<div class="fogs"><span><b>'+FD.T.length+'</b> trajets</span><span><b>'+nc+'</b> commune'+(nc>1?'s':'')+'</span>'+(nq?'<span><b>'+nq+'</b> quartiers</span>':'<span><b>'+fi(FD.tot)+'</b> km roulés</span>')+'</div></div>'}
+function fogTabHead(){
+  if(!comTrips().length)return '<div class="card tmh"><h2>Carte à dévoiler</h2><p class="note">Aucun trajet avec un tracé GPS pour l’instant. Les tracés arrivent de l’autoradio à la synchro : la brume se lèvera sur les routes que tu prends.</p><div class="sbtns"><button type="button" class="btn ghost" data-pass="1">🗺 Carte des passages</button></div></div>';
+  return '<div class="card tmh fgh"><h2>Carte à dévoiler</h2><p class="fgsub">Roule pour lever la brume · fais une boucle pour remplir une zone</p>'+fogStats()+
+    '<div class="fgb"><button type="button" class="btn ghost" data-fga="all">Tout voir</button><button type="button" class="btn ghost" data-fga="last">Dernier trajet</button><button type="button" class="btn ghost" data-fga="play">▶ Rejouer</button></div>'+
+    '<div class="sbtns"><button type="button" class="btn ghost" data-pass="1">🗺 Carte des passages</button></div></div>';
 }
-function closeFog(){cancelAnimationFrame(FOG.raf);cancelAnimationFrame(FOG.anim);if(FOG.map){try{FOG.map.remove()}catch(e){}}FOG.map=null;FOG.cv=null;var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow=''}
+/* monte la carte (en plein écran ou dans l'onglet) */
+function fogStart(box,inline){
+  var I=fogInfo(),FD=I.FD;if(!FD.T.length)return false;
+  FOG.inline=!!inline;FOG.T=FD.T;FOG.tot=FD.tot;FOG.prog=0;FOG.zA=0;FOG.flash=0;FOG.Z=I.Z;FOG.newZ=0;FOG.newN=0;
+  var ZS=null;try{ZS=JSON.parse(localStorage.getItem(FZK)||'null')}catch(e){}
+  if(FOG.Z){if(ZS&&FOG.Z.km2>ZS.km2+.0004){FOG.newZ=FOG.Z.km2-ZS.km2;FOG.newN=Math.max(1,FOG.Z.zones-ZS.zones)}try{localStorage.setItem(FZK,JSON.stringify({km2:FOG.Z.km2,zones:FOG.Z.zones}))}catch(e){}}
+  box.innerHTML='<div class="fogmap" id="fogmap"></div><canvas class="fogcv" id="fogcv"></canvas><div class="fgzb" id="fgzb"></div>'+(inline?'':'<button type="button" class="wx" id="fogx" aria-label="Fermer">✕</button>'+
+    '<div class="foghd"><small>Carte à dévoiler</small><b>Roule pour lever la brume · fais une boucle pour remplir une zone</b></div><div class="fogp fg2">'+fogStats()+
+    '<div class="fgb"><button type="button" class="btn ghost" data-fga="all">Tout voir</button><button type="button" class="btn ghost" data-fga="last">Dernier trajet</button><button type="button" class="btn ghost" data-fga="play">▶ Rejouer</button></div></div>');
+  if(!inline){$('#fogx').onclick=closeFog;fogBtns(box)}
+  var pad=inline?{top:40,bottom:40,left:30,right:30}:{top:120,bottom:250,left:30,right:30};FOG.pad=pad;
+  Promise.all([maplibre(),styleFor('neon')]).then(function(res){
+    var ml=res[0];if(!box.isConnected||box.classList.contains('hide')||!$('#fogmap'))return;var flat=[];FD.T.forEach(function(x){flat.push([x.b[1],x.b[0]],[x.b[3],x.b[2]])});
+    var m=new ml.Map({container:'fogmap',style:res[1],bounds:bnds(ml,flat),fitBoundsOptions:{padding:pad,maxZoom:15},attributionControl:false,fadeDuration:0,dragRotate:false,pitchWithRotate:false,touchPitch:false});
+    m.addControl(new ml.AttributionControl({compact:true}),'bottom-right');FOG.map=m;FOG.cv=$('#fogcv');
+    m.once('load',function(){fogPlay()});cancelAnimationFrame(FOG.raf);fogLoop();
+  }).catch(function(){var b=$('#fogmap');if(b)b.innerHTML='<p class="note" style="padding:140px 24px;text-align:center">Carte indisponible pour le moment.</p>'});
+  return true;
+}
+function fogBtns(root){Array.prototype.forEach.call((root||document).querySelectorAll('[data-fga]'),function(b){b.onclick=function(){if(!FOG.map)return;var a=b.getAttribute('data-fga');if(a==='all')fogFit(false);else if(a==='last')fogFit(true);else{fogFit(false);setTimeout(fogPlay,750)}}})}
+function fogUnmount(){cancelAnimationFrame(FOG.raf);cancelAnimationFrame(FOG.anim);if(FOG.map){try{FOG.map.remove()}catch(e){}}FOG.map=null;FOG.cv=null;FOG.inline=false}
+function fogTabSize(){var el=$('#fogtab'),r=el.getBoundingClientRect(),tb=$('#tabs').offsetHeight||70;el.style.height=Math.max(340,window.innerHeight-r.top-tb-14)+'px';if(FOG.map&&FOG.inline)FOG.map.resize()}
+function fogTabShow(){var el=$('#fogtab');if(PASS.on||!comTrips().length){el.classList.add('hide');return}
+  el.classList.remove('hide');fogTabSize();if(FOG.map&&FOG.inline&&$('#fogmap')&&el.contains($('#fogmap')))return;
+  if(FOG.map&&!FOG.inline)return; /* la version plein écran est ouverte */
+  fogUnmount();fogStart(el,true)}
+function openFog(){if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}var box=$('#fog');if(!fogStart(box,false)){toast('Pas encore de tracé GPS.');return}box.classList.remove('hide');document.body.style.overflow='hidden'}
+function closeFog(){fogUnmount();var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow='';if(TAB==='map')fogTabShow()}
+/* carte des passages en plein écran */
+var PASS={on:false};
+function passBar(){var f=freqData(),chips=[['all','Tout'],['year','Cette année'],['month','Ce mois']].map(function(x){return '<button type="button" data-tmf2="'+x[0]+'" aria-pressed="'+(TMF===x[0])+'">'+x[1]+'</button>'}).join('');
+  return '<div class="pbh"><div><small>Carte des passages</small><b>'+(f.trips?f.trips+' trajet'+(f.trips>1?'s':'')+' · '+fi(f.km)+' km · record '+f.max+' passage'+(f.max>1?'s':''):'Aucun tracé sur cette période')+'</b></div><button type="button" class="wx" id="passx" aria-label="Fermer">✕</button></div><div class="seg">'+chips+'</div>'}
+function openPass(){PASS.on=true;if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}$('#fogtab').classList.add('hide');
+  var el=$('#tabmap');el.classList.add('tmfull');var bar=$('#passbar');if(!bar){bar=document.createElement('div');bar.id='passbar';bar.className='passbar';el.appendChild(bar)}
+  var draw=function(){bar.innerHTML=passBar();$('#passx').onclick=closePass;Array.prototype.forEach.call(bar.querySelectorAll('[data-tmf2]'),function(b){b.onclick=function(){TMF=b.getAttribute('data-tmf2');draw();tabMapShow()}})};
+  draw();document.body.style.overflow='hidden';tabMapShow()}
+function closePass(){PASS.on=false;var el=$('#tabmap');el.classList.remove('tmfull');el.classList.add('hide');var bar=$('#passbar');if(bar)bar.remove();document.body.style.overflow='';if(TAB==='map'){var y=window.scrollY;render();window.scrollTo(0,y)}}
 /* ---------- 2.38 (17) : duel de trajets ---------- */
 var DUEL={id:null,a:null,b:null};
 function duelOpen(id){
@@ -3971,7 +4005,7 @@ function render(){
   T.trips=ecoCard(L)+'<div class="ttl">'+L.length+' trajet'+(L.length>1?'s':'')+'</div>'+h;
   levelCheck();lvChip();
   T.vie=lifeTab();
-  T.map=tabMapHead();
+  T.map=fogTabHead();
   T.set=setHtml(D,L);
   if(!T[TAB])TAB='car';
   miniClear();$('#main').innerHTML=T[TAB];setApply();if(TAB==='set')setWire();animMain();
@@ -3999,7 +4033,9 @@ function render(){
   $('#tabs').classList.remove('hide');
   Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.setAttribute('aria-selected',b.getAttribute('data-t')===TAB?'true':'false')});
   if(TAB==='car'&&SET.car3d)show3d(S);else $('#car3d').classList.add('hide');
-  if(TAB==='map')tabMapShow();else $('#tabmap').classList.add('hide');
+  if(TAB==='map'){if(PASS.on)tabMapShow();else{$('#tabmap').classList.add('hide');fogTabShow()}}
+  else{if(PASS.on){PASS.on=false;var tmx=$('#tabmap');tmx.classList.remove('tmfull');var pb=$('#passbar');if(pb)pb.remove();document.body.style.overflow=''}$('#tabmap').classList.add('hide');$('#fogtab').classList.add('hide');if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}}
+  fogBtns(document);Array.prototype.forEach.call(document.querySelectorAll('[data-pass]'),function(b){b.onclick=openPass});
   var mp=$('#mp'),mn=$('#mn');if(mp)mp.onclick=function(){if(mOff<24){mOff++;ANIM=true;render()}};if(mn)mn.onclick=function(){if(mOff>0){mOff--;ANIM=true;render()}};
   Array.prototype.forEach.call(document.querySelectorAll('.tr'),function(b){b.onclick=function(){b.classList.toggle('open');if(b.classList.contains('open'))miniMount(b.querySelector('.mapb'))}});
   if(TAB==='car'){miniMount(document.querySelector('.lt .mapb'));parkMount()}
@@ -4204,7 +4240,7 @@ Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(
 $('#mapx').onclick=closeMap;
 $('#rpl').onclick=function(){rpStart()};
 $('#tm3d').onclick=function(){SET.map3d=!SET.map3d;setSave();this.setAttribute('aria-pressed',!!SET.map3d);tm3d(true)};
-window.addEventListener('resize',function(){if(TAB==='map'&&!$('#tabmap').classList.contains('hide'))tmSize()});
+window.addEventListener('resize',function(){if(TAB==='map'&&!$('#tabmap').classList.contains('hide'))tmSize();if(TAB==='map'&&!$('#fogtab').classList.contains('hide'))fogTabSize()});
 (function(){var sv=$('#profs'),on=false;
   function at(e){var M=MAPM;if(!M||!M.det||!M._x)return;var r=sv.getBoundingClientRect(),x=(e.clientX-r.left)*(sv.viewBox.baseVal.width/r.width),b=0;
     for(var i=1;i<M._x.length;i++)if(Math.abs(M._x[i]-x)<Math.abs(M._x[b]-x))b=i;if(b!==CUR)setCursor(b,true)}
