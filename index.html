@@ -735,6 +735,8 @@ button{font:inherit;color:inherit}
 .bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
 .bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 /* 2.38 */
+.lmin{width:100%;box-sizing:border-box;margin:6px 0 4px;padding:14px 10px;border-radius:16px;border:1.5px solid rgba(0,229,255,.5);background:rgba(0,229,255,.06);color:#fff;font:800 34px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;text-align:center;text-transform:uppercase}
+.lmin:focus{outline:none;border-color:#00e5ff;box-shadow:0 0 18px rgba(0,229,255,.35)}.lmerr{min-height:18px;margin:4px 0 8px;font-size:12.5px;color:#ffb340;text-align:center}
 .scan .sbtm{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);display:flex;gap:10px;z-index:3}.scan .sbtm .btn{flex:1;position:static!important;margin:0!important;width:auto!important}
 .fogtab{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);margin-bottom:12px;background:#3d3666}.fogtab .fogmap{position:absolute!important;inset:0}.fogtab .fgzb{top:16px}
 .fgh .fgsub{margin:-4px 0 8px;font-size:12.5px;color:var(--fg-3)}.fgh .fgt{text-align:center}.fgh .fogbig b{font-size:36px;font-weight:800;letter-spacing:-.03em;color:#fff;text-shadow:0 0 18px rgba(0,229,255,.55)}.fgh .fogbig u{display:block;text-decoration:none;font-size:13px;font-weight:700;color:#7ff3ff;margin-top:-2px}
@@ -894,7 +896,7 @@ button{font:inherit;color:inherit}
 <button type="button" role="tab" data-t="vie"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg>À vie</button>
 <button type="button" role="tab" data-t="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Réglages</button>
 </nav>
-<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><div class="sbtm"><button type="button" class="btn" id="sphoto">🖼 Depuis une photo</button><button type="button" class="btn ghost" id="sclose">Annuler</button></div></div><input type="file" id="qrfile" accept="image/*" multiple hidden>
+<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><div class="sbtm"><button type="button" class="btn" id="scode">⌨ Code</button><button type="button" class="btn" id="sphoto">🖼 Photo</button><button type="button" class="btn ghost" id="sclose">Annuler</button></div></div><input type="file" id="qrfile" accept="image/*" multiple hidden>
 <canvas id="scv" hidden></canvas>
 <div class="cele" id="cele" hidden role="dialog" aria-label="Célébration"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -923,7 +925,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.52';
+var APP_V='2.53';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4183,12 +4185,12 @@ function progDraw(){var p=$('#sprog'),h='';if(SC.total>1)for(var i=1;i<=SC.total
 function stopScan(){running=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}$('#scan').classList.add('hide');if(SC.any){SC.any=false;ANIM=true;render()}}
 function scan(){
   if(typeof jsQR!=='function'){toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500);return}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Caméra indisponible : choisis une photo du QR code.',4000);$('#qrfile').click();return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){codeSheet();return}
   SC={done:{},total:0,added:0,tracks:0,last:'',any:false};progDraw();
   $('#scan').classList.remove('hide');$('#smsg').textContent='Vise le QR code affiché sur l’autoradio';
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){
     stream=s;var v=$('#vid');v.srcObject=s;v.setAttribute('playsinline','');v.play();running=true;tick();
-  }).catch(function(){$('#smsg').textContent='Caméra refusée : utilise « Depuis une photo » ci-dessous (ou autorise la caméra dans Réglages › Safari › Appareil photo).'});
+  }).catch(function(){$('#smsg').textContent='Caméra refusée : utilise « Code » ou « Photo » ci-dessous (ou autorise la caméra dans Réglages › Safari › Appareil photo).'});
 }
 function tick(){
   if(!running)return;
@@ -4219,6 +4221,72 @@ function tick(){
     }
   }
   requestAnimationFrame(tick);
+}
+/* ---------- 2.53 : synchro par code court (6 caractères) ----------
+   L'autoradio chiffre les mêmes données que les QR codes et les dépose sur ntfy.sh (gratuit, sans compte,
+   effacé au bout de 12 h), puis affiche un code de 6 caractères. On tape le code ici : on récupère, on déchiffre, on importe.
+   Chiffrement fait à la main (SHA-256 en JS) pour marcher aussi dans l'autoradio (page file://, sans crypto.subtle). */
+var LMC={A:'0123456789ABCDEFGHJKMNPQRSTVWXYZ',srv:'https://ntfy.sh/'};
+function sha256(B){/* B : Uint8Array → Uint8Array(32) */
+  var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],l=B.length,n=((l+9+63)>>6)<<6,M=new Uint8Array(n);M.set(B);M[l]=0x80;
+  var bits=l*8;M[n-4]=(bits>>>24)&255;M[n-3]=(bits>>>16)&255;M[n-2]=(bits>>>8)&255;M[n-1]=bits&255;M[n-5]=Math.floor(bits/4294967296)&255;
+  var W=new Array(64),r=function(x,k){return (x>>>k)|(x<<(32-k))};
+  for(var o=0;o<n;o+=64){for(var i=0;i<16;i++)W[i]=(M[o+4*i]<<24)|(M[o+4*i+1]<<16)|(M[o+4*i+2]<<8)|M[o+4*i+3];
+    for(i=16;i<64;i++){var s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0}
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(i=0;i<64;i++){var S1=r(e,6)^r(e,11)^r(e,25),ch=(e&f)^(~e&g),t1=(h+S1+ch+K[i]+W[i])|0,S0=r(a,2)^r(a,13)^r(a,22),mj=(a&b)^(a&c)^(b&c),t2=(S0+mj)|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0}
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0}
+  var out=new Uint8Array(32);for(i=0;i<8;i++){out[4*i]=H[i]>>>24;out[4*i+1]=(H[i]>>>16)&255;out[4*i+2]=(H[i]>>>8)&255;out[4*i+3]=H[i]&255}return out}
+function u8(s){return new TextEncoder().encode(s)}
+function cat8(){var n=0,i;for(i=0;i<arguments.length;i++)n+=arguments[i].length;var o=new Uint8Array(n),p=0;for(i=0;i<arguments.length;i++){o.set(arguments[i],p);p+=arguments[i].length}return o}
+function hex8(B){var s='';for(var i=0;i<B.length;i++)s+=(B[i]<16?'0':'')+B[i].toString(16);return s}
+function b64u(B){var s='';for(var i=0;i<B.length;i++)s+=String.fromCharCode(B[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function unb64u(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var t=atob(s),o=new Uint8Array(t.length);for(var i=0;i<t.length;i++)o[i]=t.charCodeAt(i);return o}
+/* code saisi → forme normale (6 caractères, alphabet de Crockford : pas de I, L, O, U) */
+function lmNorm(s){return String(s||'').toUpperCase().replace(/[\s\-_.]/g,'').replace(/O/g,'0').replace(/[IL]/g,'1').replace(/U/g,'V')}
+function lmTopic(code){return 'lm-'+hex8(sha256(u8('lm-topic|'+code))).slice(0,24)}
+function lmKey(code){return sha256(u8('lm-key|'+code))}
+/* flux : bloc j = SHA-256(clé ‖ nonce ‖ j) ; contrôle = SHA-256(clé ‖ nonce ‖ chiffré)[0..8] */
+function lmXor(key,nonce,D){var o=new Uint8Array(D.length);for(var j=0;j*32<D.length;j++){var ks=sha256(cat8(key,nonce,new Uint8Array([j>>>24,(j>>>16)&255,(j>>>8)&255,j&255])));for(var i=0;i<32&&j*32+i<D.length;i++)o[j*32+i]=D[j*32+i]^ks[i]}return o}
+function lmOpen(code,b64){var key=lmKey(code),B=unb64u(b64);if(B.length<17)throw new Error('court');var nonce=B.slice(0,8),ct=B.slice(8,B.length-8),tag=B.slice(B.length-8),chk=sha256(cat8(key,nonce,ct)).slice(0,8);
+  for(var i=0;i<8;i++)if(chk[i]!==tag[i])throw new Error('cle');return new TextDecoder().decode(lmXor(key,nonce,ct))}
+function lmFetch(code){
+  return fetch(LMC.srv+lmTopic(code)+'/json?poll=1&since=all').then(function(r){if(!r.ok)throw new Error('reseau');return r.text()}).then(function(t){
+    var parts={},n=0,stamp=0;t.split('\n').forEach(function(l){if(!l.trim())return;var j;try{j=JSON.parse(l)}catch(e){return}if(j.event&&j.event!=='message')return;
+      var m=/^LM1 (\w+) (\d+)\/(\d+) (.+)$/.exec(j.message||'');if(!m)return;var id=m[1];
+      /* plusieurs envois avec le même code : on garde le plus récent */
+      if(!parts[id])parts[id]={n:+m[3],c:{},t:j.time||0};parts[id].c[+m[2]]=m[4];if((j.time||0)>parts[id].t)parts[id].t=j.time||0});
+    var best=null;Object.keys(parts).forEach(function(k){var p=parts[k];if(Object.keys(p.c).length>=p.n&&(!best||p.t>best.t))best=p});
+    if(!best)throw new Error(Object.keys(parts).length?'incomplet':'introuvable');
+    var s='';for(var i=1;i<=best.n;i++)s+=best.c[i];return lmOpen(code,s)});
+}
+function codeImport(raw){
+  var code=lmNorm(raw);if(code.length!==6||/[^0-9A-HJKMNP-TV-Z]/.test(code)){toast('Le code fait 6 caractères (chiffres et lettres).',3500);return Promise.resolve(false)}
+  var b=$('#lmgo');if(b){b.disabled=true;b.textContent='Récupération…'}
+  return lmFetch(code).then(function(txt){
+    if(txt.indexOf('z1')===0){var d=unz(txt);if(!d)throw new Error('cle');txt=d}
+    var pages=txt.split('\n').filter(function(x){return x.indexOf('v1~')===0||x.indexOf('z1')===0});if(!pages.length)throw new Error('vide');
+    SC={done:{},total:0,added:0,tracks:0,last:'',any:false};
+    pages.forEach(function(pg){var pl=unz(pg);if(!pl||pl.indexOf('v1~')!==0)return;
+      var r=importPayload(pl);SC.any=true;SC.added+=r.added;SC.tracks+=r.tracks||0;SC.total=Math.max(1,r.total||1);SC.done[r.page||1]=1});
+    try{localStorage.setItem('sandero-lastcode',code)}catch(e){}
+    sheetClose();if(!$('#scan').classList.contains('hide'))stopScan();
+    var add=SC.added,ntk=SC.tracks;SC.any=false;ANIM=true;render();setTimeout(tripReveal,250);
+    island({fallback:1,icon:'check',pop:true,tone:'good',title:add?add+' trajet'+(add>1?'s':'')+' importé'+(add>1?'s':''):ntk?'Tracés mis à jour':'Tout est à jour',sub:'Code '+code.slice(0,3)+' '+code.slice(3)+(ntk?' · '+ntk+' tracé'+(ntk>1?'s':''):''),ms:3800});
+    return true;
+  }).catch(function(e){var m=e&&e.message,s=m==='introuvable'?'Code introuvable : vérifie les 6 caractères (un code reste valable 12 h).':m==='incomplet'?'Envoi pas encore complet : attends quelques secondes et réessaie.':m==='cle'?'Code incorrect : une lettre ou un chiffre ne correspond pas.':m==='reseau'||!m?'Pas de connexion au service : vérifie internet et réessaie.':'Données illisibles, renvoie depuis l’autoradio.';
+    var er=$('#lmerr');if(er)er.textContent=s;else toast(s,4500);if(b){b.disabled=false;b.textContent='Importer'}return false});
+}
+function codeSheet(){
+  if(!$('#scan').classList.contains('hide'))stopScan();
+  sheetOpen('Entrer un code','<p class="note" style="margin-top:0">Sur l’autoradio : <b>Envoyer à l’iPhone › Code</b>. Tape les 6 caractères affichés.</p>'+
+    '<input id="lmin" class="lmin" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="9" placeholder="K7Q 2M9">'+
+    '<p class="lmerr" id="lmerr"></p><button type="button" class="btn" id="lmgo" style="width:100%">Importer</button>'+
+    '<p class="note">Les données passent chiffrées par ntfy.sh et sont effacées au bout de 12 h. Sans le code, personne ne peut les lire.</p>');
+  var I=$('#lmin');setTimeout(function(){I.focus()},250);
+  I.oninput=function(){var v=lmNorm(I.value).replace(/[^0-9A-Z]/g,'').slice(0,6);I.value=v.length>3?v.slice(0,3)+' '+v.slice(3):v;$('#lmerr').textContent='';if(v.length===6)codeImport(v)};
+  I.onkeydown=function(e){if(e.key==='Enter')codeImport(I.value)};$('#lmgo').onclick=function(){codeImport(I.value)};
 }
 /* ---------- 2.52 : lire le QR code sur une photo (ou une capture d'écran) ---------- */
 function qrFromImage(file){
@@ -4261,7 +4329,7 @@ function photoScan(files){
   })();
 }
 $('#qrfile').onchange=function(){var F=this.files;photoScan(F);this.value=''};
-$('#sphoto').onclick=function(){$('#qrfile').click()};
+$('#sphoto').onclick=function(){$('#qrfile').click()};$('#scode').onclick=codeSheet;
 var LOCKK='sandero-lock';
 function lockState(){try{return localStorage.getItem(LOCKK)!=='0'}catch(e){return true}}
 function lockDraw(){var l=lockState(),b=$('#lock');b.classList.toggle('open',!l);$('#lockt').textContent=l?'Verrouillée':'Ouverte';b.setAttribute('aria-label',l?'Voiture verrouillée':'Voiture ouverte')}
