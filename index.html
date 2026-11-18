@@ -735,6 +735,7 @@ button{font:inherit;color:inherit}
 .bad-d{display:flex;gap:6px;margin-bottom:10px}.bad-d span{flex:1;text-align:center;padding:7px 2px;border-radius:10px;background:var(--surface-2)}.bad-d b{display:block;font-size:13px}.bad-d small{font-size:10.5px;color:var(--fg-3)}
 .bad-d .bad b{color:#ff4d4f}.bad-d .warn b{color:#ffb340}.bad-d .ok b{color:var(--good)}
 /* 2.38 */
+.scan .sbtm{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);display:flex;gap:10px;z-index:3}.scan .sbtm .btn{flex:1;position:static!important;margin:0!important;width:auto!important}
 .fogtab{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);margin-bottom:12px;background:#3d3666}.fogtab .fogmap{position:absolute!important;inset:0}.fogtab .fgzb{top:16px}
 .fgh .fgsub{margin:-4px 0 8px;font-size:12.5px;color:var(--fg-3)}.fgh .fgt{text-align:center}.fgh .fogbig b{font-size:36px;font-weight:800;letter-spacing:-.03em;color:#fff;text-shadow:0 0 18px rgba(0,229,255,.55)}.fgh .fogbig u{display:block;text-decoration:none;font-size:13px;font-weight:700;color:#7ff3ff;margin-top:-2px}
 .fgh .fgl,.fgh .fgz{margin:6px 0 0}.fgh .fogs{display:flex;gap:6px;margin-top:10px}.fgh .fogs span{flex:1;text-align:center;font-size:11px;color:var(--fg-3);padding:7px 2px;border-radius:12px;background:rgba(255,255,255,.05)}.fgh .fogs b{display:block;font-size:16px;color:#fff}.fgh .sbtns{margin-top:8px}
@@ -893,7 +894,7 @@ button{font:inherit;color:inherit}
 <button type="button" role="tab" data-t="vie"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg>À vie</button>
 <button type="button" role="tab" data-t="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Réglages</button>
 </nav>
-<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><button type="button" class="btn ghost" id="sclose">Annuler</button></div>
+<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><div class="sbtm"><button type="button" class="btn" id="sphoto">🖼 Depuis une photo</button><button type="button" class="btn ghost" id="sclose">Annuler</button></div></div><input type="file" id="qrfile" accept="image/*" multiple hidden>
 <canvas id="scv" hidden></canvas>
 <div class="cele" id="cele" hidden role="dialog" aria-label="Célébration"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -922,7 +923,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.51';
+var APP_V='2.52';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4182,12 +4183,12 @@ function progDraw(){var p=$('#sprog'),h='';if(SC.total>1)for(var i=1;i<=SC.total
 function stopScan(){running=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}$('#scan').classList.add('hide');if(SC.any){SC.any=false;ANIM=true;render()}}
 function scan(){
   if(typeof jsQR!=='function'){toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500);return}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('La caméra n’est pas disponible ici. Ouvre l’appli depuis l’écran d’accueil ou dans Safari.',4500);return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Caméra indisponible : choisis une photo du QR code.',4000);$('#qrfile').click();return}
   SC={done:{},total:0,added:0,tracks:0,last:'',any:false};progDraw();
   $('#scan').classList.remove('hide');$('#smsg').textContent='Vise le QR code affiché sur l’autoradio';
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){
     stream=s;var v=$('#vid');v.srcObject=s;v.setAttribute('playsinline','');v.play();running=true;tick();
-  }).catch(function(){stopScan();toast('Accès à la caméra refusé. Autorise-le dans Réglages › Safari › Appareil photo.',5000)});
+  }).catch(function(){$('#smsg').textContent='Caméra refusée : utilise « Depuis une photo » ci-dessous (ou autorise la caméra dans Réglages › Safari › Appareil photo).'});
 }
 function tick(){
   if(!running)return;
@@ -4219,6 +4220,48 @@ function tick(){
   }
   requestAnimationFrame(tick);
 }
+/* ---------- 2.52 : lire le QR code sur une photo (ou une capture d'écran) ---------- */
+function qrFromImage(file){
+  return new Promise(function(ok){
+    var url=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){
+      var W0=im.naturalWidth,H0=im.naturalHeight,cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true}),res=null;
+      /* plusieurs tailles et cadrages : une photo d'écran est souvent floue, petite ou de travers */
+      var tries=[[1,1400],[1,1000],[1,2000],[1,700],[.7,1200],[.5,1000],[.5,700]];
+      for(var i=0;i<tries.length&&!res;i++){var fr=tries[i][0],sx=W0*(1-fr)/2,sy=H0*(1-fr)/2,sw=W0*fr,sh=H0*fr,k=Math.min(1,tries[i][1]/Math.max(sw,sh)),w=Math.max(1,Math.round(sw*k)),h=Math.max(1,Math.round(sh*k));
+        cv.width=w;cv.height=h;cx.imageSmoothingEnabled=true;cx.drawImage(im,sx,sy,sw,sh,0,0,w,h);
+        try{var c=jsQR(cx.getImageData(0,0,w,h).data,w,h,{inversionAttempts:'attemptBoth'});if(c&&c.data)res=c.data}catch(e){}}
+      URL.revokeObjectURL(url);ok(res)};
+    im.onerror=function(){URL.revokeObjectURL(url);ok(null)};im.src=url;
+  });
+}
+function photoScan(files){
+  if(typeof jsQR!=='function'){toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500);return}
+  var L=Array.prototype.slice.call(files||[]);if(!L.length)return;var open=!$('#scan').classList.contains('hide');
+  if(!open||!SC||!SC.done)SC={done:{},total:0,added:0,tracks:0,last:'',any:false};
+  var msg=function(s){if(open)$('#smsg').textContent=s};msg('Lecture de '+L.length+' photo'+(L.length>1?'s':'')+'…');
+  var bad=0,foreign=0,i=0;
+  (function nx(){
+    if(i>=L.length){
+      progDraw();var left=scLeft(),tot=SC.total,add=SC.added,ntk=SC.tracks;
+      if(SC.any&&!left){if(open)stopScan();else if(SC.any){SC.any=false;ANIM=true;render()}setTimeout(tripReveal,250);
+        island({fallback:1,icon:'check',pop:true,tone:'good',title:add?add+' trajet'+(add>1?'s':'')+' importé'+(add>1?'s':''):ntk?'Tracés mis à jour':'Tout est à jour',sub:(tot>1?tot+' codes lus':'Synchronisation terminée')+' depuis '+(L.length>1?'les photos':'la photo')+(ntk?' · '+ntk+' tracé'+(ntk>1?'s':''):''),right:tot>1?tot+'/'+tot:'',ms:3800});return}
+      var s=SC.any?Object.keys(SC.done).length+' / '+SC.total+' codes reçus ✓ · ajoute la photo des autres codes ou scanne-les':(foreign?'Ce QR code ne vient pas du tableau de bord de La Mathias.':'Aucun QR code trouvé sur '+(L.length>1?'ces photos':'cette photo')+' : prends-le bien en face, en entier et net.');
+      if(open)msg(s);else{if(SC.any){ANIM=true;render()}toast(s,5000)}
+      return}
+    var f=L[i++];qrFromImage(f).then(function(code){
+      if(!code){bad++;nx();return}
+      var pl=null;try{pl=payOf(code)}catch(e){pl=null}
+      if(pl==null||pl.indexOf('v1~')!==0){foreign++;nx();return}
+      var pg=+(pl.split('~')[2]||'1-1').split('-')[0]||1;
+      if(!SC.done[pg]){try{var r=importPayload(pl);SC.any=true;SC.added+=r.added;SC.tracks+=r.tracks||0;SC.total=Math.max(1,r.total||1);SC.done[r.page||1]=1;progDraw();
+        if(open){var fr=$('#sfr');fr.classList.add('ok');setTimeout(function(){fr.classList.remove('ok')},600)}}catch(e){bad++}}
+      msg(Object.keys(SC.done).length+(SC.total?' / '+SC.total:'')+' codes reçus…');nx();
+    });
+  })();
+}
+$('#qrfile').onchange=function(){var F=this.files;photoScan(F);this.value=''};
+$('#sphoto').onclick=function(){$('#qrfile').click()};
 var LOCKK='sandero-lock';
 function lockState(){try{return localStorage.getItem(LOCKK)!=='0'}catch(e){return true}}
 function lockDraw(){var l=lockState(),b=$('#lock');b.classList.toggle('open',!l);$('#lockt').textContent=l?'Verrouillée':'Ouverte';b.setAttribute('aria-label',l?'Voiture verrouillée':'Voiture ouverte')}
