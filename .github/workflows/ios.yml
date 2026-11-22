@@ -1,0 +1,60 @@
+name: Appli iPhone
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Outils
+        run: brew install xcodegen
+
+      - name: Projet Xcode
+        working-directory: ios
+        run: |
+          VER="1.0.${GITHUB_RUN_NUMBER}"
+          sed -i '' "s/CFBundleShortVersionString: \"1.0\"/CFBundleShortVersionString: \"${VER}\"/; s/CFBundleVersion: \"1\"/CFBundleVersion: \"${GITHUB_RUN_NUMBER}\"/" project.yml
+          xcodegen generate
+
+      - name: Compilation
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project LaMathias.xcodeproj -scheme LaMathias -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee build.log \
+            | grep -E "error:|warning: unre|BUILD" || true
+          if ! grep -q "BUILD SUCCEEDED" build.log; then
+            grep -E "^/.*:[0-9]+:[0-9]+: error:" build.log | sort -u | head -40 | while IFS= read -r l; do
+              f=$(echo "$l" | cut -d: -f1 | sed "s#.*/ios/#ios/#"); n=$(echo "$l" | cut -d: -f2); m=$(echo "$l" | cut -d: -f5-)
+              echo "::error file=$f,line=$n::$m"
+            done
+            grep -E "error:" build.log | grep -v "^/" | sort -u | head -10 | while IFS= read -r l; do echo "::error ::$l"; done
+            exit 1
+          fi
+
+      - name: Fichier IPA
+        working-directory: ios
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/LaMathias.app Payload/
+          zip -qry LaMathias.ipa Payload
+          ls -l LaMathias.ipa
+
+      - name: Publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="ios-1.0.${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" ios/LaMathias.ipa --title "Appli iPhone 1.0.${GITHUB_RUN_NUMBER}" --notes "Appli iPhone La Mathias à installer avec SideStore." --latest
