@@ -166,6 +166,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         "stft": ("0106", { Double($0[0]) * 100 / 128 - 100 }),
         "ltft": ("0107", { Double($0[0]) * 100 / 128 - 100 }),
         "fuel": ("012F", { Double($0[0]) * 100 / 255 }),
+        "fr": ("015E", { Double($0[0] * 256 + ($0.count > 1 ? $0[1] : 0)) / 20 }),
+        "eq": ("0144", { Double($0[0] * 256 + ($0.count > 1 ? $0[1] : 0)) * 2 / 65536 }),
     ]
 
     private func sup(_ k: String) -> Bool {
@@ -200,7 +202,9 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         guard loopOn, obd.ready else { loopOn = false; return }
         var L = ["rpm", "speed"]
         if sup("maf") && mafBad < 3 { L.append("maf") } else { L.append("map"); if n % 3 == 0 { L.append("iat") } }
-        if n % 2 == 0 && sup("thr") { L.append("thr") }
+        if sup("fr") { L.append("fr") }
+        if sup("eq") && n % 2 == 0 { L.append("eq") }
+        if sup("thr") { L.append("thr") }
         if n % 4 == 1 && sup("timing") { L.append("timing") }
         if n % 5 == 0 { L.append("coolant"); if sup("stft") { L.append("stft") }; if sup("ltft") { L.append("ltft") } }
         if n % 10 == 0 { L.append("load") }
@@ -215,7 +219,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         }
         func extra() {
             var ex: [String] = []
-            if n % 10 == 0 { ex.append("0103") }
+            if n % 2 == 0 { ex.append("0103") }
             if n % 30 == 0 { ex.append("ATRV") }
             var j = 0
             func one() {
@@ -240,7 +244,22 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         step()
     }
 
-    /// Conso instantanée : même calcul que l'autoradio (densité d'air, corrections de mélange, coupure d'injection).
+    /// Conso instantanée (2.58) : débit d'air (MAF, ou pression × régime avec rendement selon le régime), richesse
+    /// (boucle fermée = mélange idéal + trims, pleine charge / moteur froid = enrichi), 015E / 0144 si la voiture les donne.
+    /// Coupure d'injection seulement si tout concorde : rapport engagé et stable, pied levé, forte dépression, régime qui ne monte pas.
+    static let veK: [(Double, Double)] = [(600, 0.62), (1000, 0.68), (1500, 0.74), (2000, 0.78), (2500, 0.82), (3000, 0.85), (3500, 0.88), (4000, 0.9), (5000, 0.88), (6000, 0.83), (7000, 0.78)]
+    static func ve(_ r: Double) -> Double {
+        if r <= veK[0].0 { return veK[0].1 }
+        for i in 1..<veK.count where r <= veK[i].0 {
+            let a = veK[i - 1], b = veK[i]
+            return a.1 + (b.1 - a.1) * (r - a.0) / (b.0 - a.0)
+        }
+        return veK[veK.count - 1].1
+    }
+    static let gearK: [Double] = [7.5, 13.5, 20, 27, 34]
+    private var pR: Double? = nil, pRatio: Double? = nil, cutN = 0, pLph: Double? = nil
+    var src = ""
+
     private func derive() {
         let s = settings
         let r = d["rpm"], v = d["speed"] ?? 0
@@ -252,25 +271,50 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             let now = Date().timeIntervalSince1970
             if now - cutS > 30 { cutS = now; UserDefaults.standard.set(cutT, forKey: "cutT"); UserDefaults.standard.set(cutM, forKey: "cutM") }
         }
-        var maf = d["maf"]
-        if maf == nil, let m = d["map"], let r = r {
-            let imap = r * m / ((d["iat"] ?? 25) + 273.15) / 2
-            maf = imap / 60 * 0.85 * s.disp * 28.97 / 8.314
-        }
-        guard let mf = maf else { d["lph"] = nil; d["lphRaw"] = nil; d["cons"] = nil; cut = false; return }
-        var lph = mf * 3600 / (14.7 * 745)
+        var lph: Double? = nil
         let fss = d["fss"]
-        if fss != 4 && fss != 1 && (d["stft"] != nil || d["ltft"] != nil) {
-            lph *= max(0.75, min(1.25, 1 + ((d["stft"] ?? 0) + (d["ltft"] ?? 0)) / 100))
+        if let fr = d["fr"], fr >= 0, fr < 60 { lph = fr; src = "mesurée" } else {
+            var air = d["maf"]
+            src = "débit d’air"
+            if air == nil, let m = d["map"], let r = r {
+                air = r / 120 * s.disp * Recorder.ve(r) * (m * 1000) / (287.05 * ((d["iat"] ?? 25) + 273.15))
+                src = "pression d’admission"
+            }
+            if let a = air {
+                var phi = 1.0
+                let cl = fss == 2 || fss == nil
+                if let eq = d["eq"], eq > 0.6, eq < 1.6 { phi = eq }
+                else if !cl {
+                    let hi = (d["map"] ?? 0) >= 85 || (d["load"] ?? 0) >= 80 || (d["thr"] != nil && cutT != nil && d["thr"]! > cutT! + 55)
+                    if hi { phi = 1.15 } else if let c = d["coolant"], c < 65 { phi = 1 + min(0.3, (65 - c) * 0.008) }
+                }
+                var trim = 1 + (d["ltft"] ?? 0) / 100 + (cl ? (d["stft"] ?? 0) / 100 : 0)
+                trim = max(0.75, min(1.25, trim))
+                lph = a / 14.7 * phi * trim * 3600 / 745
+            }
         }
-        let thr = d["thr"], map = d["map"]
-        let rest = thr == nil || (cutT != nil ? thr! <= cutT! + 2.5 : thr! < 20)
-        let lowAir = map != nil && (cutM != nil ? map! < cutM! * 0.82 : map! < 26)
-        let veryLow = map != nil && cutM != nil && map! < cutM! * 0.75 && (r ?? 0) > 1300
-        cut = (r ?? 0) > 1150 && v > 10 && rest && (fss == 4 || (lowAir && fss != 2) || veryLow)
-        if cut { lph = 0 }
-        d["lphRaw"] = lph
-        d["lph"] = lph * max(0.6, min(1.6, s.k))
+        guard var l = lph else { d["lph"] = nil; d["lphRaw"] = nil; d["cons"] = nil; cut = false; src = ""; return }
+        var ratio: Double? = nil
+        var gear = false
+        if let r = r, v >= 4, r >= 650 {
+            let k = v / (r / 1000)
+            ratio = k
+            gear = Recorder.gearK.contains { abs(log(k / $0)) < 0.22 }
+        }
+        let stable = ratio != nil && pRatio != nil && abs(ratio! / pRatio! - 1) < 0.08
+        let notRising = pR == nil || r == nil || r! - pR! <= 60
+        let foot: Bool = d["thr"] == nil ? true : (cutT != nil ? d["thr"]! <= cutT! + 1.5 : d["thr"]! < 16)
+        let vac: Bool = d["map"] != nil ? (cutM != nil ? d["map"]! < cutM! * 0.8 : d["map"]! < 26) : ((d["load"] ?? 100) < 12)
+        let cand = src != "mesurée" && (r ?? 0) >= 1250 && v >= 15 && gear && stable && notRising && foot && vac && fss != 2
+        cutN = cand ? cutN + 1 : 0
+        pRatio = ratio
+        pR = r
+        cut = cutN >= 2
+        if cut { l = 0 }
+        if !cut, let p = pLph, p > 0 { l = p * 0.4 + l * 0.6 }
+        pLph = l
+        d["lphRaw"] = l
+        d["lph"] = l * max(0.6, min(1.6, s.k))
         d["cons"] = v > 8 ? d["lph"]! / v * 100 : nil
     }
 
@@ -394,6 +438,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         var dd: [String: Any] = [:]
         for (k, v) in d where v.isFinite { dd[k] = v }
         dd["cut"] = cut
+        dd["src"] = src
         var o: [String: Any] = ["st": obd.state, "err": obd.err, "name": obd.savedName, "known": obd.savedId != nil, "can": obd.can, "d": dd, "loc": locAuth, "pending": Store.count()]
         if let R = trip { o["rec"] = ["t0": R.t0, "dist": R.dist, "dur": R.dur, "fuel": R.fuel, "P": R.P.count] }
         if let g = gps { o["gps"] = ["la": g.coordinate.latitude, "lo": g.coordinate.longitude, "acc": g.horizontalAccuracy] }

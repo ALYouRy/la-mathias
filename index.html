@@ -952,7 +952,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.57';
+var APP_V='2.58';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4426,14 +4426,15 @@ function obdInit(){
   .then(function(){return S('ATSP0')}).then(function(){return obdSend('0100',15000)}).then(function(r){
     var b=obdBytes(r,'4100');if(!b)throw new Error('noecu');OBD.sup={};
     for(var i=0;i<4;i++)for(var k=0;k<8;k++)if(b[i]&(128>>k))OBD.sup[i*8+k+1]=1;
-    return S('ATDPN').then(function(p){OBD.can=/[6-9AB]$/.test(String(p).toUpperCase().replace(/[^0-9A-F]/g,''))});
+    var more=function(base){if(!OBD.sup[base])return Promise.resolve();var h=(base).toString(16).toUpperCase();return obdSend('01'+h,4000).then(function(r2){var b2=obdBytes(r2,'41'+h);if(!b2)return;for(var i=0;i<4;i++)for(var k=0;k<8;k++)if(b2[i]&(128>>k))OBD.sup[base+i*8+k+1]=1;return more(base+32)},function(){})};
+    return more(0x20).then(function(){return S('ATDPN')}).then(function(p){OBD.can=/[6-9AB]$/.test(String(p).toUpperCase().replace(/[^0-9A-F]/g,''))});
   }).then(function(){OBD.ok=true;OBD.mafBad=0;OBD.st='ok';OBD.err='';BATS={first:true,runN:0,runPush:false};drvDraw();island({icon:'check',pop:true,tone:'good',title:'Voiture connectée',sub:OBD.dev&&OBD.dev.name||'OBD',ms:2500,fallback:1});return obdRead('rpm').then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20){DRV.d.volt=v;battNote(v)}},function(){})}).then(function(){drvStart('obd');setTimeout(function(){if(OBD.ok)dtcRead(true)},4000)})})
   .catch(function(e){OBD.ok=false;OBD.st='err';OBD.err=e&&e.message==='noecu'?'L’adaptateur répond mais pas la voiture : contact mis ?':'Pas de réponse de l’adaptateur';drvDraw()});
 }
 /* --- lecture en boucle, puis calcul comme l'autoradio --- */
 var PIDS={rpm:['010C',function(b){return (b[0]*256+b[1])/4}],speed:['010D',function(b){return b[0]}],coolant:['0105',function(b){return b[0]-40}],iat:['010F',function(b){return b[0]-40}],
   load:['0104',function(b){return b[0]*100/255}],map:['010B',function(b){return b[0]}],maf:['0110',function(b){return (b[0]*256+b[1])/100}],thr:['0111',function(b){return b[0]*100/255}],timing:['010E',function(b){return b[0]/2-64}],
-  stft:['0106',function(b){return b[0]*100/128-100}],ltft:['0107',function(b){return b[0]*100/128-100}],fuel:['012F',function(b){return b[0]*100/255}]};
+  stft:['0106',function(b){return b[0]*100/128-100}],ltft:['0107',function(b){return b[0]*100/128-100}],fuel:['012F',function(b){return b[0]*100/255}],fr:['015E',function(b){return (b[0]*256+b[1])/20}],eq:['0144',function(b){return (b[0]*256+b[1])*2/65536}]};
 function obdRead(k){var p=PIDS[k];return obdSend(p[0],2500).then(function(r){var b=obdBytes(r,'4'+p[0].slice(1));if(b){DRV.d[k]=p[1](b);if(k==='maf')OBD.mafBad=0;return true}if(k==='maf'){OBD.mafBad=(OBD.mafBad||0)+1;DRV.d.maf=null}return false},function(){return false})}
 function obdLoop(){
   if(DRV.loop)return;DRV.loop=true;var n=0;
@@ -4441,27 +4442,55 @@ function obdLoop(){
     if(!DRV.on||!OBD.ok){DRV.loop=false;return}
     var L=['rpm','speed'],sup=function(k){return OBD.sup[parseInt(PIDS[k][0].slice(2),16)]};
     if(sup('maf')&&(OBD.mafBad||0)<3)L.push('maf');else{L.push('map');if(n%3===0)L.push('iat')}
-    if(n%2===0&&sup('thr'))L.push('thr');if(n%4===1&&sup('timing'))L.push('timing');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
+    if(sup('fr'))L.push('fr');if(sup('eq')&&n%2===0)L.push('eq');if(sup('thr'))L.push('thr');if(n%4===1&&sup('timing'))L.push('timing');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
     var p=Promise.resolve();L.forEach(function(k){p=p.then(function(){return obdRead(k)})});
-    if(n%10===0)p=p.then(function(){return obdSend('0103',2500).then(function(r){var b=obdBytes(r,'4103');if(b)DRV.d.fss=b[0]},function(){})});
+    if(n%2===0)p=p.then(function(){return obdSend('0103',2500).then(function(r){var b=obdBytes(r,'4103');if(b)DRV.d.fss=b[0]},function(){})});
     if(n%30===0)p=p.then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20){DRV.d.volt=v;battNote(v)}},function(){})});
     p.then(function(){n++;DRV.d.t=Date.now();drvDerive();setTimeout(nx,0)});
   })();
 }
-var CUTL=null;
+/* 2.58 : conso instantanée revue.
+   Débit d'air : capteur MAF si la voiture l'a, sinon pression d'admission × régime avec un rendement qui dépend du régime.
+   Richesse : boucle fermée = mélange idéal corrigé par les trims ; pleine charge et moteur froid = mélange enrichi.
+   Si la voiture donne directement le débit de carburant (015E) ou la richesse commandée (0144), on les prend.
+   Coupure d'injection seulement si tout concorde : rapport engagé et stable, pied levé, dépression forte, régime qui ne monte pas.
+   En point mort, en montée de régime ou à l'arrêt : jamais de coupure. */
+var VEK=[[600,.62],[1000,.68],[1500,.74],[2000,.78],[2500,.82],[3000,.85],[3500,.88],[4000,.9],[5000,.88],[6000,.83],[7000,.78]];
+function veOf(r){if(r<=VEK[0][0])return VEK[0][1];for(var i=1;i<VEK.length;i++)if(r<=VEK[i][0]){var a=VEK[i-1],b=VEK[i];return a[1]+(b[1]-a[1])*(r-a[0])/(b[0]-a[0])}return VEK[VEK.length-1][1]}
+var CUTL=null,DRVP={r:null,ratio:null,cutN:0,lph:null};
 function drvDerive(){
   var d=DRV.d,S=drvSet();if(!CUTL){try{CUTL=JSON.parse(localStorage.getItem('sandero-cut-1')||'{}')}catch(e){CUTL={}}}
-  var r=d.rpm,v=d.speed||0;
+  var r=d.rpm,v=d.speed||0,now=Date.now();
+  /* apprentissage au ralenti, moteur chaud : position papillon et pression de référence */
   if(r!=null&&r>550&&r<1150&&v<2){if(d.thr!=null){CUTL.t=CUTL.t==null?d.thr:Math.min(CUTL.t+0.02,CUTL.t*0.97+d.thr*0.03);if(d.thr<CUTL.t)CUTL.t=d.thr}
     if(d.map!=null&&(d.coolant==null||d.coolant>60))CUTL.m=CUTL.m==null?d.map:CUTL.m*0.97+d.map*0.03;
-    var now=Date.now();if(!CUTL.s||now-CUTL.s>30000){CUTL.s=now;try{localStorage.setItem('sandero-cut-1',JSON.stringify({t:CUTL.t,m:CUTL.m}))}catch(e){}}}
-  var maf=d.maf;if(maf==null&&d.map!=null&&r!=null){var imap=r*d.map/((d.iat!=null?d.iat:25)+273.15)/2;maf=imap/60*0.85*S.disp*28.97/8.314}
-  if(maf==null){d.lph=d.lphRaw=null;d.cons=null;return}
-  var lph=maf*3600/(14.7*745);
-  if(d.fss!==4&&d.fss!==1&&(d.stft!=null||d.ltft!=null))lph*=Math.max(.75,Math.min(1.25,1+((d.stft||0)+(d.ltft||0))/100));
-  var rest=d.thr==null||(CUTL.t!=null?d.thr<=CUTL.t+2.5:d.thr<20),lowAir=d.map!=null&&(CUTL.m!=null?d.map<CUTL.m*0.82:d.map<26),veryLow=d.map!=null&&CUTL.m!=null&&d.map<CUTL.m*0.75&&r>1300;
-  d.cut=r>1150&&v>10&&rest&&(d.fss===4||(lowAir&&d.fss!==2)||veryLow);if(d.cut)lph=0;
-  d.lphRaw=lph;d.lph=lph*Math.max(.6,Math.min(1.6,S.k||1));d.cons=v>8?d.lph/v*100:null;
+    if(!CUTL.s||now-CUTL.s>30000){CUTL.s=now;try{localStorage.setItem('sandero-cut-1',JSON.stringify({t:CUTL.t,m:CUTL.m}))}catch(e){}}}
+  var lph=null,src='';
+  if(d.fr!=null&&d.fr>=0&&d.fr<60){lph=d.fr;src='mesurée'}
+  else{
+    var air=d.maf;src='débit d’air';
+    if(air==null&&d.map!=null&&r!=null){air=r/120*S.disp*veOf(r)*(d.map*1000)/(287.05*((d.iat!=null?d.iat:25)+273.15));src='pression d’admission'}
+    if(air!=null){
+      var phi=1,cl=d.fss===2||d.fss==null;
+      if(d.eq!=null&&d.eq>.6&&d.eq<1.6)phi=d.eq;
+      else if(!cl){var hiLoad=(d.map!=null&&d.map>=85)||(d.load!=null&&d.load>=80)||(d.thr!=null&&CUTL.t!=null&&d.thr>CUTL.t+55);
+        if(hiLoad)phi=1.15;else if(d.coolant!=null&&d.coolant<65)phi=1+Math.min(.3,(65-d.coolant)*.008)}
+      var trim=1+(d.ltft||0)/100+(cl&&d.stft!=null?d.stft/100:0);trim=Math.max(.75,Math.min(1.25,trim));
+      lph=air/14.7*phi*trim*3600/745;
+    }
+  }
+  if(lph==null){d.lph=d.lphRaw=d.cons=null;d.cut=false;d.src='';return}
+  /* coupure d'injection : toutes les conditions en même temps, deux lectures de suite */
+  var ratio=r&&v>=4?v/(r/1000):null,g=estGear(),stable=ratio!=null&&DRVP.ratio!=null&&Math.abs(ratio/DRVP.ratio-1)<.08,
+      notRising=DRVP.r==null||r==null||r-DRVP.r<=60,
+      foot=d.thr==null?true:(CUTL.t!=null?d.thr<=CUTL.t+1.5:d.thr<16),
+      vac=d.map!=null?(CUTL.m!=null?d.map<CUTL.m*0.8:d.map<26):(d.load!=null&&d.load<12),
+      cand=src!=='mesurée'&&r!=null&&r>=1250&&v>=15&&g!=null&&stable&&notRising&&foot&&vac&&d.fss!==2;
+  DRVP.cutN=cand?DRVP.cutN+1:0;DRVP.ratio=ratio;DRVP.r=r;
+  d.cut=DRVP.cutN>=2;if(d.cut)lph=0;
+  /* léger lissage (pas pendant une coupure) */
+  if(!d.cut&&DRVP.lph!=null&&DRVP.lph>0)lph=DRVP.lph*0.4+lph*0.6;DRVP.lph=lph;
+  d.src=src;d.lphRaw=lph;d.lph=lph*Math.max(.6,Math.min(1.6,S.k||1));d.cons=v>8?d.lph/v*100:null;
 }
 /* --- GPS --- */
 function gpsStart(){if(DRV.gw!=null||!navigator.geolocation)return;
@@ -4700,7 +4729,7 @@ function drvBody(){
   var obd=DRV.mode==='obd'||DRV.mode==='nat',R=DRV.rec,t=DRV.tab,S=drvSet();
   if(t==='con'){
     return '<div class="dvcons"><b data-v="cons" data-c="cons">–</b><u data-v="consU">L/100</u><em data-v="cut"></em></div>'+
-      '<div class="det dvdet"><div><span>Dernière minute</span><b data-v="c1m">–</b></div><div><span>Moyenne du trajet'+(obd?'':' (estimée)')+'</span><b data-v="avg">–</b></div><div><span>Carburant du trajet</span><b data-v="fuelT">–</b></div></div>'+
+      '<div class="det dvdet"><div><span>Dernière minute</span><b data-v="c1m">–</b></div><div><span>Moyenne du trajet'+(obd?'':' (estimée)')+'</span><b data-v="avg">–</b></div><div><span>Carburant du trajet</span><b data-v="fuelT">–</b></div><div><span>Calculée d’après</span><b data-v="srcT">–</b></div></div>'+
       '<div class="dvcv"><div class="seg dvcm"><button type="button" data-cm="l100" aria-pressed="'+(DRV.cm!=='lph')+'">L/100</button><button type="button" data-cm="lph" aria-pressed="'+(DRV.cm==='lph')+'">L/h</button></div><canvas id="dvcv" width="600" height="220"></canvas><div class="dvcx"><span>−3 min</span><span>maintenant</span></div></div>'+
       '<div class="dvtank"><div class="dvtk"><span><b data-v="range">–</b> km d’autonomie</span><span><b data-v="rem">–</b> L <i data-v="remTag"></i></span></div><div class="bar"><i id="dvbar"></i></div><p class="note" data-v="tankNote"></p><button type="button" class="btn ghost" id="dvfill">⛽ Plein / niveau</button></div>';
   }
@@ -4734,7 +4763,7 @@ function drvVals(){
   V.cons=d.cons!=null?f1(d.cons):(d.lph!=null&&(d.speed||0)<=8?f1(d.lph):'–');V.consU=d.cons!=null?'L/100':(d.lph!=null?'L/h à l’arrêt':'L/100');V.cut=d.cut?'coupure d’injection : 0 L':'';
   V.spd=d.speed!=null?Math.round(d.speed):'–';V.rpm=d.rpm!=null?Math.round(d.rpm/10)*10:'–';V.cool=d.coolant!=null?Math.round(d.coolant)+'°':'–';V.gear=g?gearTxt(g)+' (estimé)':'';
   V.dist=R?f1(R.dist):'–';V.dur=R?dur(R.dur):'–';V.avg=avg!=null?f1(avg):'–';V.cost=R?f2(R.fuel*k*pr)+' €':'–';
-  var c1=winAvg(60);V.c1m=c1!=null?f1(c1)+' L/100':'–';if(DRV.tab==='con')V.avg=avg!=null?f1(avg)+' L/100':'–';V.fuelT=R?f2(R.fuel*k).replace(/0$/,'')+' L · '+f2(R.fuel*k*pr)+' €':'–';
+  var c1=winAvg(60);V.c1m=c1!=null?f1(c1)+' L/100':'–';if(DRV.tab==='con')V.avg=avg!=null?f1(avg)+' L/100':'–';V.srcT=DRV.mode==='gps'?'le GPS (estimation)':d.src==='mesurée'?'le débit carburant de la voiture':d.src==='débit d’air'?'le débit d’air':d.src?'la pression d’admission et le régime':'–';V.fuelT=R?f2(R.fuel*k).replace(/0$/,'')+' L · '+f2(R.fuel*k*pr)+' €':'–';
   V.range=FI.range!=null?Math.round(FI.range/5)*5:'–';V.rem=FI.rem!=null?f1(FI.rem):'–';V.remTag=FI.rem==null?'':FI.meas?'· mesurés':'· estimés';
   V.tankNote=FI.rem==null?'Touche « Plein / niveau » à ton prochain passage à la pompe : l’appli suivra ensuite ce que tu consommes.':(FI.meas?'Niveau lu sur la voiture. ':'Dernier plein le '+new Date(FS.fillT).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+' · '+fi(Math.round(FS.dist))+' km depuis. ')+'Autonomie calculée avec '+FI.src+' ('+f1(FI.cons)+' L/100).';
   SENS.forEach(function(s){var v=d[s[0]];V['s_'+s[0]]=v==null?'–':String(s[3](v))+(s[0]==='volt'&&DRV.tab==='dia'?' V':'')});

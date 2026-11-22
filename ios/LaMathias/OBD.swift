@@ -283,6 +283,18 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         return out.isEmpty ? nil : out
     }
 
+    /// PIDs pris en charge au-delà de 0x20 (0120, 0140…), pour trouver 015E (débit carburant) ou 0144 (richesse).
+    private func moreSup(_ base: Int, _ done: @escaping () -> Void) {
+        guard sup.contains(base) else { done(); return }
+        let h = String(format: "%02X", base)
+        send("01" + h, timeout: 4) { [weak self] r in
+            guard let self = self else { return }
+            guard let b = OBD.bytes(r, "41" + h), b.count >= 4 else { done(); return }
+            for i in 0..<4 { for k in 0..<8 where b[i] & (128 >> k) != 0 { self.sup.insert(base + i * 8 + k + 1) } }
+            self.moreSup(base + 32, done)
+        }
+    }
+
     private func elmInit() {
         initToken += 1
         let tok = initToken
@@ -306,12 +318,14 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 var s = Set<Int>()
                 for i in 0..<4 { for k in 0..<8 where b[i] & (128 >> k) != 0 { s.insert(i * 8 + k + 1) } }
                 self.sup = s
+                self.moreSup(0x20) {
                 self.send("ATDPN") { p in
                     let hex = (p ?? "").uppercased().filter { "0123456789ABCDEF".contains($0) }
                     if let last = hex.last { self.can = "6789AB".contains(last) }
                     self.err = ""
                     self.state = "ok"
                     self.onReady?()
+                }
                 }
             }
         }
