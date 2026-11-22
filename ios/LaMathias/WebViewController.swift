@@ -73,7 +73,8 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             let c = (m["c"] as? String) ?? ""
             let ms = (m["ms"] as? NSNumber)?.doubleValue ?? 2500
             core.obd.send(c, timeout: ms / 1000) { r in
-                core.js("window.LMN&&LMN.res(\(id)," + Core.json([r ?? NSNull()]) + ")")
+                let arr: String = r != nil ? Core.json([r!]) : "[null]"
+                core.js("window.LMN&&LMN.res(\(id)," + arr + ")")
             }
         case "end":
             core.rec.endTrip()
