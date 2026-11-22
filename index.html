@@ -857,6 +857,17 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){.pkpin{animation:none}.rtin{animation:none}}
 @media (prefers-reduced-motion:reduce){.md.ok .ring,.md.ok .uorb,.md.ok .uhalo,.md.ok .ust,.usky,.tl-u{animation:none!important}.md.ok .ust{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.md.ok.t-l .ring,.md.ok i::after,.tl-l{animation:none!important}}
+.drive{position:fixed;inset:0;z-index:42;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 24px)}
+.dvh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}.dvh small{display:block;font-size:12px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.08em}.dvh b{font-size:17px}
+.dvh .wx{position:static;background:var(--surface-2);color:var(--fg)}
+.dvst{display:flex;flex-direction:column;gap:10px}.dvbig{width:100%;font-size:17px;padding:16px}.btn[disabled]{opacity:.4}
+.dvwarn{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:14px;font-size:14px;line-height:1.5}.dvbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.dvbtns .btn{flex:1;font-size:14px;padding:11px 10px;text-align:center;text-decoration:none}
+.dverr{color:#ff8a7a;font-size:14px;margin:0}.dvc{text-align:center}
+.dvset{margin-top:8px;font-size:14px;color:var(--fg-2)}.dvset label{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.dvset input{width:80px;padding:7px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font-size:15px}
+.dvcons{text-align:center;padding:18px 0 8px}.dvcons b{display:block;font-size:84px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums}.dvcons u{text-decoration:none;color:var(--fg-3);font-size:15px}.dvcons em{display:block;margin-top:6px;font-style:normal;color:#5ee38b;font-size:14px}
+.dvg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}.dvg span,.dvtrip div{background:var(--surface-2);border-radius:14px;padding:10px 4px;text-align:center}.dvg b,.dvtrip b{display:block;font-size:21px;font-variant-numeric:tabular-nums}.dvg small,.dvtrip small{font-size:11.5px;color:var(--fg-3)}
+.dvtrip{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dvtrip b{font-size:26px}
+.dvpill{display:inline-flex;align-items:center;gap:6px;margin-top:4px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:20px;padding:3px 10px;font-size:12.5px}.dvpill[hidden],.lvc[hidden]{display:none}.dvpill i{width:8px;height:8px;border-radius:50%;background:var(--fg-3)}.dvpill i.rec{background:#ff4d4d;animation:dvbl 1.2s infinite}@keyframes dvbl{50%{opacity:.25}}
 </style>
 </head>
 <body>
@@ -880,7 +891,7 @@ button{font:inherit;color:inherit}
 <div class="sub">TABLEAU DE BORD</div>
 </div>
 <script>document.getElementById('splash').classList.add('wait')</script>
-<div class="hd"><div><h1 id="nm">La Mathias</h1><button type="button" class="lvc" id="lvc" hidden></button><small id="sy">Pas encore synchronisée</small></div><div class="hd-r"><div class="plate" id="pl" hidden><i>F</i><span id="plt"></span></div><button type="button" class="qrb" id="scanb" aria-label="Scanner le QR code de l’autoradio"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></svg></button></div></div>
+<div class="hd"><div><h1 id="nm">La Mathias</h1><button type="button" class="lvc" id="lvc" hidden></button><small id="sy">Pas encore synchronisée</small><button type="button" class="dvpill" id="dvpill" hidden></button></div><div class="hd-r"><div class="plate" id="pl" hidden><i>F</i><span id="plt"></span></div><button type="button" class="qrb" id="drvb" aria-label="Conduite : enregistrer avec l’OBD ou le GPS"><svg viewBox="0 0 24 24"><path d="M5 16l1.6-5.2A2 2 0 0 1 8.5 9.4h7a2 2 0 0 1 1.9 1.4L19 16"/><path d="M4 16h16v3H4z"/><circle cx="8" cy="17.5" r=".6"/><circle cx="16" cy="17.5" r=".6"/><path d="M12 3v3M8.5 4.5l1 1.5M15.5 4.5l-1 1.5"/></svg></button><button type="button" class="qrb" id="scanb" aria-label="Scanner le QR code de l’autoradio"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></svg></button></div></div>
 
 <div class="car3d hide" id="car3d"><canvas id="car-gl" aria-label="Modèle 3D de la voiture"></canvas><button type="button" class="lock" id="lock" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor" fill-opacity=".18"/></svg><span id="lockt">Verrouillée</span></button><div class="hint" id="c3h">Fais glisser pour tourner la voiture</div></div>
 <div id="main"></div>
@@ -896,7 +907,7 @@ button{font:inherit;color:inherit}
 <button type="button" role="tab" data-t="vie"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg>À vie</button>
 <button type="button" role="tab" data-t="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Réglages</button>
 </nav>
-<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><div class="sbtm"><button type="button" class="btn" id="scode">⌨ Code</button><button type="button" class="btn" id="sphoto">🖼 Photo</button><button type="button" class="btn ghost" id="sclose">Annuler</button></div></div><input type="file" id="qrfile" accept="image/*" multiple hidden>
+<div class="scan hide" id="scan"><video id="vid" playsinline muted></video><div class="frame" id="sfr"></div><div class="prog" id="sprog"></div><div class="msg" id="smsg">Vise le QR code affiché sur l’autoradio</div><div class="sbtm"><button type="button" class="btn" id="scode">⌨ Code</button><button type="button" class="btn" id="sphoto">🖼 Photo</button><button type="button" class="btn ghost" id="sclose">Annuler</button></div></div><div class="drive hide" id="drive" role="dialog" aria-label="Conduite"></div><input type="file" id="qrfile" accept="image/*" multiple hidden>
 <canvas id="scv" hidden></canvas>
 <div class="cele" id="cele" hidden role="dialog" aria-label="Célébration"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -925,7 +936,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.53';
+var APP_V='2.54';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4336,6 +4347,186 @@ function lockDraw(){var l=lockState(),b=$('#lock');b.classList.toggle('open',!l)
 $('#lock').onclick=function(){try{localStorage.setItem(LOCKK,lockState()?'0':'1')}catch(e){}lockDraw();var lk=lockState();if(window.Car3D&&Car3D.doors)Car3D.doors(!lk);island({icon:lk?'lock':'unlock',pop:true,tone:lk?'good':'warn',title:lk?'Verrouillée':'Ouverte',sub:(data().snap&&data().snap.name&&data().snap.name!=='Sandero'?data().snap.name:'La Mathias'),ms:1700});var b=$('#lock');b.classList.remove('pulse');void b.offsetWidth;b.classList.add('pulse');if(navigator.vibrate)navigator.vibrate(12)};
 lockDraw();
 $('#scanb').onclick=scan;
+$('#drvb').onclick=openDrive;$('#dvpill').onclick=openDrive;
+/* ---------- 2.54 : l'iPhone enregistre lui-même (OBD en Bluetooth LE via Bluefy + GPS) ----------
+   Reprend la logique de l'autoradio : mêmes questions à l'ELM327, même calcul de conso (débit d'air ou pression
+   d'admission, corrections de mélange, coupure d'injection apprise), même enregistrement des trajets.
+   Sans OBD : mode « GPS seul » avec une conso estimée (marquée « estimée »). */
+var OBD={dev:null,w:null,n:null,buf:'',wait:null,q:Promise.resolve(),ok:false,sup:{},can:false,st:'off',err:''},
+  DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0},
+  ACTK='sandero-actif',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
+function drvSet(){var s={};try{s=JSON.parse(localStorage.getItem('sandero-drv')||'{}')}catch(e){}if(!s.disp)s.disp=1.2;if(!s.k)s.k=1;if(!s.redline)s.redline=5000;if(!s.endMin)s.endMin=5;return s}
+function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}}
+/* --- liaison Bluetooth LE (Web Bluetooth : Bluefy sur iPhone, Chrome sur ordinateur) --- */
+function obdConnect(){
+  if(!navigator.bluetooth)return Promise.reject(new Error('nobt'));
+  OBD.st='conn';drvDraw();
+  return navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:BLESV}).then(function(dev){
+    OBD.dev=dev;dev.addEventListener('gattserverdisconnected',obdLost);return dev.gatt.connect();
+  }).then(function(g){return g.getPrimaryServices()}).then(function(S){
+    return Promise.all(S.map(function(s){return s.getCharacteristics().catch(function(){return []})}))
+  }).then(function(CC){
+    var all=[];CC.forEach(function(L){all=all.concat(L)});
+    var n=all.filter(function(c){return c.properties.notify||c.properties.indicate})[0],w=null;
+    all.forEach(function(c){if(!w&&(c.properties.write||c.properties.writeWithoutResponse)&&(!n||c.service===n.service))w=c});
+    if(!w)all.forEach(function(c){if(!w&&(c.properties.write||c.properties.writeWithoutResponse))w=c});
+    if(!n||!w)throw new Error('nochar');OBD.n=n;OBD.w=w;
+    n.addEventListener('characteristicvaluechanged',function(e){var v=e.target.value,s='';for(var i=0;i<v.byteLength;i++)s+=String.fromCharCode(v.getUint8(i));obdRx(s)});
+    return n.startNotifications();
+  }).then(obdInit);
+}
+function obdLost(){var was=OBD.ok;OBD.ok=false;OBD.st='lost';if(OBD.wait){OBD.wait.ko(new Error('lost'));OBD.wait=null}drvDraw();if(was&&DRV.on)island({icon:'warn',tone:'warn',title:'OBD déconnecté',sub:'Touche « OBD » pour reconnecter',ms:3500,fallback:1})}
+function obdRx(s){OBD.buf+=s;var i=OBD.buf.indexOf('>');if(i<0||!OBD.wait)return;var r=OBD.buf.slice(0,i);OBD.buf=OBD.buf.slice(i+1);var W=OBD.wait;OBD.wait=null;clearTimeout(W.to);W.ok(r)}
+function obdSend(cmd,ms){
+  var run=function(){return new Promise(function(ok,ko){
+    if(!OBD.w){ko(new Error('off'));return}OBD.buf='';
+    OBD.wait={ok:ok,ko:ko,to:setTimeout(function(){if(OBD.wait){OBD.wait=null;ko(new Error('timeout'))}},ms||2500)};
+    var b=new TextEncoder().encode(cmd+'\r'),p=Promise.resolve();
+    for(var i=0;i<b.length;i+=20)(function(ch){p=p.then(function(){return OBD.w.properties.writeWithoutResponse&&OBD.w.writeValueWithoutResponse?OBD.w.writeValueWithoutResponse(ch):OBD.w.writeValue(ch)})})(b.slice(i,i+20));
+    p.catch(function(e){if(OBD.wait){clearTimeout(OBD.wait.to);OBD.wait=null}ko(e)});
+  })};
+  var r=OBD.q.then(run,run);OBD.q=r.catch(function(){});return r;
+}
+function obdBytes(r,hdr){var s=String(r||'').replace(/[\s\r\n>]/g,'').toUpperCase(),i=s.indexOf(hdr);if(i<0||/NODATA|ERROR|UNABLE|STOPPED|\?/.test(s.slice(0,i+hdr.length+2)))return null;
+  var h=s.slice(i+hdr.length),o=[];for(var k=0;k+1<h.length&&o.length<8;k+=2){var v=parseInt(h.substr(k,2),16);if(isNaN(v))break;o.push(v)}return o.length?o:null}
+function obdInit(){
+  OBD.st='init';drvDraw();var S=function(c,ms){return obdSend(c,ms).catch(function(){return ''})};
+  return S('ATZ',4000).then(function(){return S('ATE0')}).then(function(){return S('ATL0')}).then(function(){return S('ATS0')}).then(function(){return S('ATH0')}).then(function(){return S('ATAT1')})
+  .then(function(){return S('ATSP0')}).then(function(){return obdSend('0100',15000)}).then(function(r){
+    var b=obdBytes(r,'4100');if(!b)throw new Error('noecu');OBD.sup={};
+    for(var i=0;i<4;i++)for(var k=0;k<8;k++)if(b[i]&(128>>k))OBD.sup[i*8+k+1]=1;
+    return S('ATDPN').then(function(p){OBD.can=/[6-9AB]/.test(String(p).replace(/A(?=[0-9A-F])/,'').slice(-1))});
+  }).then(function(){OBD.ok=true;OBD.mafBad=0;OBD.st='ok';OBD.err='';drvDraw();island({icon:'check',pop:true,tone:'good',title:'Voiture connectée',sub:OBD.dev&&OBD.dev.name||'OBD',ms:2500,fallback:1});drvStart('obd')})
+  .catch(function(e){OBD.ok=false;OBD.st='err';OBD.err=e&&e.message==='noecu'?'L’adaptateur répond mais pas la voiture : contact mis ?':'Pas de réponse de l’adaptateur';drvDraw()});
+}
+/* --- lecture en boucle, puis calcul comme l'autoradio --- */
+var PIDS={rpm:['010C',function(b){return (b[0]*256+b[1])/4}],speed:['010D',function(b){return b[0]}],coolant:['0105',function(b){return b[0]-40}],iat:['010F',function(b){return b[0]-40}],
+  load:['0104',function(b){return b[0]*100/255}],map:['010B',function(b){return b[0]}],maf:['0110',function(b){return (b[0]*256+b[1])/100}],thr:['0111',function(b){return b[0]*100/255}],
+  stft:['0106',function(b){return b[0]*100/128-100}],ltft:['0107',function(b){return b[0]*100/128-100}],fuel:['012F',function(b){return b[0]*100/255}]};
+function obdRead(k){var p=PIDS[k];return obdSend(p[0],2500).then(function(r){var b=obdBytes(r,'4'+p[0].slice(1));if(b){DRV.d[k]=p[1](b);if(k==='maf')OBD.mafBad=0;return true}if(k==='maf'){OBD.mafBad=(OBD.mafBad||0)+1;DRV.d.maf=null}return false},function(){return false})}
+function obdLoop(){
+  if(DRV.loop)return;DRV.loop=true;var n=0;
+  (function nx(){
+    if(!DRV.on||!OBD.ok){DRV.loop=false;return}
+    var L=['rpm','speed'],sup=function(k){return OBD.sup[parseInt(PIDS[k][0].slice(2),16)]};
+    if(sup('maf')&&(OBD.mafBad||0)<3)L.push('maf');else{L.push('map');if(n%3===0)L.push('iat')}
+    if(n%2===0&&sup('thr'))L.push('thr');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
+    var p=Promise.resolve();L.forEach(function(k){p=p.then(function(){return obdRead(k)})});
+    if(n%10===0)p=p.then(function(){return obdSend('0103',2500).then(function(r){var b=obdBytes(r,'4103');if(b)DRV.d.fss=b[0]},function(){})});
+    if(n%30===0)p=p.then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20)DRV.d.volt=v},function(){})});
+    p.then(function(){n++;DRV.d.t=Date.now();drvDerive();setTimeout(nx,0)});
+  })();
+}
+var CUTL=null;
+function drvDerive(){
+  var d=DRV.d,S=drvSet();if(!CUTL){try{CUTL=JSON.parse(localStorage.getItem('sandero-cut-1')||'{}')}catch(e){CUTL={}}}
+  var r=d.rpm,v=d.speed||0;
+  if(r!=null&&r>550&&r<1150&&v<2){if(d.thr!=null){CUTL.t=CUTL.t==null?d.thr:Math.min(CUTL.t+0.02,CUTL.t*0.97+d.thr*0.03);if(d.thr<CUTL.t)CUTL.t=d.thr}
+    if(d.map!=null&&(d.coolant==null||d.coolant>60))CUTL.m=CUTL.m==null?d.map:CUTL.m*0.97+d.map*0.03;
+    var now=Date.now();if(!CUTL.s||now-CUTL.s>30000){CUTL.s=now;try{localStorage.setItem('sandero-cut-1',JSON.stringify({t:CUTL.t,m:CUTL.m}))}catch(e){}}}
+  var maf=d.maf;if(maf==null&&d.map!=null&&r!=null){var imap=r*d.map/((d.iat!=null?d.iat:25)+273.15)/2;maf=imap/60*0.85*S.disp*28.97/8.314}
+  if(maf==null){d.lph=d.lphRaw=null;d.cons=null;return}
+  var lph=maf*3600/(14.7*745);
+  if(d.fss!==4&&d.fss!==1&&(d.stft!=null||d.ltft!=null))lph*=Math.max(.75,Math.min(1.25,1+((d.stft||0)+(d.ltft||0))/100));
+  var rest=d.thr==null||(CUTL.t!=null?d.thr<=CUTL.t+2.5:d.thr<20),lowAir=d.map!=null&&(CUTL.m!=null?d.map<CUTL.m*0.82:d.map<26),veryLow=d.map!=null&&CUTL.m!=null&&d.map<CUTL.m*0.75&&r>1300;
+  d.cut=r>1150&&v>10&&rest&&(d.fss===4||(lowAir&&d.fss!==2)||veryLow);if(d.cut)lph=0;
+  d.lphRaw=lph;d.lph=lph*Math.max(.6,Math.min(1.6,S.k||1));d.cons=v>8?d.lph/v*100:null;
+}
+/* --- GPS --- */
+function gpsStart(){if(DRV.gw!=null||!navigator.geolocation)return;
+  DRV.gw=navigator.geolocation.watchPosition(function(p){var c=p.coords;DRV.gps={la:c.latitude,lo:c.longitude,acc:c.accuracy,sp:c.speed!=null&&c.speed>=0?c.speed*3.6:null,t:p.timestamp};if(DRV.mode==='gps')drvGpsTick()},
+    function(e){DRV.gpsErr=e.code===1?'refusé':'indisponible';drvDraw()},{enableHighAccuracy:true,maximumAge:0,timeout:20000})}
+function gpsStop(){if(DRV.gw!=null&&navigator.geolocation)navigator.geolocation.clearWatch(DRV.gw);DRV.gw=null}
+/* conso estimée sans OBD (mode GPS seul) : modèle simple ralenti + roulage + accélérations, pour une petite essence */
+function gpsLph(v,acc){if(v<3)return .75;var base=.75+v*(.028+v*.00042),a=Math.max(0,acc||0);return Math.min(18,base+a*v*.018)}
+function drvGpsTick(){var g=DRV.gps;if(!g||g.acc>60)return;var now=g.t,pv=DRV.gp;var v=g.sp;
+  if(v==null&&pv){var dd=hav([pv.la,pv.lo],[g.la,g.lo]),dt=(now-pv.t)/1000;v=dt>0?dd/dt*3600:0}
+  var acc=pv&&pv.v!=null?(v-pv.v)/Math.max(.5,(now-pv.t)/1000):0;DRV.gp={la:g.la,lo:g.lo,t:now,v:v};
+  DRV.d.speed=v;DRV.d.rpm=null;DRV.d.lphRaw=gpsLph(v,acc/3.6);DRV.d.lph=DRV.d.lphRaw*(drvSet().k||1);DRV.d.cons=v>8?DRV.d.lph/v*100:null;DRV.d.t=now}
+/* --- enregistrement d'un trajet (comme recTick de l'autoradio) --- */
+function recNew(){return {t0:Date.now(),src:DRV.mode,dur:0,mov:0,idle:0,stop:0,off:0,dist:0,fuel:0,vmax:0,rpmMax:0,rpmMin:99999,rpmSum:0,rpmN:0,over:0,tMax:0,tSum:0,tN:0,vMin:99,vSum:0,vN:0,load:0,lN:0,brakes:0,hard:0,accel:0,stops:0,pv:null,bd:0,bt:false,hf:false,af:false,ov:false,P:[],lastP:0}}
+function recTick(dt){
+  var d=DRV.d,S=drvSet(),obd=DRV.mode==='obd',s=d.speed==null?0:d.speed,rpm=d.rpm,fresh=d.t&&Date.now()-d.t<5000;
+  var run=obd?(fresh&&rpm!=null&&rpm>200):(fresh&&DRV.gps!=null);
+  var R=DRV.rec;
+  if(!R){if(run&&s>=(obd?5:12)){R=DRV.rec=recNew();island({icon:'check',tone:'good',title:'Trajet démarré',sub:obd?'Enregistrement OBD + GPS':'Enregistrement GPS (conso estimée)',ms:2500,fallback:1})}return}
+  if(!run){R.off+=dt;if(R.off>=(obd?25:120))recEnd();return}
+  R.off=0;R.dur+=dt;var moving=s>=1;if(moving){R.mov+=dt;R.stop=0}else{R.idle+=dt;R.stop+=dt}
+  if(R.pv!=null&&R.pv>=1&&!moving)R.stops++;R.dist+=s*dt/3600;if(d.lphRaw!=null)R.fuel+=d.lphRaw*dt/3600;if(s>R.vmax)R.vmax=s;
+  if(rpm!=null){R.rpmSum+=rpm;R.rpmN++;if(rpm>R.rpmMax)R.rpmMax=rpm;if(rpm<R.rpmMin)R.rpmMin=rpm;if(rpm>=S.redline){if(!R.ov){R.over++;R.ov=true}}else R.ov=false}
+  if(d.coolant!=null){R.tSum+=d.coolant;R.tN++;if(d.coolant>R.tMax)R.tMax=d.coolant}
+  if(d.volt!=null){R.vSum+=d.volt;R.vN++;if(d.volt<R.vMin)R.vMin=d.volt}
+  if(d.load!=null){R.load+=d.load;R.lN++}
+  if(R.pv!=null){var dv=(R.pv-s)/dt,ac=(s-R.pv)/dt;
+    if(dv>=6){R.bd+=dt;if(!R.bt&&R.bd>=0.8){R.bt=true;R.brakes++}if(dv>=14&&!R.hf){R.hf=true;R.hard++}}else{R.bd=0;R.bt=false;R.hf=false}
+    if(ac>=12){if(!R.af){R.af=true;R.accel++}}else R.af=false}
+  R.pv=s;
+  /* point du tracé : au plus 1 par seconde, avec conso, vitesse et temps depuis le point précédent */
+  var g=DRV.gps;if(g&&g.acc<=60&&Date.now()-g.t<8000){var L=R.P[R.P.length-1],now=Date.now();
+    if(!L||(hav([L[0],L[1]],[g.la,g.lo])>=.012&&now-R.lastP>=1000)||now-R.lastP>=15000){R.P.push([g.la,g.lo,d.cons!=null?Math.min(99,d.cons):null,Math.round(s),L?Math.round((now-R.lastP)/1000):0]);R.lastP=now}}
+  if((R._p=(R._p||0)+dt)>=15){R._p=0;try{localStorage.setItem(ACTK,JSON.stringify(R))}catch(e){}}
+  if(R.stop>=S.endMin*60)recEnd();
+}
+function recEnd(){var R=DRV.rec;DRV.rec=null;try{localStorage.removeItem(ACTK)}catch(e){}if(R)recSave(R,false);drvDraw()}
+function recSave(R,recovered){
+  if(R.dist<0.2||R.dur<30)return false;
+  var D=db,obd=R.src==='obd',km=Math.max(R.dist,5),rpmAvg=R.rpmN?R.rpmSum/R.rpmN:0;
+  var eco=Math.round(Math.max(0,Math.min(100,100-(R.hard*6+R.accel*3+R.over*8)*10/km-(obd?Math.max(0,rpmAvg-2300)/15:0))));
+  var pr=priceOf(D.snap)||(D.snap&&D.snap.price)||null,t0=Math.round(R.t0/1000)*1000;
+  D.trips[t0]={t0:t0,dur:Math.round(R.dur),dist:Math.round(R.dist*10)/10,fuel:Math.round(R.fuel*(drvSet().k||1)*100)/100,vmax:Math.round(R.vmax),hard:R.hard,accel:R.accel,over:R.over,idle:Math.round(R.idle),eco:eco,rpm:Math.round(rpmAvg/10)*10,fav:null,
+    drive:Math.round(R.mov),stops:R.stops,brakes:R.brakes,rpmMax:R.rpmMax?Math.round(R.rpmMax/10)*10:null,rpmMin:R.rpmMin<99999?Math.round(R.rpmMin/10)*10:null,tMax:R.tN?R.tMax:null,tAvg:R.tN?Math.round(R.tSum/R.tN):null,
+    batMin:R.vN?Math.round(R.vMin*10)/10:null,batAvg:R.vN?Math.round(R.vSum/R.vN*10)/10:null,load:R.lN?Math.round(R.load/R.lN):null,price:pr,meas:obd,src:'iphone'};
+  /* tracé : même format que les QR (1e-4°, base36 signée, cumulé) + détail CONSO,VITESSE,TEMPS */
+  var P=R.P||[];if(P.length>=2){
+    var keep=dpSimp(P.map(function(p){return [p[0],p[1]]}),.00004),idx=[],j=0;P.forEach(function(p,i){if(j<keep.length&&p[0]===keep[j][0]&&p[1]===keep[j][1]){idx.push(i);j++}});
+    var la=0,lo=0,o=[],C=[],V=[],T=[],acc=0,prev=-1;
+    idx.forEach(function(i){var p=P[i],a=Math.round(p[0]*1e4),b=Math.round(p[1]*1e4);o.push(sb36(a-la),sb36(b-lo));la=a;lo=b;
+      var tt=0;for(var k=prev+1;k<=i;k++)tt+=P[k][4]||0;prev=i;C.push(p[2]==null?'':Math.round(p[2]*10).toString(36));V.push(p[3]==null?'':Math.max(0,p[3]).toString(36));T.push(Math.max(0,tt).toString(36))});
+    D.tracks=D.tracks||{};D.details=D.details||{};D.tracks[t0]=o.join('.');D.details[t0]=C.join('.')+','+V.join('.')+','+T.join('.');}
+  if(obd&&DRV.d.fuel!=null){D.snap=D.snap||{};var tank=D.snap.tank||50;D.snap.rem=Math.round(DRV.d.fuel/100*tank*10)/10;D.snap.t=Date.now()}
+  NEWT.push(t0);save();
+  if(!recovered){ANIM=true;render();setTimeout(tripReveal,300)}
+  return true;
+}
+function recRecover(){var a=null;try{a=JSON.parse(localStorage.getItem(ACTK)||'null')}catch(e){}if(a&&a.t0){try{localStorage.removeItem(ACTK)}catch(e){}recSave(a,true)}}
+/* --- écran Conduite --- */
+function drvStart(mode){DRV.mode=mode;DRV.on=true;gpsStart();wakeOn();if(mode==='obd')obdLoop();
+  if(!DRV.timer){var last=Date.now();DRV.timer=setInterval(function(){var now=Date.now(),dt=Math.min(5,(now-last)/1000);last=now;if(DRV.on)recTick(dt);drvDraw()},1000)}drvDraw()}
+function drvStop(){if(DRV.rec)recEnd();DRV.on=false;DRV.mode='';clearInterval(DRV.timer);DRV.timer=null;gpsStop();wakeOff();
+  if(OBD.dev&&OBD.dev.gatt&&OBD.dev.gatt.connected){OBD.ok=false;try{OBD.dev.gatt.disconnect()}catch(e){}}OBD.st='off';drvDraw()}
+function wakeOn(){try{if(navigator.wakeLock&&!DRV.wl)navigator.wakeLock.request('screen').then(function(l){DRV.wl=l;l.addEventListener('release',function(){DRV.wl=null})}).catch(function(){})}catch(e){}}
+function wakeOff(){try{if(DRV.wl)DRV.wl.release()}catch(e){}DRV.wl=null}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&DRV.on)wakeOn()});
+function openDrive(){var el=$('#drive');el.classList.remove('hide');document.body.style.overflow='hidden';drvDraw(true)}
+function closeDrive(){$('#drive').classList.add('hide');document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
+function drvDraw(full){
+  var el=$('#drive');if(!el)return;drvPill();if(el.classList.contains('hide'))return;
+  var d=DRV.d,R=DRV.rec,obd=DRV.mode==='obd',bt=!!navigator.bluetooth,pr=priceOf(data().snap)||0;
+  var big=d.cons!=null?f1(d.cons):(d.lph!=null&&(d.speed||0)<=8?f1(d.lph):'–'),bigU=d.cons!=null?'L/100':(d.lph!=null?'L/h à l’arrêt':'L/100');
+  var avg=R&&R.dist>.3?R.fuel*(drvSet().k||1)/R.dist*100:null,st=OBD.st;
+  var stTxt=!DRV.on?'Arrêté':obd?(st==='ok'?'🟢 OBD connecté'+(OBD.dev&&OBD.dev.name?' · '+esc(OBD.dev.name):''):st==='lost'?'🟠 OBD perdu':'…'):'📍 GPS seul · conso estimée';
+  var h='<div class="dvh"><div><small>Conduite</small><b>'+stTxt+'</b></div><button type="button" class="wx" id="dvx" aria-label="Fermer">✕</button></div>';
+  if(!DRV.on){
+    h+='<div class="dvst">'+(bt?'':'<div class="dvwarn"><b>Bluetooth indisponible dans ce navigateur.</b> Pour lire l’OBD, ouvre La Mathias dans l’appli gratuite <b>Bluefy</b> (App Store), avec un adaptateur <b>Bluetooth LE (BLE 4.0)</b>. Les adaptateurs Bluetooth classiques ne marchent pas avec un iPhone.<div class="dvbtns"><a class="btn ghost" href="https://apps.apple.com/app/id1492822055" target="_blank" rel="noopener">Bluefy sur l’App Store</a><button type="button" class="btn ghost" id="dvcopy">Copier le lien de l’appli</button></div></div>')+
+      '<button type="button" class="btn dvbig" id="dvobd"'+(bt?'':' disabled')+'>🔌 Connecter l’OBD</button>'+(st==='conn'||st==='init'?'<p class="note dvc">'+(st==='conn'?'Choisis ton adaptateur dans la liste…':'Dialogue avec la voiture…')+'</p>':'')+(OBD.err?'<p class="dverr">'+esc(OBD.err)+'</p>':'')+
+      '<button type="button" class="btn ghost dvbig" id="dvgps">📍 Enregistrer avec le GPS seul</button><p class="note">GPS seul : trajet, vitesse et tracé exacts, conso <b>estimée</b> (sans OBD). Garde l’écran allumé pendant le trajet, téléphone sur un support.</p>'+
+      '<details class="dvset"><summary>Réglages du calcul</summary><label>Cylindrée (L) <input type="number" step="0.1" min="0.6" max="3" id="dvdisp" value="'+drvSet().disp+'"></label><label>Correction de la conso (×) <input type="number" step="0.01" min="0.6" max="1.6" id="dvk" value="'+drvSet().k+'"></label><label>Fin de trajet après un arrêt de (min) <input type="number" step="1" min="1" max="30" id="dvend" value="'+drvSet().endMin+'"></label></details></div>';
+  }else{
+    h+='<div class="dvmain"><div class="dvcons"><b'+(d.cons!=null?' style="color:'+consoCol(d.cons)+'"':'')+'>'+big+'</b><u>'+bigU+'</u>'+(d.cut?'<em>coupure d’injection</em>':'')+'</div>'+
+      '<div class="dvg"><span><b>'+(d.speed!=null?Math.round(d.speed):'–')+'</b><small>km/h</small></span><span><b>'+(d.rpm!=null?Math.round(d.rpm/10)*10:'–')+'</b><small>tr/min</small></span><span><b>'+(d.coolant!=null?Math.round(d.coolant)+'°':'–')+'</b><small>eau</small></span><span><b>'+(d.volt!=null?f1(d.volt):'–')+'</b><small>volts</small></span></div>'+
+      (R?'<div class="dvtrip"><div><b>'+f1(R.dist)+'</b><small>km</small></div><div><b>'+dur(R.dur)+'</b><small>durée</small></div><div><b'+(avg!=null?' style="color:'+consoCol(avg)+'"':'')+'>'+(avg!=null?f1(avg):'–')+'</b><small>L/100 moyen'+(obd?'':' (estimé)')+'</small></div><div><b>'+f2(R.fuel*(drvSet().k||1)*pr)+' €</b><small>coût</small></div></div>':'<p class="note dvc">Le trajet démarre tout seul dès que tu roules.</p>')+
+      '<div class="dvbtns">'+(obd&&st!=='ok'?'<button type="button" class="btn" id="dvre">Reconnecter l’OBD</button>':'')+(R?'<button type="button" class="btn ghost" id="dvend2">Terminer le trajet</button>':'')+'<button type="button" class="btn ghost" id="dvoff">Arrêter</button></div>'+
+      (DRV.wl?'':'<p class="note">Garde l’écran allumé : Réglages › Luminosité › Verrouillage automatique › Jamais, pendant le trajet.</p>')+'</div>';
+  }
+  if(full||el.getAttribute('data-on')!==String(DRV.on)||!DRV.on){el.innerHTML=h;el.setAttribute('data-on',String(DRV.on))}else{var cur=el.querySelector('.dvmain');if(cur){var tmp=document.createElement('div');tmp.innerHTML=h;el.querySelector('.dvh').outerHTML=tmp.querySelector('.dvh').outerHTML;cur.outerHTML=tmp.querySelector('.dvmain').outerHTML}}
+  var B=function(id,f){var b=$('#'+id);if(b)b.onclick=f};
+  B('dvx',closeDrive);B('dvobd',function(){OBD.err='';obdConnect().catch(function(e){OBD.st='off';OBD.err=e&&e.message==='nobt'?'Bluetooth indisponible : ouvre l’appli dans Bluefy.':e&&e.name==='NotFoundError'?'':e&&e.message==='nochar'?'Cet appareil n’est pas un adaptateur OBD reconnu.':'Connexion impossible. Vérifie que l’adaptateur est branché et que le contact est mis.';drvDraw()})});
+  B('dvgps',function(){drvStart('gps')});B('dvoff',drvStop);B('dvend2',recEnd);B('dvre',function(){obdConnect().catch(function(){OBD.st='lost';drvDraw()})});
+  B('dvcopy',function(){try{navigator.clipboard.writeText(location.origin+location.pathname);toast('Lien copié : colle-le dans Bluefy.')}catch(e){toast(location.origin+location.pathname,6000)}});
+  var inp=function(id,k,mn,mx){var i=$('#'+id);if(i)i.onchange=function(){var s=drvSet(),v=parseFloat(String(i.value).replace(',','.'));if(v>=mn&&v<=mx){s[k]=v;drvSave(s)}}};inp('dvdisp','disp',.6,3);inp('dvk','k',.6,1.6);inp('dvend','endMin',1,30);
+}
+function drvPill(){var p=$('#dvpill');if(!p)return;var R=DRV.rec;p.hidden=!DRV.on;if(!DRV.on)return;p.innerHTML='<i class="'+(R?'rec':'')+'"></i>'+(R?f1(R.dist)+' km · '+dur(R.dur):DRV.mode==='obd'?'OBD prêt':'GPS prêt')}
+
 /* bloque le zoom de Safari (pincement, double-toucher), sauf sur les cartes et la voiture 3D qui gèrent leurs propres gestes */
 (function(){var free=function(t){return t&&t.closest&&t.closest('.maplibregl-map,#car-gl,#profs,canvas')};
   ['gesturestart','gesturechange','gestureend'].forEach(function(ev){document.addEventListener(ev,function(e){if(!free(e.target))e.preventDefault()},{passive:false})});
@@ -4374,6 +4565,7 @@ function fromHash(){
 }
 window.addEventListener('hashchange',fromHash);
 fromHash();
+recRecover();
 render();
 
 function welcomeIsland(){
