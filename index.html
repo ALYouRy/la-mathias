@@ -868,6 +868,19 @@ button{font:inherit;color:inherit}
 .dvg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}.dvg span,.dvtrip div{background:var(--surface-2);border-radius:14px;padding:10px 4px;text-align:center}.dvg b,.dvtrip b{display:block;font-size:21px;font-variant-numeric:tabular-nums}.dvg small,.dvtrip small{font-size:11.5px;color:var(--fg-3)}
 .dvtrip{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dvtrip b{font-size:26px}
 .dvpill{display:inline-flex;align-items:center;gap:6px;margin-top:4px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:20px;padding:3px 10px;font-size:12.5px}.dvpill[hidden],.lvc[hidden]{display:none}.dvpill i{width:8px;height:8px;border-radius:50%;background:var(--fg-3)}.dvpill i.rec{background:#ff4d4d;animation:dvbl 1.2s infinite}@keyframes dvbl{50%{opacity:.25}}
+.dvtabs{margin:0 0 6px}.dvtabs button{font-size:14px;padding:9px 6px}
+.dvg2{display:flex;justify-content:center}.dvgauge{width:100%;max-width:340px}.dvgauge path{fill:none;stroke-width:13;stroke-linecap:round}.dvgauge .gt{stroke:var(--surface-2)}.dvgauge .gr{stroke:rgba(255,77,77,.45)}.dvgauge .gv{stroke:var(--accent);transition:stroke-dasharray .4s}.dvgauge .gv.red{stroke:#ff4d4d}
+.dvgauge text{fill:var(--fg-3);font-size:11px;text-anchor:middle;font-family:inherit}.dvgauge .gs{fill:var(--fg);font-size:52px;font-weight:750}.dvgauge .gu{font-size:13px}.dvgauge .gg{fill:var(--accent);font-size:15px;font-weight:700}
+.dvdet{margin-top:6px}.dvcv{margin:14px 0 6px}.dvcm{margin:0 0 8px}.dvcv canvas{width:100%;height:110px;background:var(--surface-2);border-radius:14px}.dvcx{display:flex;justify-content:space-between;font-size:11.5px;color:var(--fg-3);margin-top:3px}
+.dvtank{background:var(--surface-2);border-radius:16px;padding:12px 14px;margin-top:12px}.dvtk{display:flex;justify-content:space-between;font-size:14px;color:var(--fg-2)}.dvtk b{font-size:22px;color:var(--fg)}.dvtk i{font-style:normal;color:var(--fg-3);font-size:12px}
+.dvtank .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.08);margin:10px 0 4px;overflow:hidden}.dvtank .bar i{display:block;height:100%;background:var(--good);transform-origin:left;transform:scaleX(0);transition:transform .5s}.dvtank .bar i.warn{background:#ffb340}.dvtank .bar i.bad{background:#ff4d4f}.dvtank .btn{width:100%;margin-top:8px}
+.dvsen{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dvsen div{background:var(--surface-2);border-radius:14px;padding:10px 12px}.dvsen small{display:block;font-size:12px;color:var(--fg-3)}.dvsen b{font-size:22px;font-variant-numeric:tabular-nums}.dvsen u{text-decoration:none;font-size:12px;color:var(--fg-3);margin-left:4px}
+.dvmil{border-radius:16px;padding:14px;background:var(--surface-2);border-left:5px solid var(--fg-3);margin-bottom:10px}.dvmil.ok{border-color:var(--good)}.dvmil.bad{border-color:#ff4d4f}.dvmil b{display:block;font-size:17px}.dvmil small{color:var(--fg-3);font-size:13px}
+.dvdtc{background:var(--surface-2);border-radius:14px;padding:11px 13px;margin-bottom:8px;border-left:4px solid #ffb340}.dvdtc.bad{border-color:#ff4d4f}.dvdtc b{display:block;font-size:16px}.dvdtc b i{font-style:normal;font-size:12px;color:#ffb340;font-weight:600}.dvdtc span{display:block;font-size:14px}.dvdtc small{display:block;color:var(--fg-3);font-size:12.5px;margin-top:3px}
+.btn.danger{background:#ff4d4f;color:#fff;box-shadow:none}.dvh3{font-size:15px;margin:16px 0 4px}
+.flw .seg{margin:0 0 12px}.fll{display:flex;flex-direction:column;gap:5px;font-size:14px;color:var(--fg-2);margin-bottom:10px}.fll input,.tyin input{padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font-size:17px}
+.tyin{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}.tyin>div{background:var(--surface-2);border-radius:14px;padding:10px}.tyin b{font-size:13.5px}.tyin label{display:flex;flex-direction:column;font-size:12px;color:var(--fg-3);margin-top:6px;gap:3px}.tyin input{font-size:15px;padding:8px;width:100%;box-sizing:border-box;background:var(--bg)}
+.dvcard .dvc1{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.dvcard small{color:var(--fg-3);font-size:13px}.dvc2{text-align:right}.dvc2 b{display:block;font-size:20px}
 </style>
 </head>
 <body>
@@ -936,7 +949,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.54';
+var APP_V='2.55';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2751,7 +2764,7 @@ function batCard(){
 }
 var TPOS=[['FL','Avant gauche'],['FR','Avant droit'],['RL','Arrière gauche'],['RR','Arrière droit']],BRK=[['pf','Plaquettes avant',1.5],['rf','Plaquettes arrière',1.5],['df','Disques avant',1]];
 function tyreCard(){
-  var I=data().info;if(!I)return '';var T=I.tyres,K=I.brakes,hasT=Object.keys(T).length,hasK=Object.keys(K).length;if(!hasT&&!hasK)return '';
+  var I=data().info||{},T=I.tyres||{},K=I.brakes||{},hasT=Object.keys(T).length,hasK=Object.keys(K).length;if(!hasT&&!hasK)return sample?'':'<div class="card tyc"><h2>Pneus et freins</h2><p class="note" style="margin-top:0">Note la pression et l’usure de tes pneus et de tes freins : elles comptent dans le bulletin santé.</p><div class="sbtns"><button type="button" class="btn ghost" id="tyedit">Saisir les mesures</button></div></div>';
   var h='<div class="card tyc"><h2>Pneus et freins</h2>';
   if(hasT){
     var tile=function(p){var x=T[p[0]]||{},st=x.d==null?'':x.d<1.6?'bad':x.d<3?'warn':'ok',dp=x.d==null?0:Math.min(1,x.d/8);
@@ -2766,7 +2779,7 @@ function tyreCard(){
     BRK.forEach(function(b){var x=K[b[0]];if(!x||x.th==null)return;var st=x.min!=null?(x.th<=x.min?'bad':x.th<x.min+b[2]?'warn':'ok'):'';
       h+='<div><span>'+b[1]+(x.min!=null?'<br><small>minimum '+f1(x.min)+' mm · marge '+f1(Math.max(0,x.th-x.min))+' mm</small>':'')+'</span><b class="hs-'+st+'">'+f1(x.th)+' mm'+(st?' · '+{ok:'bon',warn:'bientôt',bad:'à changer'}[st]:'')+'</b></div>'});
     h+='</div>'}
-  return h+'<p class="note">Mesures saisies sur l’autoradio, à la synchro '+ago(I.t)+'. Le bas de la barre d’un pneu correspond à 0 mm, le haut à 8 mm (pneu neuf).</p></div>';
+  return h+'<p class="note">Mesures saisies '+ago(I.tyT||I.t)+'. Le bas de la barre d’un pneu correspond à 0 mm, le haut à 8 mm (pneu neuf).</p>'+(sample?'':'<div class="sbtns"><button type="button" class="btn ghost" id="tyedit">Modifier les mesures</button></div>')+'</div>';
 }
 function radioMaintCard(){
   var I=data().info;if(!I||!I.maint.length)return '';
@@ -3936,6 +3949,7 @@ function render(){
     var pct=Math.max(0,Math.min(1,S.rem/(S.tank||50))),st=pct<.09?'bad':pct<SET.low/100?'warn':'';
     h+='<div class="card"><h2>Réservoir</h2><div class="fu"><div><b>'+(S.range!=null?cu(Math.round(S.range/5)*5,'i'):'–')+'</b><small>km d’autonomie · '+(S.measured?'mesurée':'estimée')+'</small></div><div class="r"><b>'+cu(S.rem,'1')+'</b><small>litres restants</small></div></div><div class="bar" data-s="'+st+'"><i style="transform:scaleX('+pct.toFixed(3)+')"></i></div>'+nextFill(S,L)+'<p class="note">Valeurs au moment de la dernière synchro ('+ago(S.t)+').</p></div>';
   }
+  h+=drvCard();
   if(S)h+=fuelCard();
   /* dernier trajet (onglet Voiture) */
   if(L.length){
@@ -3964,7 +3978,7 @@ function render(){
     if(HL.svc)rows+=row2('Prochain entretien',esc(HL.svc)+'<br><small>'+esc(HL.svcTxt)+'</small>',HL.svcS);
     if(HL.precT)rows+=row2('Précision de la conso',esc(HL.precT),HL.prec==='o'?'ok':HL.prec==='w'?'warn':'','idéal : calée sur tes pleins complets',HL.prec==='o'?'':'Fais un plein complet et saisis les litres sur l’autoradio, deux fois de suite.');
     var RO=radioOdo();if(RO)rows=row2('Kilométrage',fi(RO.km)+' km','')+rows;var DX=dtcRows();
-    if(rows)h+='<div class="card"><h2>Santé de la voiture</h2><div class="det hs">'+rows+'</div>'+DX+'<p class="note">Mesures de l’autoradio, au moment de la synchro ('+ago(HL.t)+'). Température : dernier trajet, '+(LT?ago(LT.t0):'')+'. Valeurs de référence habituelles pour une voiture essence.'+(HL.dtc&&HL.dtc.length&&!DX?' Détail des codes dans l’écran Diagnostic de l’autoradio.':'')+'</p></div>';
+    if(rows)h+='<div class="card"><h2>Santé de la voiture</h2><div class="det hs">'+rows+'</div>'+DX+'<p class="note">Dernières mesures de la voiture ('+ago(HL.t)+'). Température : dernier trajet, '+(LT?ago(LT.t0):'')+'. Valeurs de référence habituelles pour une voiture essence.'+(HL.dtc&&HL.dtc.length&&!DX?' Détail des codes dans l’écran Diagnostic de l’autoradio.':'')+'</p></div>';
   }
   h+=batCard()+tyreCard()+radioMaintCard()+sanderoCard();
   h+=maintCard();
@@ -4027,7 +4041,7 @@ function render(){
   Array.prototype.forEach.call(document.querySelectorAll('[data-pp]'),function(b){b.onclick=function(e){e.stopPropagation();var t=b.getAttribute('data-pp');db.tags=db.tags||{};
     db.tags[t]=b.getAttribute('data-v')==='pro'?'pro':'perso';save();var tr=b.closest('.tr'),i=tr&&tr.getAttribute('data-i'),y=window.scrollY;render();window.scrollTo(0,y);
     var n=i!=null&&document.querySelector('.tr[data-i="'+i+'"]');if(n){n.classList.add('open');miniMount(n.querySelector('.mapb'))}}});
-  calWire();trophyWire();mtWire();lifeWire();yearCalWire();if(TAB==='set')harmWire();
+  calWire();trophyWire();mtWire();drvCardWire();lifeWire();yearCalWire();if(TAB==='set')harmWire();
   var rg=$('#rtgo');if(rg)rg.onclick=function(){openRetro(+rg.getAttribute('data-y'),+rg.getAttribute('data-m'))};
   var pe=$('#proexp');if(pe)pe.onclick=function(){proExport(+pe.getAttribute('data-y'),+pe.getAttribute('data-m'))};
   Array.prototype.forEach.call(document.querySelectorAll('[data-ana]'),function(b){b.onclick=function(){ANAP=b.getAttribute('data-ana');var y=window.scrollY;render();window.scrollTo(0,y)}});
@@ -4347,22 +4361,31 @@ function lockDraw(){var l=lockState(),b=$('#lock');b.classList.toggle('open',!l)
 $('#lock').onclick=function(){try{localStorage.setItem(LOCKK,lockState()?'0':'1')}catch(e){}lockDraw();var lk=lockState();if(window.Car3D&&Car3D.doors)Car3D.doors(!lk);island({icon:lk?'lock':'unlock',pop:true,tone:lk?'good':'warn',title:lk?'Verrouillée':'Ouverte',sub:(data().snap&&data().snap.name&&data().snap.name!=='Sandero'?data().snap.name:'La Mathias'),ms:1700});var b=$('#lock');b.classList.remove('pulse');void b.offsetWidth;b.classList.add('pulse');if(navigator.vibrate)navigator.vibrate(12)};
 lockDraw();
 $('#scanb').onclick=scan;
-$('#drvb').onclick=openDrive;$('#dvpill').onclick=openDrive;
-/* ---------- 2.54 : l'iPhone enregistre lui-même (OBD en Bluetooth LE via Bluefy + GPS) ----------
+$('#drvb').onclick=openDrive;
+function drvCardWire(){var a=$('#dvopen');if(a)a.onclick=openDrive;var b=$('#dvfill2');if(b)b.onclick=fillSheet;var t=$('#tyedit');if(t)t.onclick=tyreSheet}$('#dvpill').onclick=openDrive;
+/* ---------- 2.54-2.55 : l'iPhone enregistre lui-même (OBD en Bluetooth LE via Bluefy + GPS) ----------
    Reprend la logique de l'autoradio : mêmes questions à l'ELM327, même calcul de conso (débit d'air ou pression
    d'admission, corrections de mélange, coupure d'injection apprise), même enregistrement des trajets.
    Sans OBD : mode « GPS seul » avec une conso estimée (marquée « estimée »). */
 var OBD={dev:null,w:null,n:null,buf:'',wait:null,q:Promise.resolve(),ok:false,sup:{},can:false,st:'off',err:''},
-  DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0},
-  ACTK='sandero-actif',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
+  DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0,hist:[],tab:'dir',cm:'l100',sig:''},
+  ACTK='sandero-actif',OBDK='sandero-obd-dev',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
 function drvSet(){var s={};try{s=JSON.parse(localStorage.getItem('sandero-drv')||'{}')}catch(e){}if(!s.disp)s.disp=1.2;if(!s.k)s.k=1;if(!s.redline)s.redline=5000;if(!s.endMin)s.endMin=5;return s}
 function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}}
 /* --- liaison Bluetooth LE (Web Bluetooth : Bluefy sur iPhone, Chrome sur ordinateur) --- */
-function obdConnect(){
+OBD.knownName=function(){try{var o=JSON.parse(localStorage.getItem(OBDK)||'null');return o&&navigator.bluetooth&&navigator.bluetooth.getDevices?(o.name||'l’adaptateur'):''}catch(e){return ''}};
+function obdPick(known){
+  var ask=function(){return navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:BLESV})};
+  if(!known||!navigator.bluetooth.getDevices)return ask();
+  var o=null;try{o=JSON.parse(localStorage.getItem(OBDK)||'null')}catch(e){}
+  return navigator.bluetooth.getDevices().then(function(L){var d=o&&L.filter(function(x){return x.id===o.id})[0];return d||ask()},ask);
+}
+function obdConnect(known){
   if(!navigator.bluetooth)return Promise.reject(new Error('nobt'));
+  if(OBD.dev&&OBD.dev.gatt&&OBD.dev.gatt.connected&&OBD.ok)return Promise.resolve();
   OBD.st='conn';drvDraw();
-  return navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:BLESV}).then(function(dev){
-    OBD.dev=dev;dev.addEventListener('gattserverdisconnected',obdLost);return dev.gatt.connect();
+  return obdPick(known).then(function(dev){
+    if(OBD.dev!==dev)dev.addEventListener('gattserverdisconnected',obdLost);OBD.dev=dev;try{localStorage.setItem(OBDK,JSON.stringify({id:dev.id,name:dev.name||''}))}catch(e){}return dev.gatt.connect();
   }).then(function(g){return g.getPrimaryServices()}).then(function(S){
     return Promise.all(S.map(function(s){return s.getCharacteristics().catch(function(){return []})}))
   }).then(function(CC){
@@ -4395,13 +4418,13 @@ function obdInit(){
   .then(function(){return S('ATSP0')}).then(function(){return obdSend('0100',15000)}).then(function(r){
     var b=obdBytes(r,'4100');if(!b)throw new Error('noecu');OBD.sup={};
     for(var i=0;i<4;i++)for(var k=0;k<8;k++)if(b[i]&(128>>k))OBD.sup[i*8+k+1]=1;
-    return S('ATDPN').then(function(p){OBD.can=/[6-9AB]/.test(String(p).replace(/A(?=[0-9A-F])/,'').slice(-1))});
-  }).then(function(){OBD.ok=true;OBD.mafBad=0;OBD.st='ok';OBD.err='';drvDraw();island({icon:'check',pop:true,tone:'good',title:'Voiture connectée',sub:OBD.dev&&OBD.dev.name||'OBD',ms:2500,fallback:1});drvStart('obd')})
+    return S('ATDPN').then(function(p){OBD.can=/[6-9AB]$/.test(String(p).toUpperCase().replace(/[^0-9A-F]/g,''))});
+  }).then(function(){OBD.ok=true;OBD.mafBad=0;OBD.st='ok';OBD.err='';BATS={first:true,runN:0,runPush:false};drvDraw();island({icon:'check',pop:true,tone:'good',title:'Voiture connectée',sub:OBD.dev&&OBD.dev.name||'OBD',ms:2500,fallback:1});return obdRead('rpm').then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20){DRV.d.volt=v;battNote(v)}},function(){})}).then(function(){drvStart('obd');setTimeout(function(){if(OBD.ok)dtcRead(true)},4000)})})
   .catch(function(e){OBD.ok=false;OBD.st='err';OBD.err=e&&e.message==='noecu'?'L’adaptateur répond mais pas la voiture : contact mis ?':'Pas de réponse de l’adaptateur';drvDraw()});
 }
 /* --- lecture en boucle, puis calcul comme l'autoradio --- */
 var PIDS={rpm:['010C',function(b){return (b[0]*256+b[1])/4}],speed:['010D',function(b){return b[0]}],coolant:['0105',function(b){return b[0]-40}],iat:['010F',function(b){return b[0]-40}],
-  load:['0104',function(b){return b[0]*100/255}],map:['010B',function(b){return b[0]}],maf:['0110',function(b){return (b[0]*256+b[1])/100}],thr:['0111',function(b){return b[0]*100/255}],
+  load:['0104',function(b){return b[0]*100/255}],map:['010B',function(b){return b[0]}],maf:['0110',function(b){return (b[0]*256+b[1])/100}],thr:['0111',function(b){return b[0]*100/255}],timing:['010E',function(b){return b[0]/2-64}],
   stft:['0106',function(b){return b[0]*100/128-100}],ltft:['0107',function(b){return b[0]*100/128-100}],fuel:['012F',function(b){return b[0]*100/255}]};
 function obdRead(k){var p=PIDS[k];return obdSend(p[0],2500).then(function(r){var b=obdBytes(r,'4'+p[0].slice(1));if(b){DRV.d[k]=p[1](b);if(k==='maf')OBD.mafBad=0;return true}if(k==='maf'){OBD.mafBad=(OBD.mafBad||0)+1;DRV.d.maf=null}return false},function(){return false})}
 function obdLoop(){
@@ -4410,10 +4433,10 @@ function obdLoop(){
     if(!DRV.on||!OBD.ok){DRV.loop=false;return}
     var L=['rpm','speed'],sup=function(k){return OBD.sup[parseInt(PIDS[k][0].slice(2),16)]};
     if(sup('maf')&&(OBD.mafBad||0)<3)L.push('maf');else{L.push('map');if(n%3===0)L.push('iat')}
-    if(n%2===0&&sup('thr'))L.push('thr');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
+    if(n%2===0&&sup('thr'))L.push('thr');if(n%4===1&&sup('timing'))L.push('timing');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
     var p=Promise.resolve();L.forEach(function(k){p=p.then(function(){return obdRead(k)})});
     if(n%10===0)p=p.then(function(){return obdSend('0103',2500).then(function(r){var b=obdBytes(r,'4103');if(b)DRV.d.fss=b[0]},function(){})});
-    if(n%30===0)p=p.then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20)DRV.d.volt=v},function(){})});
+    if(n%30===0)p=p.then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20){DRV.d.volt=v;battNote(v)}},function(){})});
     p.then(function(){n++;DRV.d.t=Date.now();drvDerive();setTimeout(nx,0)});
   })();
 }
@@ -4452,7 +4475,7 @@ function recTick(dt){
   if(!R){if(run&&s>=(obd?5:12)){R=DRV.rec=recNew();island({icon:'check',tone:'good',title:'Trajet démarré',sub:obd?'Enregistrement OBD + GPS':'Enregistrement GPS (conso estimée)',ms:2500,fallback:1})}return}
   if(!run){R.off+=dt;if(R.off>=(obd?25:120))recEnd();return}
   R.off=0;R.dur+=dt;var moving=s>=1;if(moving){R.mov+=dt;R.stop=0}else{R.idle+=dt;R.stop+=dt}
-  if(R.pv!=null&&R.pv>=1&&!moving)R.stops++;R.dist+=s*dt/3600;if(d.lphRaw!=null)R.fuel+=d.lphRaw*dt/3600;if(s>R.vmax)R.vmax=s;
+  if(R.pv!=null&&R.pv>=1&&!moving)R.stops++;R.dist+=s*dt/3600;if(d.lphRaw!=null){R.fuel+=d.lphRaw*dt/3600;FS.used+=d.lphRaw*dt/3600*(S.k||1)}FS.dist+=s*dt/3600;if(s>R.vmax)R.vmax=s;
   if(rpm!=null){R.rpmSum+=rpm;R.rpmN++;if(rpm>R.rpmMax)R.rpmMax=rpm;if(rpm<R.rpmMin)R.rpmMin=rpm;if(rpm>=S.redline){if(!R.ov){R.over++;R.ov=true}}else R.ov=false}
   if(d.coolant!=null){R.tSum+=d.coolant;R.tN++;if(d.coolant>R.tMax)R.tMax=d.coolant}
   if(d.volt!=null){R.vSum+=d.volt;R.vN++;if(d.volt<R.vMin)R.vMin=d.volt}
@@ -4464,7 +4487,7 @@ function recTick(dt){
   /* point du tracé : au plus 1 par seconde, avec conso, vitesse et temps depuis le point précédent */
   var g=DRV.gps;if(g&&g.acc<=60&&Date.now()-g.t<8000){var L=R.P[R.P.length-1],now=Date.now();
     if(!L||(hav([L[0],L[1]],[g.la,g.lo])>=.012&&now-R.lastP>=1000)||now-R.lastP>=15000){R.P.push([g.la,g.lo,d.cons!=null?Math.min(99,d.cons):null,Math.round(s),L?Math.round((now-R.lastP)/1000):0]);R.lastP=now}}
-  if((R._p=(R._p||0)+dt)>=15){R._p=0;try{localStorage.setItem(ACTK,JSON.stringify(R))}catch(e){}}
+  if((R._p=(R._p||0)+dt)>=15){R._p=0;try{localStorage.setItem(ACTK,JSON.stringify(R))}catch(e){}fsSave();if(BATS.runN)save()}
   if(R.stop>=S.endMin*60)recEnd();
 }
 function recEnd(){var R=DRV.rec;DRV.rec=null;try{localStorage.removeItem(ACTK)}catch(e){}if(R)recSave(R,false);drvDraw()}
@@ -4483,48 +4506,294 @@ function recSave(R,recovered){
     idx.forEach(function(i){var p=P[i],a=Math.round(p[0]*1e4),b=Math.round(p[1]*1e4);o.push(sb36(a-la),sb36(b-lo));la=a;lo=b;
       var tt=0;for(var k=prev+1;k<=i;k++)tt+=P[k][4]||0;prev=i;C.push(p[2]==null?'':Math.round(p[2]*10).toString(36));V.push(p[3]==null?'':Math.max(0,p[3]).toString(36));T.push(Math.max(0,tt).toString(36))});
     D.tracks=D.tracks||{};D.details=D.details||{};D.tracks[t0]=o.join('.');D.details[t0]=C.join('.')+','+V.join('.')+','+T.join('.');}
-  if(obd&&DRV.d.fuel!=null){D.snap=D.snap||{};var tank=D.snap.tank||50;D.snap.rem=Math.round(DRV.d.fuel/100*tank*10)/10;D.snap.t=Date.now()}
-  NEWT.push(t0);save();
+  
+  favAuto(D.trips[t0]);fsSave();snapUpdate();NEWT.push(t0);save();
   if(!recovered){ANIM=true;render();setTimeout(tripReveal,300)}
   return true;
 }
 function recRecover(){var a=null;try{a=JSON.parse(localStorage.getItem(ACTK)||'null')}catch(e){}if(a&&a.t0){try{localStorage.removeItem(ACTK)}catch(e){}recSave(a,true)}}
 /* --- écran Conduite --- */
 function drvStart(mode){DRV.mode=mode;DRV.on=true;gpsStart();wakeOn();if(mode==='obd')obdLoop();
-  if(!DRV.timer){var last=Date.now();DRV.timer=setInterval(function(){var now=Date.now(),dt=Math.min(5,(now-last)/1000);last=now;if(DRV.on)recTick(dt);drvDraw()},1000)}drvDraw()}
+  if(!DRV.timer){var last=Date.now();DRV.timer=setInterval(function(){var now=Date.now(),dt=Math.min(5,(now-last)/1000);last=now;if(DRV.on){recTick(dt);var d=DRV.d;DRV.hist.push({c:d.cons!=null?Math.min(40,d.cons):null,h:d.lph,s:d.speed||0});if(DRV.hist.length>600)DRV.hist.shift()}drvDraw();if(TAB==='car'&&$('#dvcard'))drvCardUpd()},1000)}drvDraw()}
 function drvStop(){if(DRV.rec)recEnd();DRV.on=false;DRV.mode='';clearInterval(DRV.timer);DRV.timer=null;gpsStop();wakeOff();
   if(OBD.dev&&OBD.dev.gatt&&OBD.dev.gatt.connected){OBD.ok=false;try{OBD.dev.gatt.disconnect()}catch(e){}}OBD.st='off';drvDraw()}
 function wakeOn(){try{if(navigator.wakeLock&&!DRV.wl)navigator.wakeLock.request('screen').then(function(l){DRV.wl=l;l.addEventListener('release',function(){DRV.wl=null})}).catch(function(){})}catch(e){}}
 function wakeOff(){try{if(DRV.wl)DRV.wl.release()}catch(e){}DRV.wl=null}
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&DRV.on)wakeOn()});
 function openDrive(){var el=$('#drive');el.classList.remove('hide');document.body.style.overflow='hidden';drvDraw(true)}
+function drvCardUpd(){var e=$('#dvcard');if(e){var t=document.createElement('div');t.innerHTML=drvCard();var n=t.firstChild;n.id='dvcard';e.querySelector('.dvc1').innerHTML=n.querySelector('.dvc1').innerHTML;var o=$('#dvopen');if(o)o.textContent=n.querySelector('#dvopen').textContent}}
 function closeDrive(){$('#drive').classList.add('hide');document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
+function drvPill(){var p=$('#dvpill');if(!p)return;var R=DRV.rec;p.hidden=!DRV.on;if(!DRV.on)return;p.innerHTML='<i class="'+(R?'rec':'')+'"></i>'+(R?f1(R.dist)+' km · '+dur(R.dur):DRV.mode==='obd'?'OBD prêt':'GPS prêt')}
+
+/* ---------- 2.55 : tout ce que faisait l'autoradio (compteur, conso, capteurs, codes défaut, batterie, réservoir, pleins) ---------- */
+var DTC_INFO={
+  P0100:'Circuit du débitmètre d’air',P0101:'Débitmètre d’air hors plage',P0102:'Débitmètre d’air, signal trop bas',P0103:'Débitmètre d’air, signal trop haut',
+  P0105:'Circuit du capteur de pression collecteur',P0107:'Capteur de pression collecteur, signal bas',P0108:'Capteur de pression collecteur, signal haut',
+  P0112:'Température d’air d’admission, signal bas',P0113:'Température d’air d’admission, signal haut',
+  P0117:'Température du liquide de refroidissement, signal bas',P0118:'Température du liquide de refroidissement, signal haut',P0125:'Montée en température trop lente',P0128:'Thermostat bloqué ouvert',
+  P0130:'Sonde lambda amont, circuit',P0131:'Sonde lambda amont, tension basse',P0132:'Sonde lambda amont, tension haute',P0133:'Sonde lambda amont, réponse lente',P0135:'Sonde lambda amont, chauffage',
+  P0136:'Sonde lambda aval, circuit',P0141:'Sonde lambda aval, chauffage',
+  P0171:'Mélange trop pauvre',P0172:'Mélange trop riche',
+  P0201:'Injecteur cylindre 1',P0202:'Injecteur cylindre 2',P0203:'Injecteur cylindre 3',P0204:'Injecteur cylindre 4',
+  P0300:'Ratés d’allumage multiples',P0301:'Raté d’allumage cylindre 1',P0302:'Raté d’allumage cylindre 2',P0303:'Raté d’allumage cylindre 3',P0304:'Raté d’allumage cylindre 4',
+  P0325:'Capteur de cliquetis, circuit',P0335:'Capteur de vilebrequin, circuit',P0340:'Capteur d’arbre à cames, circuit',
+  P0420:'Efficacité du catalyseur insuffisante',P0500:'Capteur de vitesse du véhicule',P0505:'Régulation du ralenti',
+  P0562:'Tension du système trop basse',P0563:'Tension du système trop haute'
+};
+var DTC_MORE={
+  P0010:'Commande du déphaseur d’arbre à cames',P0011:'Calage d’arbre à cames trop en avance',P0012:'Calage d’arbre à cames trop en retard',P0016:'Désaccord vilebrequin / arbre à cames',
+  P0030:'Chauffage de la sonde lambda amont',P0036:'Chauffage de la sonde lambda aval',P0106:'Capteur de pression collecteur hors plage',P0110:'Capteur de température d’air, circuit',P0115:'Capteur de température moteur, circuit',P0116:'Capteur de température moteur hors plage',
+  P0120:'Capteur de position du papillon, circuit',P0121:'Capteur de position du papillon hors plage',P0122:'Capteur de position du papillon, signal bas',P0123:'Capteur de position du papillon, signal haut',
+  P0134:'Sonde lambda amont, aucune activité',P0137:'Sonde lambda aval, tension basse',P0138:'Sonde lambda aval, tension haute',P0140:'Sonde lambda aval, aucune activité',
+  P0200:'Circuit des injecteurs',P0217:'Surchauffe du moteur',P0230:'Circuit de la pompe à carburant',P0261:'Injecteur 1, signal bas',P0264:'Injecteur 2, signal bas',P0267:'Injecteur 3, signal bas',P0270:'Injecteur 4, signal bas',
+  P0327:'Capteur de cliquetis, signal bas',P0328:'Capteur de cliquetis, signal haut',P0336:'Capteur de vilebrequin hors plage',P0341:'Capteur d’arbre à cames hors plage',
+  P0351:'Bobine d’allumage A',P0352:'Bobine d’allumage B',P0353:'Bobine d’allumage C',P0354:'Bobine d’allumage D',
+  P0401:'Débit EGR insuffisant',P0421:'Catalyseur, efficacité au démarrage',P0441:'Purge du canister (EVAP)',P0442:'Petite fuite EVAP',P0443:'Électrovanne de purge du canister',P0444:'Électrovanne de purge, circuit ouvert',P0455:'Grosse fuite EVAP',
+  P0501:'Capteur de vitesse hors plage',P0506:'Ralenti trop bas',P0507:'Ralenti trop haut',P0560:'Tension du système',P0600:'Liaison du calculateur',P0601:'Mémoire du calculateur',P0604:'Mémoire vive du calculateur',P0605:'Mémoire morte du calculateur',P0606:'Processeur du calculateur',P0650:'Commande du voyant moteur',P0700:'Boîte de vitesses : défaut signalé'
+};
+Object.keys(DTC_MORE).forEach(function(k){if(!DTC_INFO[k])DTC_INFO[k]=DTC_MORE[k]});
+var DTC_FAM={'P00':'Air, carburant ou distribution','P01':'Mesure d’air et de carburant','P02':'Injection','P03':'Allumage ou ratés','P04':'Antipollution','P05':'Vitesse, ralenti ou tension','P06':'Calculateur','P07':'Boîte de vitesses','P08':'Boîte de vitesses','P09':'Boîte de vitesses','P1':'Code propre au constructeur','P2':'Air, carburant ou injection','P3':'Allumage ou ratés','B':'Carrosserie (airbags, confort…)','C':'Châssis (ABS, direction…)','U':'Communication entre calculateurs'};
+function dtcAdvice(c){
+  var f=c.slice(0,3),bad=/^P03\d\d$/.test(c)||/^P(0335|0336|0340|0341|0016|0217|0230|0606)$/.test(c);
+  var a;
+  if(/^P03[0-9]/.test(c)&&c<'P0320')a='Ratés d’allumage : évite les fortes accélérations et fais vérifier vite (bougies, bobines). Rouler longtemps ainsi peut abîmer le catalyseur.';
+  else if(/^P035/.test(c))a='Bobine d’allumage : risque de ratés. À faire vérifier rapidement.';
+  else if(/^P(0335|0336|0340|0341|0016)$/.test(c))a='Le moteur peut caler ou refuser de redémarrer. Garage rapidement.';
+  else if(c==='P0217')a='Arrête-toi dès que possible et laisse refroidir. Vérifie le niveau de liquide de refroidissement.';
+  else if(c==='P0230')a='Problème d’alimentation en carburant : risque de panne. Garage rapidement.';
+  else if(f==='P01'||f==='P00')a='La conso peut augmenter et le moteur manquer de souplesse. À faire vérifier sans urgence.';
+  else if(f==='P02')a='Injection : la conso et le ralenti peuvent être perturbés. À faire vérifier.';
+  else if(f==='P04')a='Pollution : pas d’urgence pour rouler, mais cause de refus au contrôle technique.';
+  else if(f==='P05')a=/^P056/.test(c)?'Tension électrique anormale : fais contrôler la batterie et l’alternateur.':'Ralenti ou capteur de vitesse : à faire vérifier sans urgence.';
+  else if(f==='P06')a='Défaut du calculateur : à faire diagnostiquer par un garage.';
+  else a='À faire vérifier par un garage avec un outil de diagnostic.';
+  return {sev:bad?'bad':'warn',adv:a};
+}
+function dtcDesc(c){return DTC_INFO[c]||((DTC_FAM[c.slice(0,3)]||DTC_FAM[c.slice(0,2)]||DTC_FAM[c.charAt(0)]||'Défaut')+' : code non répertorié ici, cherche « '+c+' Dacia » pour le détail')}
+function decodeDTC(a,b){return 'PCBU'.charAt(a>>6)+((a>>4)&3)+(a&15).toString(16).toUpperCase()+(b>>4).toString(16).toUpperCase()+(b&15).toString(16).toUpperCase()}
+function parseDTC(resp,hd){
+  var lines=String(resp||'').split(/[\r\n]+/).map(function(l){return l.replace(/^\s*\d+:/,'')}),hex='';
+  if(OBD.can){hex=lines.filter(function(l){return !/^[0-9A-F]{3}$/i.test(l.trim())}).join('').replace(/[^0-9A-Fa-f]/g,'').toUpperCase();var i=hex.indexOf(hd);if(i<0)return [];hex=hex.slice(i+4)}
+  else hex=lines.map(function(l){return l.replace(/[^0-9A-Fa-f]/g,'').toUpperCase()}).filter(function(l){return l.indexOf(hd)===0}).map(function(l){return l.slice(2)}).join('');
+  var c=[];for(var j=0;j+3<hex.length;j+=4){var a=parseInt(hex.substr(j,2),16),b=parseInt(hex.substr(j+2,2),16);if(!a&&!b)continue;var x=decodeDTC(a,b);if(c.indexOf(x)<0)c.push(x)}return c;
+}
+var DTCP={t:0,codes:[],pend:[],mil:false};try{Object.assign(DTCP,JSON.parse(localStorage.getItem('sandero-dtc-phone')||'{}'))}catch(e){}DTCP.busy=false;DTCP.msg='';DTCP.arm=0;
+function infoEns(){var D=db;if(!D.info)D.info={t:Date.now(),goal:null,weeks:[],alert:null,car:null,odo:null,tot:null,park:null,maint:[],tyres:{},brakes:{},dtc:[],bat:[]};['maint','weeks','dtc','bat'].forEach(function(k){if(!D.info[k])D.info[k]=[]});['tyres','brakes'].forEach(function(k){if(!D.info[k])D.info[k]={}});return D.info}
+function healthEns(){if(!db.health)db.health={t:Date.now(),rest:null,run:null,dtc:null,dtcT:0,svc:'',svcS:'',svcTxt:'',prec:'',precT:'',odo:null};return db.health}
+function dtcStore(codes,pend,mil){var now=Date.now();DTCP.t=now;DTCP.codes=codes;DTCP.pend=pend;DTCP.mil=!!mil;try{localStorage.setItem('sandero-dtc-phone',JSON.stringify({t:now,codes:codes,pend:pend,mil:!!mil}))}catch(e){}
+  var H=healthEns();H.dtc=codes.slice();H.dtcT=now;H.t=now;var I=infoEns();I.dtc=codes.map(function(c){return {c:c,x:dtcDesc(c)}});save()}
+function dtcRead(auto){
+  if(!OBD.ok){DTCP.msg='Connecte d’abord l’OBD.';drvDraw();return Promise.resolve()}
+  DTCP.busy=true;DTCP.msg='Lecture en cours…';drvDraw();var mil=false;
+  return obdSend('0101',4000).then(function(r){var b=obdBytes(r,'4101');mil=b?!!(b[0]&128):false;var n=b?b[0]&127:0;
+      if(auto&&!n&&!mil)return [[],[]];
+      return obdSend('03',8000).then(function(r3){var c=parseDTC(r3,'43');return obdSend('07',8000).then(function(r7){return [c,parseDTC(r7,'47')]},function(){return [c,[]]})})})
+    .then(function(R){dtcStore(R[0],R[1],mil);DTCP.busy=false;DTCP.msg=auto?'':'Lecture terminée.';drvDraw(true);
+      if(auto&&(R[0].length||mil))island({icon:'warn',tone:'warn',title:'Voyant moteur : '+R[0].length+' code'+(R[0].length>1?'s':''),sub:R[0].slice(0,3).join(' · ')+' — voir Diagnostic',ms:7000,fallback:1})})
+    .catch(function(e){DTCP.busy=false;DTCP.msg=auto?'':'Lecture impossible : '+(e&&e.message||'pas de réponse');drvDraw(true)});
+}
+function dtcClear(){
+  if(!OBD.ok){DTCP.msg='Connecte d’abord l’OBD.';drvDraw(true);return}
+  if(!DTCP.arm||Date.now()-DTCP.arm>5000){DTCP.arm=Date.now();drvDraw(true);setTimeout(function(){if(DTCP.arm&&Date.now()-DTCP.arm>=5000){DTCP.arm=0;drvDraw(true)}},5100);return}
+  DTCP.arm=0;DTCP.busy=true;DTCP.msg='Effacement…';drvDraw(true);
+  obdSend('04',6000).then(function(r){DTCP.busy=false;if(/44/.test(String(r).replace(/\s/g,''))){dtcStore([],[],false);DTCP.msg='Codes effacés. Le voyant s’éteint si le défaut a disparu.'}else DTCP.msg='Le calculateur n’a pas confirmé l’effacement (moteur arrêté, contact mis).';drvDraw(true)},
+    function(e){DTCP.busy=false;DTCP.msg='Effacement impossible.';drvDraw(true)});
+}
+/* batterie : tension lue par l'adaptateur (ATRV) */
+var BATS={first:true,runN:0,runPush:false};
+function battNote(v){
+  var run=(DRV.d.rpm||0)>400,now=Date.now(),H=healthEns(),I=infoEns();
+  if(BATS.first){BATS.first=false;I.bat.push({t:now,v:Math.round(v*100)/100,run:run});if(I.bat.length>120)I.bat.shift();
+    if(!run){H.rest=Math.round(v*100)/100;H.t=now;if(v<12.4)island({icon:'warn',tone:'warn',title:'Batterie '+(v>=12.1?'à recharger':'faible'),sub:f1(v)+' V moteur arrêté',ms:6000,fallback:1})}save();return}
+  if(run){BATS.runN++;if(BATS.runN>=3){H.run=Math.round(v*100)/100;H.t=now;if(!BATS.runPush){BATS.runPush=true;I.bat.push({t:now,v:Math.round(v*100)/100,run:true});if(I.bat.length>120)I.bat.shift()}}}
+}
+/* rapport engagé estimé (boîte de la Sandero 1.2 : km/h pour 1000 tr/min) */
+var GEARK=[0,7.5,13.5,20,27,34];
+function estGear(){var v=DRV.d.speed,r=DRV.d.rpm;if(v==null||r==null||v<4||r<650)return null;var k=v/(r/1000),best=0,bd=1e9;for(var g=1;g<6;g++){var d=Math.abs(Math.log(k/GEARK[g]));if(d<bd){bd=d;best=g}}return bd<.22?best:null}
+function gearTxt(g){return g?g+(g===1?'re':'e'):'–'}
+function winAvg(n){var a=DRV.hist.slice(-n),L=0,D=0;a.forEach(function(p){if(p.h!=null)L+=p.h/3600;D+=(p.s||0)/3600});return D>.02&&L>0?L/D*100:null}
+/* réservoir : depuis le dernier plein, on retranche le carburant calculé ; si la voiture donne son niveau, on le prend */
+var FSK='sandero-fuel-phone';
+function fsLoad(){var f={fillT:0,used:0,dist:0,level:1,added:0,lastCons:null};try{Object.assign(f,JSON.parse(localStorage.getItem(FSK)||'{}'))}catch(e){}return f}
+var FS=fsLoad();function fsSave(){try{localStorage.setItem(FSK,JSON.stringify(FS))}catch(e){}}
+function tankL(){return (db.snap&&db.snap.tank)||50}
+function fuelInfo(){
+  var tank=tankL(),rem=null,meas=false;
+  if(DRV.on&&DRV.mode==='obd'&&DRV.d.fuel!=null){rem=DRV.d.fuel/100*tank;meas=true}
+  else if(FS.fillT)rem=Math.max(0,Math.min(tank,FS.level*tank-FS.used+(FS.added||0)));
+  var cons,src;
+  if(FS.dist>30&&FS.used>0){cons=FS.used/FS.dist*100;src='ta conso depuis le dernier plein'}
+  else if(FS.lastCons){cons=FS.lastCons;src='ta conso du plein précédent'}
+  else{var km=0,l=0;realList().slice(0,30).forEach(function(r){km+=r.dist;l+=r.fuel});if(km>20&&l>0){cons=l/km*100;src='tes derniers trajets'}else{cons=6.5;src='une conso de référence'}}
+  return {rem:rem,range:rem!=null&&cons>0?rem/cons*100:null,cons:cons,src:src,meas:meas,pct:rem!=null?Math.max(0,Math.min(1,rem/tank)):null,tank:tank};
+}
+function snapUpdate(){var D=db;if(!D.snap)D.snap={name:'La Mathias',plate:'',price:priceOf(null),rem:null,range:null,tank:50,t:0,measured:false,paint:null};
+  var FI=fuelInfo();D.snap.rem=FI.rem!=null?Math.round(FI.rem*10)/10:null;D.snap.range=FI.range!=null?Math.round(FI.range):null;D.snap.measured=FI.meas;D.snap.t=Date.now()}
+function fillSheet(){
+  var FI=fuelInfo(),S=drvSet(),last=FS.fillT?new Date(FS.fillT).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}):null;
+  sheetOpen('Carburant','<div class="flw"><div class="seg" id="flmode"><button type="button" data-m="full" aria-pressed="true">Plein complet</button><button type="button" data-m="part" aria-pressed="false">Plein partiel</button><button type="button" data-m="lvl" aria-pressed="false">Corriger le niveau</button></div>'+
+    '<div id="flf"><label class="fll">Litres mis à la pompe<input id="fll" type="text" inputmode="decimal" placeholder="ex. 38,5"></label><label class="fll">Prix au litre (€)<input id="flp" type="text" inputmode="decimal" placeholder="ex. '+f2(priceOf(db.snap)).replace(/,?0+$/,'')+'"></label></div>'+
+    '<div id="flv" hidden><p class="note">Niveau actuel du réservoir ('+FI.tank+' L) :</p><div class="seg" id="fllv">'+[['.25','¼'],['.5','½'],['.75','¾'],['1','Plein']].map(function(x){return '<button type="button" data-lv="'+x[0]+'" aria-pressed="false">'+x[1]+'</button>'}).join('')+'</div><label class="fll">ou litres restants<input id="fllr" type="text" inputmode="decimal" placeholder="ex. 20"></label></div>'+
+    '<p class="dverr" id="fle" hidden></p><button type="button" class="btn dvbig" id="flok">Valider le plein</button>'+
+    '<div class="det" style="margin-top:14px">'+(FI.rem!=null?'<div><span>Dans le réservoir</span><b>'+f1(FI.rem)+' L · '+Math.round((FI.range||0)/5)*5+' km</b></div>':'')+(last?'<div><span>Dernier plein</span><b>'+last+' · '+fi(Math.round(FS.dist))+' km</b></div>':'')+'<div><span>Correction de la conso</span><b>× '+String(Math.round(S.k*100)/100).replace('.',',')+'</b></div></div>'+
+    '<p class="note">Plein complet avec les litres de la pompe : l’appli compare avec ce qu’elle a calculé et corrige toute seule sa conso. Fais-le deux fois de suite pour une conso juste. Les pleins rejoignent tes statistiques.</p></div>');
+  var mode='full',noL=false,lv=null;
+  var err=function(t){var e=$('#fle');e.textContent=t;e.hidden=false};
+  Array.prototype.forEach.call(document.querySelectorAll('#flmode button'),function(b){b.onclick=function(){mode=b.getAttribute('data-m');noL=false;$('#fle').hidden=true;
+    Array.prototype.forEach.call(document.querySelectorAll('#flmode button'),function(x){x.setAttribute('aria-pressed',String(x===b))});
+    $('#flf').hidden=mode==='lvl';$('#flv').hidden=mode!=='lvl';$('#flok').textContent=mode==='full'?'Valider le plein':mode==='part'?'Ajouter':'Valider le niveau'}});
+  Array.prototype.forEach.call(document.querySelectorAll('#fllv button'),function(b){b.onclick=function(){lv=parseFloat(b.getAttribute('data-lv'));$('#fllr').value='';Array.prototype.forEach.call(document.querySelectorAll('#fllv button'),function(x){x.setAttribute('aria-pressed',String(x===b))})}});
+  $('#fll').oninput=function(){if(noL){noL=false;$('#fle').hidden=true;$('#flok').textContent='Valider le plein'}};
+  $('#flok').onclick=function(){
+    var tank=tankL(),num=function(id){return parseFloat(String($(id).value).replace(',','.'))},L=num('#fll'),PR=num('#flp'),now=Date.now(),S=drvSet();
+    if(!(PR>.5&&PR<5))PR=null;
+    if(mode==='lvl'){var r=num('#fllr'),v=isFinite(r)?r/tank:lv;if(v==null||!(v>=0&&v<=1.05))return err('Choisis un niveau ou indique les litres restants (0 à '+tank+' L).');
+      FS.level=Math.min(1,v);FS.used=0;FS.dist=0;FS.added=0;if(!FS.fillT)FS.fillT=now;fsSave();snapUpdate();save();sheetClose();island({icon:'fuel',tone:'good',title:'Niveau corrigé',sub:f1(FS.level*tank)+' L dans le réservoir',ms:2600,fallback:1});return}
+    if(mode==='part'){if(!(L>0&&L<=tank))return err('Indique le nombre de litres mis.');if(!FS.fillT)return err('L’appli ne connaît pas encore le niveau de départ : fais d’abord un plein complet ou « Corriger le niveau ».');
+      var before=Math.max(0,FS.level*tank-FS.used+FS.added);if(before+L>tank+2)return err('Avec '+f1(L)+' L, le réservoir dépasserait sa contenance ('+tank+' L). Vérifie, ou choisis « Plein complet ».');
+      FS.added+=L;db.fills=db.fills||{};db.fills[now]={t:now,litres:Math.round(L*10)/10,full:false,kmSince:null,estL:null,price:PR};}
+    else{
+      if(!(L>0)&&!noL){noL=true;$('#flok').textContent='Valider sans les litres';return err('Pense aux litres affichés sur la pompe : sans eux, pas de conso réelle jusqu’au prochain plein.')}
+      if(L>tank+5)return err('Plus de litres que la contenance du réservoir ('+tank+' L) : vérifie le chiffre.');
+      var real=L>3&&FS.fillT&&FS.level>=.99?L+FS.added:null;
+      if(real!=null&&FS.used>3){S.k=Math.max(.6,Math.min(1.6,(S.k||1)*real/FS.used));S.k=Math.round(S.k*1000)/1000;drvSave(S)}
+      if(FS.dist>30&&FS.used>0)FS.lastCons=(real!=null?real:FS.used)/FS.dist*100;
+      db.fills=db.fills||{};db.fills[now]={t:now,litres:L>0?Math.round(L*10)/10:null,full:true,kmSince:FS.fillT&&FS.dist>0?Math.round(FS.dist):null,estL:FS.fillT&&FS.used>0?Math.round(FS.used*100)/100:null,price:PR};
+      FS.fillT=now;FS.used=0;FS.dist=0;FS.level=1;FS.added=0;
+    }
+    if(PR){if(!db.snap)snapUpdate();db.snap.price=PR}
+    fsSave();snapUpdate();save();sheetClose();island({icon:'fuel',pop:true,tone:'good',title:mode==='full'?'Plein enregistré':'Carburant ajouté',sub:(L>0?f1(L)+' L':'Réservoir plein')+(PR?' · '+f2(PR)+' €/L':''),ms:3000,fallback:1});
+  };
+}
+/* trajet favori : même distance et même heure de départ que les trajets déjà rangés dans ce favori */
+function favAuto(r){var D=db,F=D.favs||{},best=null,bs=1e9,mn=function(t){var d=new Date(t);return d.getHours()*60+d.getMinutes()},m0=mn(r.t0);
+  Object.keys(F).forEach(function(id){var L=Object.keys(D.trips).map(function(k){return D.trips[k]}).filter(function(x){return x.fav!=null&&String(x.fav)===String(id)&&x.t0!==r.t0});if(L.length<2)return;
+    var km=L.reduce(function(a,x){return a+x.dist},0)/L.length,tol=Math.max(.12*km,.6),dd=Math.abs(r.dist-km);if(dd>tol)return;
+    var ok=L.some(function(x){var d=Math.abs(mn(x.t0)-m0);return Math.min(d,1440-d)<=75});if(!ok)return;if(dd/tol<bs){bs=dd/tol;best=id}});
+  if(best!=null)r.fav=isNaN(+best)?best:+best;
+}
+/* tableau des capteurs */
+var SENS=[['rpm','Régime','tr/min',function(v){return Math.round(v/10)*10}],['speed','Vitesse','km/h',Math.round],['coolant','Eau moteur','°C',Math.round],['iat','Air admission','°C',Math.round],
+  ['map','Pression collecteur','kPa',Math.round],['maf','Débit d’air','g/s',f1],['load','Charge moteur','%',Math.round],['thr','Papillon','%',Math.round],['timing','Avance allumage','°',f1],
+  ['stft','Correction courte','%',f1],['ltft','Correction longue','%',f1],['fuel','Niveau carburant','%',Math.round],['volt','Batterie','V',f1],['lph','Débit carburant','L/h',f1],['fss','Boucle carburant','',function(v){return {1:'ouverte (froid)',2:'fermée',4:'ouverte (charge / coupure)',8:'ouverte (défaut)',16:'fermée (défaut)'}[v]||String(v)}]];
+/* --- écran Conduite : onglets Compteur, Conso, Capteurs, Diagnostic --- */
+var GPATH='M30.3 156A92 92 0 1 1 189.7 156';
+function drvTabs(){var T=[['dir','Compteur'],['con','Conso'],['sen','Capteurs'],['dia','Diagnostic']];return '<div class="seg dvtabs">'+T.map(function(t){return '<button type="button" data-t="'+t[0]+'" aria-pressed="'+(DRV.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'}
+function drvBody(){
+  var obd=DRV.mode==='obd',R=DRV.rec,t=DRV.tab,S=drvSet();
+  if(t==='con'){
+    return '<div class="dvcons"><b data-v="cons" data-c="cons">–</b><u data-v="consU">L/100</u><em data-v="cut"></em></div>'+
+      '<div class="det dvdet"><div><span>Dernière minute</span><b data-v="c1m">–</b></div><div><span>Moyenne du trajet'+(obd?'':' (estimée)')+'</span><b data-v="avg">–</b></div><div><span>Carburant du trajet</span><b data-v="fuelT">–</b></div></div>'+
+      '<div class="dvcv"><div class="seg dvcm"><button type="button" data-cm="l100" aria-pressed="'+(DRV.cm!=='lph')+'">L/100</button><button type="button" data-cm="lph" aria-pressed="'+(DRV.cm==='lph')+'">L/h</button></div><canvas id="dvcv" width="600" height="220"></canvas><div class="dvcx"><span>−3 min</span><span>maintenant</span></div></div>'+
+      '<div class="dvtank"><div class="dvtk"><span><b data-v="range">–</b> km d’autonomie</span><span><b data-v="rem">–</b> L <i data-v="remTag"></i></span></div><div class="bar"><i id="dvbar"></i></div><p class="note" data-v="tankNote"></p><button type="button" class="btn ghost" id="dvfill">⛽ Plein / niveau</button></div>';
+  }
+  if(t==='sen'){
+    var h='<div class="dvsen">'+SENS.map(function(s){return '<div data-sk="'+s[0]+'"><small>'+s[1]+'</small><b data-v="s_'+s[0]+'">–</b><u>'+s[2]+'</u></div>'}).join('')+'</div>';
+    return h+'<p class="note">'+(obd?'Valeurs lues en direct sur la prise OBD. « – » : la voiture ne donne pas cette mesure.':'Mode GPS seul : seule la vitesse est mesurée. Connecte l’OBD pour voir les capteurs du moteur.')+'</p>';
+  }
+  if(t==='dia'){
+    var D=DTCP,H=db.health||{},I=(db.info&&db.info.bat)||[],h2='';
+    var st=!D.t?['','État du calculateur inconnu','Lis les codes défaut pour connaître l’état du voyant moteur.']:(D.mil||D.codes.length)?['bad','Voyant moteur : '+D.codes.length+' code'+(D.codes.length>1?'s':''),'Lu '+ago(D.t)+'.']:['ok','Aucun code défaut','Lu '+ago(D.t)+'.'+(D.pend.length?' '+D.pend.length+' défaut'+(D.pend.length>1?'s':'')+' en attente de confirmation.':'')];
+    h2+='<div class="dvmil '+st[0]+'"><b>'+st[1]+'</b><small>'+st[2]+'</small></div>';
+    var row=function(c,p){var a=dtcAdvice(c);return '<div class="dvdtc '+(p?'warn':a.sev)+'"><b>'+c+(p?' <i>en attente</i>':'')+'</b><span>'+esc(dtcDesc(c))+'</span><small>'+esc(a.adv)+'</small></div>'};
+    h2+=D.codes.map(function(c){return row(c,false)}).join('')+D.pend.filter(function(c){return D.codes.indexOf(c)<0}).map(function(c){return row(c,true)}).join('');
+    h2+='<div class="dvbtns"><button type="button" class="btn" id="dtcr"'+(OBD.ok&&!D.busy?'':' disabled')+'>Lire les codes</button><button type="button" class="btn '+(D.arm?'danger':'ghost')+'" id="dtcc"'+(OBD.ok&&!D.busy?'':' disabled')+'>'+(D.arm?'Confirmer l’effacement':'Effacer les codes')+'</button></div>'+
+      (D.msg?'<p class="note dvc">'+esc(D.msg)+'</p>':'')+(OBD.ok?'':'<p class="note">Connecte l’OBD pour lire ou effacer les codes.</p>')+
+      '<p class="note">Effacer les codes éteint le voyant, mais remet aussi à zéro les autotests du calculateur. Évite de le faire juste avant un contrôle technique.</p>';
+    var rs=H.rest!=null?(H.rest>=12.4?['ok','bonne charge']:H.rest>=12.1?['warn','à recharger']:['bad','faible']):null,ru=H.run!=null?(H.run>15?['bad','surcharge']:H.run>=13.3?['ok','charge bien']:H.run>=12.9?['warn','charge un peu faible']:['bad','ne charge pas']):null;
+    h2+='<h3 class="dvh3">Batterie</h3><div class="det dvdet"><div><span>Maintenant</span><b data-v="s_volt">–</b></div><div><span>Moteur arrêté</span><b'+(rs?' class="hs-'+rs[0]+'"':'')+'>'+(rs?f1(H.rest)+' V · '+rs[1]:'–')+'</b></div><div><span>Moteur tournant (alternateur)</span><b'+(ru?' class="hs-'+ru[0]+'"':'')+'>'+(ru?f1(H.run)+' V · '+ru[1]:'–')+'</b></div></div>'+
+      '<p class="note">Mesure prise à chaque connexion. Moteur arrêté : 12,4 V ou plus = bonne charge. Moteur tournant : 13,3 à 14,8 V = l’alternateur charge bien. Pour la mesure « moteur arrêté », connecte l’OBD contact mis, avant de démarrer.</p>';
+    return h2;
+  }
+  var red=(S.redline||5000)/7000*100;
+  return '<div class="dvg2"><svg viewBox="0 0 220 190" class="dvgauge"><path d="'+GPATH+'" pathLength="100" class="gt"/><path d="'+GPATH+'" pathLength="100" class="gr" style="stroke-dasharray:'+(100-red).toFixed(1)+' 200;stroke-dashoffset:'+(-red).toFixed(1)+'"/><path d="'+GPATH+'" pathLength="100" class="gv" id="dvga" style="stroke-dasharray:0 200"/>'+
+    [0,1,2,3,4,5,6,7].map(function(k){var a=(150+k*240/7)*Math.PI/180;return '<text x="'+(110+72*Math.cos(a)).toFixed(1)+'" y="'+(110+72*Math.sin(a)+4).toFixed(1)+'">'+k+'</text>'}).join('')+
+    '<text x="110" y="112" class="gs" data-v="spd">–</text><text x="110" y="134" class="gu">km/h</text><text x="110" y="168" class="gg" data-v="gear"></text></svg></div>'+
+    '<div class="dvg"><span><b data-v="cons" data-c="cons">–</b><small data-v="consU">L/100</small></span><span><b data-v="rpm">–</b><small>tr/min</small></span><span><b data-v="cool">–</b><small>eau</small></span><span><b data-v="s_volt">–</b><small>volts</small></span></div>'+
+    (R?'<div class="dvtrip"><div><b data-v="dist">–</b><small>km</small></div><div><b data-v="dur">–</b><small>durée</small></div><div><b data-v="avg" data-c="avgc">–</b><small>L/100 moyen'+(obd?'':' (estimé)')+'</small></div><div><b data-v="cost">–</b><small>coût</small></div></div>':'<p class="note dvc">Le trajet démarre tout seul dès que tu roules.</p>');
+}
+function drvVals(){
+  var d=DRV.d,R=DRV.rec,k=drvSet().k||1,pr=priceOf(db.snap)||0,FI=fuelInfo(),avg=R&&R.dist>.3?R.fuel*k/R.dist*100:null,g=estGear(),V={};
+  V.cons=d.cons!=null?f1(d.cons):(d.lph!=null&&(d.speed||0)<=8?f1(d.lph):'–');V.consU=d.cons!=null?'L/100':(d.lph!=null?'L/h à l’arrêt':'L/100');V.cut=d.cut?'coupure d’injection : 0 L':'';
+  V.spd=d.speed!=null?Math.round(d.speed):'–';V.rpm=d.rpm!=null?Math.round(d.rpm/10)*10:'–';V.cool=d.coolant!=null?Math.round(d.coolant)+'°':'–';V.gear=g?gearTxt(g)+' (estimé)':'';
+  V.dist=R?f1(R.dist):'–';V.dur=R?dur(R.dur):'–';V.avg=avg!=null?f1(avg):'–';V.cost=R?f2(R.fuel*k*pr)+' €':'–';
+  var c1=winAvg(60);V.c1m=c1!=null?f1(c1)+' L/100':'–';if(DRV.tab==='con')V.avg=avg!=null?f1(avg)+' L/100':'–';V.fuelT=R?f2(R.fuel*k).replace(/0$/,'')+' L · '+f2(R.fuel*k*pr)+' €':'–';
+  V.range=FI.range!=null?Math.round(FI.range/5)*5:'–';V.rem=FI.rem!=null?f1(FI.rem):'–';V.remTag=FI.rem==null?'':FI.meas?'· mesurés':'· estimés';
+  V.tankNote=FI.rem==null?'Touche « Plein / niveau » à ton prochain passage à la pompe : l’appli suivra ensuite ce que tu consommes.':(FI.meas?'Niveau lu sur la voiture. ':'Dernier plein le '+new Date(FS.fillT).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+' · '+fi(Math.round(FS.dist))+' km depuis. ')+'Autonomie calculée avec '+FI.src+' ('+f1(FI.cons)+' L/100).';
+  SENS.forEach(function(s){var v=d[s[0]];V['s_'+s[0]]=v==null?'–':String(s[3](v))+(s[0]==='volt'&&DRV.tab==='dia'?' V':'')});
+  return {V:V,fi:FI,avg:avg};
+}
+function drvUpd(){
+  var el=$('#drive');if(!el||el.classList.contains('hide')||!DRV.on)return;var o=drvVals(),V=o.V,d=DRV.d;
+  Array.prototype.forEach.call(el.querySelectorAll('[data-v]'),function(x){var k=x.getAttribute('data-v'),v=V[k];if(v==null)return;v=String(v);if(x.textContent!==v)x.textContent=v});
+  Array.prototype.forEach.call(el.querySelectorAll('[data-c]'),function(x){var v=x.getAttribute('data-c')==='cons'?d.cons:o.avg;x.style.color=v!=null?consoCol(v):''});
+  var ga=$('#dvga');if(ga){var p=d.rpm!=null?Math.max(0,Math.min(100,d.rpm/7000*100)):0;ga.style.strokeDasharray=p.toFixed(1)+' 200';ga.classList.toggle('red',d.rpm!=null&&d.rpm>=(drvSet().redline||5000))}
+  var bar=$('#dvbar');if(bar){bar.style.transform='scaleX('+(o.fi.pct||0).toFixed(3)+')';bar.className=o.fi.pct!=null&&o.fi.pct<.09?'bad':o.fi.pct!=null&&o.fi.pct<.15?'warn':''}
+  var cv=$('#dvcv');if(cv)drvCurve(cv);
+}
+function drvCurve(cv){
+  var x=cv.getContext('2d'),W=cv.width,H=cv.height,A=DRV.hist.slice(-180),lph=DRV.cm==='lph',vals=A.map(function(p){return lph?p.h:p.c});
+  x.clearRect(0,0,W,H);var mx=lph?Math.max(6,Math.max.apply(null,vals.filter(function(v){return v!=null}).concat([0]))*1.15):Math.max(12,Math.min(30,Math.max.apply(null,vals.filter(function(v){return v!=null}).concat([0]))*1.15));
+  x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=1;x.fillStyle='rgba(255,255,255,.35)';x.font='20px system-ui';
+  for(var g=0;g<=3;g++){var y=H-H*g/3;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke();if(g)x.fillText(String(Math.round(mx*g/3)),4,y+20)}
+  var step=W/179,off=180-A.length;x.lineWidth=4;x.lineJoin='round';
+  for(var i=1;i<A.length;i++){var a=vals[i-1],b=vals[i];if(a==null||b==null)continue;x.strokeStyle=lph?'#5ad1ff':consoCol(b);x.beginPath();x.moveTo((off+i-1)*step,H-Math.min(a,mx)/mx*H);x.lineTo((off+i)*step,H-Math.min(b,mx)/mx*H);x.stroke()}
+}
 function drvDraw(full){
   var el=$('#drive');if(!el)return;drvPill();if(el.classList.contains('hide'))return;
-  var d=DRV.d,R=DRV.rec,obd=DRV.mode==='obd',bt=!!navigator.bluetooth,pr=priceOf(data().snap)||0;
-  var big=d.cons!=null?f1(d.cons):(d.lph!=null&&(d.speed||0)<=8?f1(d.lph):'–'),bigU=d.cons!=null?'L/100':(d.lph!=null?'L/h à l’arrêt':'L/100');
-  var avg=R&&R.dist>.3?R.fuel*(drvSet().k||1)/R.dist*100:null,st=OBD.st;
-  var stTxt=!DRV.on?'Arrêté':obd?(st==='ok'?'🟢 OBD connecté'+(OBD.dev&&OBD.dev.name?' · '+esc(OBD.dev.name):''):st==='lost'?'🟠 OBD perdu':'…'):'📍 GPS seul · conso estimée';
-  var h='<div class="dvh"><div><small>Conduite</small><b>'+stTxt+'</b></div><button type="button" class="wx" id="dvx" aria-label="Fermer">✕</button></div>';
-  if(!DRV.on){
-    h+='<div class="dvst">'+(bt?'':'<div class="dvwarn"><b>Bluetooth indisponible dans ce navigateur.</b> Pour lire l’OBD, ouvre La Mathias dans l’appli gratuite <b>Bluefy</b> (App Store), avec un adaptateur <b>Bluetooth LE (BLE 4.0)</b>. Les adaptateurs Bluetooth classiques ne marchent pas avec un iPhone.<div class="dvbtns"><a class="btn ghost" href="https://apps.apple.com/app/id1492822055" target="_blank" rel="noopener">Bluefy sur l’App Store</a><button type="button" class="btn ghost" id="dvcopy">Copier le lien de l’appli</button></div></div>')+
-      '<button type="button" class="btn dvbig" id="dvobd"'+(bt?'':' disabled')+'>🔌 Connecter l’OBD</button>'+(st==='conn'||st==='init'?'<p class="note dvc">'+(st==='conn'?'Choisis ton adaptateur dans la liste…':'Dialogue avec la voiture…')+'</p>':'')+(OBD.err?'<p class="dverr">'+esc(OBD.err)+'</p>':'')+
-      '<button type="button" class="btn ghost dvbig" id="dvgps">📍 Enregistrer avec le GPS seul</button><p class="note">GPS seul : trajet, vitesse et tracé exacts, conso <b>estimée</b> (sans OBD). Garde l’écran allumé pendant le trajet, téléphone sur un support.</p>'+
-      '<details class="dvset"><summary>Réglages du calcul</summary><label>Cylindrée (L) <input type="number" step="0.1" min="0.6" max="3" id="dvdisp" value="'+drvSet().disp+'"></label><label>Correction de la conso (×) <input type="number" step="0.01" min="0.6" max="1.6" id="dvk" value="'+drvSet().k+'"></label><label>Fin de trajet après un arrêt de (min) <input type="number" step="1" min="1" max="30" id="dvend" value="'+drvSet().endMin+'"></label></details></div>';
-  }else{
-    h+='<div class="dvmain"><div class="dvcons"><b'+(d.cons!=null?' style="color:'+consoCol(d.cons)+'"':'')+'>'+big+'</b><u>'+bigU+'</u>'+(d.cut?'<em>coupure d’injection</em>':'')+'</div>'+
-      '<div class="dvg"><span><b>'+(d.speed!=null?Math.round(d.speed):'–')+'</b><small>km/h</small></span><span><b>'+(d.rpm!=null?Math.round(d.rpm/10)*10:'–')+'</b><small>tr/min</small></span><span><b>'+(d.coolant!=null?Math.round(d.coolant)+'°':'–')+'</b><small>eau</small></span><span><b>'+(d.volt!=null?f1(d.volt):'–')+'</b><small>volts</small></span></div>'+
-      (R?'<div class="dvtrip"><div><b>'+f1(R.dist)+'</b><small>km</small></div><div><b>'+dur(R.dur)+'</b><small>durée</small></div><div><b'+(avg!=null?' style="color:'+consoCol(avg)+'"':'')+'>'+(avg!=null?f1(avg):'–')+'</b><small>L/100 moyen'+(obd?'':' (estimé)')+'</small></div><div><b>'+f2(R.fuel*(drvSet().k||1)*pr)+' €</b><small>coût</small></div></div>':'<p class="note dvc">Le trajet démarre tout seul dès que tu roules.</p>')+
-      '<div class="dvbtns">'+(obd&&st!=='ok'?'<button type="button" class="btn" id="dvre">Reconnecter l’OBD</button>':'')+(R?'<button type="button" class="btn ghost" id="dvend2">Terminer le trajet</button>':'')+'<button type="button" class="btn ghost" id="dvoff">Arrêter</button></div>'+
-      (DRV.wl?'':'<p class="note">Garde l’écran allumé : Réglages › Luminosité › Verrouillage automatique › Jamais, pendant le trajet.</p>')+'</div>';
-  }
-  if(full||el.getAttribute('data-on')!==String(DRV.on)||!DRV.on){el.innerHTML=h;el.setAttribute('data-on',String(DRV.on))}else{var cur=el.querySelector('.dvmain');if(cur){var tmp=document.createElement('div');tmp.innerHTML=h;el.querySelector('.dvh').outerHTML=tmp.querySelector('.dvh').outerHTML;cur.outerHTML=tmp.querySelector('.dvmain').outerHTML}}
-  var B=function(id,f){var b=$('#'+id);if(b)b.onclick=f};
-  B('dvx',closeDrive);B('dvobd',function(){OBD.err='';obdConnect().catch(function(e){OBD.st='off';OBD.err=e&&e.message==='nobt'?'Bluetooth indisponible : ouvre l’appli dans Bluefy.':e&&e.name==='NotFoundError'?'':e&&e.message==='nochar'?'Cet appareil n’est pas un adaptateur OBD reconnu.':'Connexion impossible. Vérifie que l’adaptateur est branché et que le contact est mis.';drvDraw()})});
-  B('dvgps',function(){drvStart('gps')});B('dvoff',drvStop);B('dvend2',recEnd);B('dvre',function(){obdConnect().catch(function(){OBD.st='lost';drvDraw()})});
-  B('dvcopy',function(){try{navigator.clipboard.writeText(location.origin+location.pathname);toast('Lien copié : colle-le dans Bluefy.')}catch(e){toast(location.origin+location.pathname,6000)}});
-  var inp=function(id,k,mn,mx){var i=$('#'+id);if(i)i.onchange=function(){var s=drvSet(),v=parseFloat(String(i.value).replace(',','.'));if(v>=mn&&v<=mx){s[k]=v;drvSave(s)}}};inp('dvdisp','disp',.6,3);inp('dvk','k',.6,1.6);inp('dvend','endMin',1,30);
+  var bt=!!navigator.bluetooth,st=OBD.st,obd=DRV.mode==='obd',known=OBD.knownName();
+  var stTxt=!DRV.on?'Arrêté':obd?(st==='ok'?'🟢 OBD connecté'+(OBD.dev&&OBD.dev.name?' · '+esc(OBD.dev.name):''):st==='lost'?'🟠 OBD perdu':st==='conn'||st==='init'?'… connexion':'🟠 OBD déconnecté'):'📍 GPS seul · conso estimée';
+  var sig=[DRV.on,DRV.tab,st,!!DRV.rec,DTCP.busy,DTCP.t,DTCP.arm,DTCP.msg,OBD.err,DRV.cm,DRV.mode,(db.health||{}).rest,(db.health||{}).run].join('|');
+  if(full||sig!==DRV.sig){DRV.sig=sig;
+    var h='<div class="dvh"><div><small>Conduite</small><b>'+stTxt+'</b></div><button type="button" class="wx" id="dvx" aria-label="Fermer">✕</button></div>';
+    if(!DRV.on){
+      h+='<div class="dvst">'+(bt?'':'<div class="dvwarn"><b>Bluetooth indisponible dans ce navigateur.</b> Pour lire l’OBD, ouvre La Mathias dans l’appli gratuite <b>Bluefy</b> (App Store), avec un adaptateur <b>Bluetooth LE (BLE 4.0)</b>. Les adaptateurs Bluetooth classiques ne marchent pas avec un iPhone.<div class="dvbtns"><a class="btn ghost" href="https://apps.apple.com/app/id1492822055" target="_blank" rel="noopener">Bluefy sur l’App Store</a><button type="button" class="btn ghost" id="dvcopy">Copier le lien de l’appli</button></div></div>')+
+        (bt&&known?'<button type="button" class="btn dvbig" id="dvknown">🔌 Reconnecter '+esc(known)+'</button>':'')+
+        '<button type="button" class="btn dvbig'+(bt&&known?' ghost':'')+'" id="dvobd"'+(bt?'':' disabled')+'>🔌 '+(known?'Choisir un autre adaptateur':'Connecter l’OBD')+'</button>'+(st==='conn'||st==='init'?'<p class="note dvc">'+(st==='conn'?'Choisis ton adaptateur dans la liste…':'Dialogue avec la voiture…')+'</p>':'')+(OBD.err?'<p class="dverr">'+esc(OBD.err)+'</p>':'')+
+        '<button type="button" class="btn ghost dvbig" id="dvgps">📍 Enregistrer avec le GPS seul</button><button type="button" class="btn ghost dvbig" id="dvfill">⛽ Plein / niveau du réservoir</button>'+
+        '<p class="note">Avec l’OBD : conso mesurée, compteur, capteurs, codes défaut et batterie, comme sur l’autoradio. GPS seul : trajet, vitesse et tracé exacts, conso <b>estimée</b>. Garde l’écran allumé pendant le trajet, téléphone sur un support.</p>'+
+        '<details class="dvset"><summary>Réglages</summary><label>Cylindrée (L) <input type="number" step="0.1" min="0.6" max="3" id="dvdisp" value="'+drvSet().disp+'"></label><label>Correction de la conso (×) <input type="number" step="0.01" min="0.6" max="1.6" id="dvk" value="'+drvSet().k+'"></label><label>Zone rouge (tr/min) <input type="number" step="100" min="3000" max="7000" id="dvred" value="'+drvSet().redline+'"></label><label>Réservoir (L) <input type="number" step="1" min="20" max="90" id="dvtank" value="'+tankL()+'"></label><label>Fin de trajet après un arrêt de (min) <input type="number" step="1" min="1" max="30" id="dvend" value="'+drvSet().endMin+'"></label></details></div>';
+    }else{
+      h+=drvTabs()+'<div class="dvmain">'+drvBody()+'<div class="dvbtns">'+(obd&&st!=='ok'?'<button type="button" class="btn" id="dvre">Reconnecter l’OBD</button>':'')+(DRV.rec?'<button type="button" class="btn ghost" id="dvend2">Terminer le trajet</button>':'')+'<button type="button" class="btn ghost" id="dvoff">Arrêter</button></div>'+
+        (DRV.wl?'':'<p class="note">Garde l’écran allumé : Réglages › Luminosité et affichage › Verrouillage automatique › Jamais, pendant le trajet.</p>')+'</div>';
+    }
+    el.innerHTML=h;drvWire();
+  }else{var b=el.querySelector('.dvh b');if(b&&b.innerHTML!==stTxt)b.innerHTML=stTxt}
+  drvUpd();
 }
+function drvWire(){
+  var B=function(id,f){var b=$('#'+id);if(b)b.onclick=f};
+  var cerr=function(e){OBD.st='off';OBD.err=e&&e.message==='nobt'?'Bluetooth indisponible : ouvre l’appli dans Bluefy.':e&&e.name==='NotFoundError'?'':e&&e.message==='nochar'?'Cet appareil n’est pas un adaptateur OBD reconnu.':'Connexion impossible. Vérifie que l’adaptateur est branché et que le contact est mis.';drvDraw(true)};
+  B('dvx',closeDrive);B('dvobd',function(){OBD.err='';obdConnect(false).catch(cerr)});B('dvknown',function(){OBD.err='';obdConnect(true).catch(cerr)});
+  B('dvgps',function(){drvStart('gps')});B('dvoff',drvStop);B('dvend2',recEnd);B('dvre',function(){obdConnect(true).catch(function(){OBD.st='lost';drvDraw(true)})});B('dvfill',fillSheet);
+  B('dtcr',function(){dtcRead(false)});B('dtcc',dtcClear);
+  B('dvcopy',function(){try{navigator.clipboard.writeText(location.origin+location.pathname);toast('Lien copié : colle-le dans Bluefy.')}catch(e){toast(location.origin+location.pathname,6000)}});
+  Array.prototype.forEach.call(document.querySelectorAll('#drive .dvtabs button'),function(b){b.onclick=function(){DRV.tab=b.getAttribute('data-t');drvDraw(true)}});
+  Array.prototype.forEach.call(document.querySelectorAll('#drive .dvcm button'),function(b){b.onclick=function(){DRV.cm=b.getAttribute('data-cm');drvDraw(true)}});
+  var inp=function(id,k,mn,mx){var i=$('#'+id);if(i)i.onchange=function(){var v=parseFloat(String(i.value).replace(',','.'));if(!(v>=mn&&v<=mx))return;if(k==='tank'){if(!db.snap)snapUpdate();db.snap.tank=Math.round(v);save();return}var s=drvSet();s[k]=v;drvSave(s)}};
+  inp('dvdisp','disp',.6,3);inp('dvk','k',.6,1.6);inp('dvred','redline',3000,7000);inp('dvtank','tank',20,90);inp('dvend','endMin',1,30);
+}
+/* carte « Conduite » en haut de l'onglet Voiture */
+function drvCard(){
+  var R=DRV.rec;
+  return '<div class="card dvcard" id="dvcard"><div class="dvc1"><div><h2 style="margin:0">Conduite</h2><small>'+(DRV.on?(R?'Trajet en cours · '+f1(R.dist)+' km · '+dur(R.dur):DRV.mode==='obd'?'OBD connecté, prêt à enregistrer':'GPS prêt à enregistrer'):'L’iPhone enregistre tes trajets : OBD ou GPS')+'</small></div>'+
+    '</div>'+
+    '<div class="sbtns"><button type="button" class="btn" id="dvopen">'+(DRV.on?'Ouvrir l’écran Conduite':'🚗 Démarrer')+'</button><button type="button" class="btn ghost" id="dvfill2">⛽ Plein</button></div></div>';
+}
+/* pneus et freins : saisie sur l'iPhone (avant, sur l'autoradio) */
+function tyreSheet(){
+  var I=infoEns(),T=I.tyres,K=I.brakes,v=function(x){return x==null?'':String(x).replace('.',',')};
+  var h='<div class="flw"><h3 class="dvh3">Pneus</h3><div class="tyin">'+TPOS.map(function(p){var x=T[p[0]]||{};return '<div><b>'+p[1]+'</b><label>Pression (bar)<input data-ty="'+p[0]+'" data-f="p" inputmode="decimal" value="'+v(x.p)+'" placeholder="2,2"></label><label>Sculptures (mm)<input data-ty="'+p[0]+'" data-f="d" inputmode="decimal" value="'+v(x.d)+'" placeholder="5"></label></div>'}).join('')+'</div>'+
+    '<h3 class="dvh3">Freins</h3><div class="tyin">'+BRK.map(function(b){var x=K[b[0]]||{};return '<div><b>'+b[1]+'</b><label>Épaisseur (mm)<input data-bk="'+b[0]+'" data-f="th" inputmode="decimal" value="'+v(x.th)+'"></label><label>Minimum (mm)<input data-bk="'+b[0]+'" data-f="min" inputmode="decimal" value="'+v(x.min)+'"></label></div>'}).join('')+'</div>'+
+    '<button type="button" class="btn dvbig" id="tyok">Enregistrer</button><p class="note">Pression à froid conseillée : étiquette dans la porte conducteur. Sculptures : 1,6 mm est le minimum légal ; change avant 3 mm. Freins : le minimum est gravé sur la pièce (ou demande au garage). Laisse vide ce que tu ne connais pas.</p></div>';
+  sheetOpen('Pneus et freins',h);
+  $('#tyok').onclick=function(){var n=function(e){var x=parseFloat(String(e.value).replace(',','.'));return isFinite(x)&&x>=0&&x<60?Math.round(x*10)/10:null};
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ty]'),function(e){var p=e.getAttribute('data-ty');T[p]=T[p]||{p:null,d:null};T[p][e.getAttribute('data-f')]=n(e)});
+    Array.prototype.forEach.call(document.querySelectorAll('[data-bk]'),function(e){var p=e.getAttribute('data-bk');K[p]=K[p]||{th:null,min:null};K[p][e.getAttribute('data-f')]=n(e)});
+    Object.keys(T).forEach(function(p){if(T[p].p==null&&T[p].d==null)delete T[p]});Object.keys(K).forEach(function(p){if(K[p].th==null)delete K[p]});
+    I.tyT=Date.now();save();sheetClose();island({icon:'check',tone:'good',title:'Pneus et freins enregistrés',ms:2400,fallback:1})};
+}
+
 function drvPill(){var p=$('#dvpill');if(!p)return;var R=DRV.rec;p.hidden=!DRV.on;if(!DRV.on)return;p.innerHTML='<i class="'+(R?'rec':'')+'"></i>'+(R?f1(R.dist)+' km · '+dur(R.dur):DRV.mode==='obd'?'OBD prêt':'GPS prêt')}
 
 /* bloque le zoom de Safari (pincement, double-toucher), sauf sur les cartes et la voiture 3D qui gèrent leurs propres gestes */
