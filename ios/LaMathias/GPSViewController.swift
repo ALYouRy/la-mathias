@@ -64,15 +64,18 @@ final class GPSViewController: UIViewController, MKMapViewDelegate {
 
     // MARK: - Caméra
 
+    /// 2.68 : caméra pilotée par l'appli (et plus par la boussole du téléphone, qui fait « danser » la carte en voiture) :
+    /// centre = position, orientation = direction de déplacement GPS lissée, distance par paliers de vitesse.
+    private var camHeading: Double = 0
+    private var camDist: Double = 500
+    private var bandWant: Double = 500
+    private var bandSince = Date()
+
     private func startFollow(animated: Bool) {
         follow = true
-        let speed = max(0, Core.shared.rec.gps?.speed ?? 0) * 3.6
-        let dist = 350 + min(900, speed * 9)
-        if let l = Core.shared.rec.gps ?? map.userLocation.location {
-            let cam = MKMapCamera(lookingAtCenter: l.coordinate, fromDistance: dist, pitch: threeD ? 60 : 0, heading: l.course >= 0 ? l.course : map.camera.heading)
-            map.setCamera(cam, animated: animated)
-        }
-        map.setUserTrackingMode(.followWithHeading, animated: animated)
+        map.setUserTrackingMode(.none, animated: false)
+        if let l = Core.shared.rec.gps ?? map.userLocation.location, l.course >= 0 { camHeading = l.course }
+        moveCamera(animated: animated, duration: 0.6)
     }
 
     @objc private func userMoved(_ g: UIPanGestureRecognizer) {
@@ -80,27 +83,39 @@ final class GPSViewController: UIViewController, MKMapViewDelegate {
     }
 
     func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
-        if mode == .none && follow { follow = false; freeAt = Date() }
+        if mode != .none { mapView.setUserTrackingMode(.none, animated: false) }
     }
 
-    /// Recentre et règle zoom / inclinaison selon la vitesse, en gardant le suivi d'Apple.
+    private func band(_ kmh: Double) -> Double { kmh < 25 ? 450 : kmh < 55 ? 650 : kmh < 90 ? 950 : 1300 }
+
+    private func moveCamera(animated: Bool, duration: Double) {
+        guard let l = Core.shared.rec.gps ?? map.userLocation.location else { return }
+        let kmh = max(0, l.speed) * 3.6
+        // direction : seulement quand on roule vraiment, lissée (pas de demi-tours brusques de la carte)
+        if kmh > 8, l.course >= 0, (l.courseAccuracy < 0 || l.courseAccuracy < 30) {
+            var d = l.course - camHeading
+            while d > 180 { d -= 360 }
+            while d < -180 { d += 360 }
+            camHeading = (camHeading + d * 0.45 + 360).truncatingRemainder(dividingBy: 360)
+        }
+        // distance : change seulement si le palier de vitesse est stable 4 s
+        let b = band(kmh)
+        if b != bandWant { bandWant = b; bandSince = Date() }
+        if bandWant != camDist && Date().timeIntervalSince(bandSince) > 4 { camDist = bandWant }
+        let cam = MKMapCamera(lookingAtCenter: l.coordinate, fromDistance: camDist, pitch: threeD ? 60 : 0, heading: camHeading)
+        if animated {
+            UIView.animate(withDuration: duration, delay: 0, options: [.curveLinear, .beginFromCurrentState, .allowUserInteraction]) { self.map.camera = cam }
+        } else {
+            map.camera = cam
+        }
+    }
+
     private func adjustCamera() {
         if !follow {
             if Date().timeIntervalSince(freeAt) > 12 { startFollow(animated: true) }
             return
         }
-        if map.userTrackingMode != .followWithHeading { map.setUserTrackingMode(.followWithHeading, animated: true) }
-        let speed = max(0, Core.shared.rec.gps?.speed ?? 0) * 3.6
-        let want = 350 + min(900, speed * 9)
-        let cam = map.camera
-        let wantPitch: CGFloat = threeD ? 60 : 0
-        if abs(cam.centerCoordinateDistance - want) > 80 || abs(cam.pitch - wantPitch) > 2 {
-            let c = cam.copy() as! MKMapCamera
-            c.centerCoordinateDistance = want
-            c.pitch = wantPitch
-            map.setCamera(c, animated: true)
-            map.setUserTrackingMode(.followWithHeading, animated: false)
-        }
+        moveCamera(animated: true, duration: 0.5)
     }
 
     // MARK: - Tracé coloré
