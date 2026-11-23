@@ -10,6 +10,7 @@ final class Trip {
     var rpmMax = 0.0, rpmMin = 99999.0, rpmSum = 0.0, rpmN = 0.0, over = 0
     var tMax = 0.0, tSum = 0.0, tN = 0.0, vMin = 99.0, vSum = 0.0, vN = 0.0, load = 0.0, lN = 0.0
     var brakes = 0, hard = 0, accel = 0, stops = 0
+    var cutKm = 0.0   // km roulés injection coupée (0 L/100)
     var pv: Double? = nil
     var bd = 0.0, bt = false, hf = false, af = false, ov = false
     var P: [[Any]] = []
@@ -18,7 +19,7 @@ final class Trip {
     func dict() -> [String: Any] {
         ["t0": t0, "src": "obd", "native": true, "dur": dur, "mov": mov, "idle": idle, "stop": stop, "off": off, "dist": dist, "fuel": fuel, "vmax": vmax,
          "rpmMax": rpmMax, "rpmMin": rpmMin, "rpmSum": rpmSum, "rpmN": rpmN, "over": over, "tMax": tMax, "tSum": tSum, "tN": tN,
-         "vMin": vMin, "vSum": vSum, "vN": vN, "load": load, "lN": lN, "brakes": brakes, "hard": hard, "accel": accel, "stops": stops, "P": P, "lastP": lastP]
+         "vMin": vMin, "vSum": vSum, "vN": vN, "load": load, "lN": lN, "brakes": brakes, "hard": hard, "accel": accel, "stops": stops, "cutKm": cutKm, "P": P, "lastP": lastP]
     }
 
     static func from(_ d: [String: Any]) -> Trip {
@@ -27,7 +28,7 @@ final class Trip {
         t.t0 = n("t0"); t.dur = n("dur"); t.mov = n("mov"); t.idle = n("idle"); t.stop = n("stop"); t.dist = n("dist"); t.fuel = n("fuel"); t.vmax = n("vmax")
         t.rpmMax = n("rpmMax"); t.rpmMin = d["rpmMin"] == nil ? 99999 : n("rpmMin"); t.rpmSum = n("rpmSum"); t.rpmN = n("rpmN"); t.over = Int(n("over"))
         t.tMax = n("tMax"); t.tSum = n("tSum"); t.tN = n("tN"); t.vMin = d["vMin"] == nil ? 99 : n("vMin"); t.vSum = n("vSum"); t.vN = n("vN"); t.load = n("load"); t.lN = n("lN")
-        t.brakes = Int(n("brakes")); t.hard = Int(n("hard")); t.accel = Int(n("accel")); t.stops = Int(n("stops"))
+        t.brakes = Int(n("brakes")); t.hard = Int(n("hard")); t.accel = Int(n("accel")); t.stops = Int(n("stops")); t.cutKm = n("cutKm")
         t.P = (d["P"] as? [[Any]]) ?? []; t.lastP = n("lastP")
         return t
     }
@@ -445,6 +446,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         if let pv = R.pv, pv >= 1, !moving { R.stops += 1 }
         R.dist += speed * dt / 3600
         if let l = d["lphRaw"] { R.fuel += l * dt / 3600 }
+        if cut && moving { R.cutKm += speed * dt / 3600 }
         if speed > R.vmax { R.vmax = speed }
         if let rp = rpm {
             R.rpmSum += rp; R.rpmN += 1
@@ -536,7 +538,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         dd["cut"] = cut
         dd["src"] = src
         var o: [String: Any] = ["st": obd.state, "err": obd.err, "name": obd.savedName, "known": obd.savedId != nil, "can": obd.can, "d": dd, "loc": locAuth, "pending": Store.count(), "isl": LiveAct.shared.available]
-        if let R = trip { o["rec"] = ["t0": R.t0, "dist": R.dist, "dur": R.dur, "fuel": R.fuel, "P": R.P.count] }
+        if let R = trip { o["rec"] = ["t0": R.t0, "dist": R.dist, "dur": R.dur, "fuel": R.fuel, "cutKm": R.cutKm, "P": R.P.count] }
         if let g = gps { o["gps"] = ["la": g.coordinate.latitude, "lo": g.coordinate.longitude, "acc": g.horizontalAccuracy, "crs": g.course, "sp": g.speed >= 0 ? g.speed * 3.6 : -1, "t": g.timestamp.timeIntervalSince1970 * 1000] }
         return o
     }

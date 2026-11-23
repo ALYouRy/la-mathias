@@ -188,6 +188,15 @@ button{font:inherit;color:inherit}
    icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
 .isl .nl,.isl .nr{display:none}
 .eco[data-t]{cursor:pointer}
+.trv-z{margin:10px 0 0;font-size:14px;color:#34d17a;display:flex;align-items:center;justify-content:center;gap:6px}.trv-z b{font-weight:800}.trv-z .ecoi{width:16px;height:16px}
+.zc-b{display:flex;align-items:baseline;gap:6px;margin:4px 0 2px}.zc-b b{font-size:44px;font-weight:800;color:#34d17a;letter-spacing:-.02em}.zc-b u{text-decoration:none;opacity:.6;font-size:17px}
+.isl[data-tone^="t-"] .ic{background:rgba(255,255,255,.1)}
+.isl[data-tone="t-b"] .ic,.isl[data-tone="t-b"] .nr.val b,.isl[data-tone="t-b"] .nr.val small{color:#e0995a}.isl[data-tone="t-b"] .ng i{background:#e0995a}
+.isl[data-tone="t-a"] .ic,.isl[data-tone="t-a"] .nr.val b,.isl[data-tone="t-a"] .nr.val small{color:#d7dee8}.isl[data-tone="t-a"] .ng i{background:#d7dee8}
+.isl[data-tone="t-o"] .ic,.isl[data-tone="t-o"] .nr.val b,.isl[data-tone="t-o"] .nr.val small{color:#ffcc33}.isl[data-tone="t-o"] .ng i{background:#ffcc33}
+.isl[data-tone="t-l"] .ic,.isl[data-tone="t-l"] .nr.val b,.isl[data-tone="t-l"] .nr.val small{color:#c77dff}.isl[data-tone="t-l"] .ng i{background:#c77dff}
+.isl[data-tone="t-u"] .ic,.isl[data-tone="t-u"] .nr.val b,.isl[data-tone="t-u"] .nr.val small{color:#00e5ff}.isl[data-tone="t-u"] .ng i{background:#00e5ff}
+.isl[data-tone^="t-"] .nr b{color:#fff}
 .sheet.ecotop{z-index:66}
 .ecs-big{text-align:center;margin:4px 0 16px}.ecs-big b{font-size:54px;font-weight:800;letter-spacing:-.03em}.ecs-big u{text-decoration:none;opacity:.55;font-size:18px;margin-left:4px}
 .ecs-r{margin:0 0 14px}.ecs-h{display:flex;justify-content:space-between;align-items:baseline}.ecs-h b{font-size:15px}.ecs-h span{font-size:13px;opacity:.7;font-variant-numeric:tabular-nums}
@@ -1007,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.84';
+var APP_V='2.85';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1094,14 +1103,14 @@ function animMain(){
 }
 /* ---------- « Dynamic Island » : la pastille noire sort de l'île de l'iPhone, puis y rentre ---------- */
 var ISL={q:[],busy:false,timer:null};
-var ICO={car:'<path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8l2 5v3a1 1 0 0 1-1 1h-1M6 17H5a1 1 0 0 1-1-1"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
+var ICO={leaf:'<path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14zM5 19l7-7"/>',road:'<path d="M8 21l3-18M16 21l-3-18"/><path d="M12 6v2M12 11v2M12 16v2"/>',battery:'<rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/>',car:'<path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8l2 5v3a1 1 0 0 1-1 1h-1M6 17H5a1 1 0 0 1-1-1"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
   check:'<path d="M5 12.5l4.3 4.3L19 7"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   unlock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 7.6-1.7"/>',
   fuel:'<path d="M5 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M4 20h12M15 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3"/><path d="M8 8h4"/>',
   warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.5"/>',qr:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"/>',
   star:'<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
   wrench:'<path d="M14.5 5.5a4 4 0 0 0-4.9 5.3L4 16.4 7.6 20l5.6-5.6a4 4 0 0 0 5.3-4.9l-2.7 2.7-2.6-.7-.7-2.6z"/>'};
-function island(o){if(typeof NAT!=='undefined'&&NAT&&NATL&&NATL.isl){if(SET.nisl===false&&!o.fallback)return;natPost({op:'island',icon:o.icon||'car',title:o.title||'',sub:o.sub||'',right:o.right||'',tone:o.tone||'info',ms:(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1)*1.3,progress:o.progress!=null?o.progress:null});
+function island(o){if(typeof NAT!=='undefined'&&NAT&&NATL&&NATL.isl){if(SET.nisl===false&&!o.fallback)return;natPost({op:'island',icon:o.icon||'car',title:o.title||'',sub:o.sub||'',right:o.right||'',tone:/^t-/.test(o.tone||'')?'good':(o.tone||'info'),ms:(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1)*1.3,progress:o.progress!=null?o.progress:null});
   /* iOS n'affiche pas l'activité d'une appli dans la Dynamic Island tant qu'elle est à l'écran : on montre donc aussi le message en haut de l'appli */
   o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext();return}if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:''));return}o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext()}
 function islNext(){
@@ -2538,7 +2547,7 @@ function trophyCheck(T){
   var quiet=!st||st._v!==2;st=st||{};var nw=[];
   T.forEach(function(t){if(t.ok&&!st[t.id]){st[t.id]=Date.now();if(!quiet)nw.push(t)}});st._v=2;
   try{localStorage.setItem(TRK,JSON.stringify(st))}catch(e){}
-  if(nw.length)setTimeout(function(){celTrophies(nw)},500);
+  if(nw.length)setTimeout(function(){celTrophies(nw,T)},500);
   return st;
 }
 function medal(t,big){var pc=Math.max(0,Math.min(1,t.val/t.goal)),u=t.tier==='u',ns={b:0,a:1,o:2,l:3,u:5}[t.tier]||0;return '<span class="md t-'+t.tier+(t.ok?' ok':'')+(big?' big':'')+'" style="--p:'+(pc*360).toFixed(0)+'deg">'+(t.tier!=='b'?'<span class="uhalo"></span>':'')+'<span class="ring"></span><i>'+(u?'<span class="usky"></span>':'')+'<svg viewBox="0 0 24 24">'+(TRI[t.icon]||TRI.star)+'</svg></i>'+(u?'<span class="uorb"><b></b></span>':'')+[1,2,3,4,5].slice(0,ns).map(function(k){return '<span class="ust s'+k+'"></span>'}).join('')+'</span>'}
@@ -2771,6 +2780,7 @@ function lifeTab(){
   h+='</div>';
   h+=trophyCard();
   h+=radioLifeCard();
+  var CT=cutTot();if(CT.km>0)h+='<div class="card zc"><h2>'+ECOI+'Roulés à 0 L/100</h2><div class="zc-b"><b class="cu" data-v="'+CT.km.toFixed(1)+'" data-f="1">'+f1(CT.km)+'</b><u>km</u></div><p class="note">Kilomètres faits pied levé en prise : la voiture coupe l’injection et ne consomme rien. Sur '+CT.n+' trajet'+(CT.n>1?'s':'')+' mesuré'+(CT.n>1?'s':'')+' avec l’OBD.</p></div>';
   /* records */
   var row=function(l,v,s){return '<div><span>'+l+(s?'<small class="lsm">'+s+'</small>':'')+'</span><b>'+v+'</b></div>'},mn=function(k){var y=Math.floor(k/12),m=k%12;return cap(MF.format(new Date(y,m,1)))};
   h+='<div class="card"><h2>Records</h2><div class="det">'+
@@ -2998,9 +3008,13 @@ function celNext(){
   clearTimeout(CEL.timer);CEL.timer=setTimeout(celClose,{b:2800,a:3400,o:4200,l:5000,u:7000}[tier]);
 }
 function celClose(){var el=$('#cele');clearTimeout(CEL.timer);if(CEL.map){try{CEL.map.remove()}catch(e){}CEL.map=null}if(!el||el.hidden){CEL.on=false;return}el.classList.remove('on');el.classList.add('off');setTimeout(function(){el.hidden=true;el.className='cele';el.innerHTML='';celNext()},380)}
-function celTrophies(nw){
+function celTrophies(nw,T){
   if(!nw.length)return;var S=nw.slice().sort(function(a,b){return RANKN[b.tier]-RANKN[a.tier]}),top=S.slice(0,3).reverse(),rest=S.length-top.length;
   top.forEach(function(t){celebrate({kind:'tr',t:t})});
+  /* 2.85 : chaque trophée passe aussi dans la Dynamic Island, avec la jauge du prochain trophée de la même catégorie */
+  top.slice().reverse().forEach(function(t){var nx=null;(T||[]).forEach(function(u){if(u.cat===t.cat&&!u.ok&&u.goal>0){var p=u.val/u.goal;if(!nx||p>nx.p)nx={u:u,p:p}}});
+    island({icon:'star',pop:true,tone:'t-'+t.tier,lt:TIER[t.tier][1],ls:'trophée',title:t.name,sub:nx?'Prochain : '+nx.u.name+' · '+progTxt(nx.u):'Catégorie terminée ✓',
+      progress:nx?Math.min(1,nx.p):1,ms:4200})});
   if(rest>0)setTimeout(function(){island({fallback:1,icon:'star',pop:true,tone:'good',title:'+'+rest+' autre'+(rest>1?'s':'')+' trophée'+(rest>1?'s':''),sub:'À voir dans l’onglet À vie',ms:3200})},400);
 }
 /* ---------- 2.23 : autoradio 2.7 ---------- */
@@ -3189,6 +3203,15 @@ function ecoSheet(t0){var r=data().trips[t0];if(!r)return;var E=ecoCalc(r);
     '<p class="ecs-n">Le score compare ta conso à ce qu’une Sandero consomme normalement au même rythme (ville, route…), donc un trajet en ville peut avoir un bon score.</p></div>';
   sheetOpen('Score éco',h);$('#sheet').classList.add('ecotop')}
 document.addEventListener('click',function(e){var p=e.target.closest&&e.target.closest('.eco[data-t]');if(!p)return;e.stopPropagation();e.preventDefault();ecoSheet(+p.getAttribute('data-t'))},true);
+/* ---------- 2.85 : km roulés à 0 L/100 (injection coupée, pied levé en prise) ---------- */
+function cutFromP(P){var k=0;for(var i=1;i<P.length;i++){var p=P[i];if(p[2]===0&&p[3]>=8)k+=hav(P[i-1],p)}return k}
+/* anciens trajets : recalcul depuis le détail point par point (conso 0 et vitesse ≥ 8 km/h) */
+function cutMigrate(){var D=db,ch=false;Object.keys(D.trips||{}).forEach(function(k){var r=D.trips[k];if(!r||r.src!=='iphone'||r.meas!==true||r.cutKm!=null)return;
+  var ds=D.details&&D.details[r.t0],Pt=null;try{Pt=D.trk5&&D.trk5[r.t0]?mmDec(D.trk5[r.t0]):(D.tracks&&D.tracks[r.t0]?trackPts(D.tracks[r.t0]):null)}catch(e){}
+  if(!ds||!Pt){r.cutKm=0;ch=true;return}var L=ds.split(','),f=function(x){return (x||'').split('.').map(function(v){var n=v===''?null:parseInt(v,36);return n==null||isNaN(n)?null:n})},C=f(L[0]),V=f(L[1]);
+  if(C.length!==Pt.length){r.cutKm=0;ch=true;return}var km=0;for(var i=1;i<Pt.length;i++)if(C[i]===0&&(V[i]||0)>=8)km+=hav(Pt[i-1],Pt[i]);
+  km=Math.min(km,r.dist||km);r.cutKm=Math.round(km*100)/100;ch=true});if(ch)save()}
+function cutTot(){var t=0,n=0;realList().forEach(function(r){if(r.cutKm>0){t+=r.cutKm;n++}});return {km:t,n:n}}
 /* recalcule les trajets enregistrés par l'iPhone avec la nouvelle méthode (une seule fois) */
 function ecoMigrate(){var D=db,ch=false;Object.keys(D.trips||{}).forEach(function(k){var r=D.trips[k];if(!r||r.src!=='iphone'||r.ecoP)return;
   var De=null;try{var ds=D.details&&D.details[r.t0];if(ds){var L=ds.split(','),f=function(x){return (x||'').split('.').map(function(v){var n=v===''?null:parseInt(v,36);return n==null||isNaN(n)?null:n})};De={v:f(L[1]),t:f(L[2])}}}catch(e){}if(De&&De.v&&De.v.length>3&&De.t){var ev=ecoEvents(De.v,De.t);r.hard=ev.hb;r.accel=ev.ha}
@@ -4033,6 +4056,7 @@ function tripRevealShow(o,el){
     '<div class="trv-st"><span><b>'+dur(r.dur)+'</b><small>durée</small></span>'+
     (c!=null?'<span><b style="color:'+consoCol(c)+'">'+f1(c)+'</b><small>L/100'+(r.meas===true?' · mesurée':r.meas===false?' · estimée':'')+'</small></span>':'')+
     '<span><b>'+ecoPill(r.eco,r)+'</b><small>score éco</small></span><span><b>'+f2(r.fuel*tPrice(r,pr))+' €</b><small>coût</small></span></div>'+
+    (r.cutKm>=.05?'<p class="trv-z">'+ECOI+'<b>'+f1(r.cutKm)+' km</b> roulés à 0 L/100</p>':'')+
     (V?'<p class="trv-v '+V[0]+'">'+(V[0]==='rec'?'🏁 ':'')+V[1]+'</p>':'')+
     (o.more>0?'<p class="trv-more">+ '+o.more+' autre'+(o.more>1?'s':'')+' trajet'+(o.more>1?'s':'')+' reçu'+(o.more>1?'s':'')+'</p>':'')+
     '<div class="trv-b">'+(P?'<button type="button" class="btn" id="trvgo">Voir le trajet</button>':'')+'<button type="button" class="btn ghost" id="trvx">Fermer</button></div></div>';
@@ -4662,7 +4686,7 @@ function recTick(dt){
   if(!R){if(run&&s>=(obd?5:12)){R=DRV.rec=recNew();island({icon:'check',tone:'good',title:'Trajet démarré',sub:obd?'Enregistrement OBD + GPS':'Enregistrement GPS (conso estimée)',ms:2500,fallback:1})}return}
   if(!run){R.off+=dt;if(R.off>=(obd?25:120))recEnd();return}
   R.off=0;R.dur+=dt;var moving=s>=1;if(moving){R.mov+=dt;R.stop=0}else{R.idle+=dt;R.stop+=dt}
-  if(R.pv!=null&&R.pv>=1&&!moving)R.stops++;R.dist+=s*dt/3600;if(d.lphRaw!=null){R.fuel+=d.lphRaw*dt/3600;FS.used+=d.lphRaw*dt/3600*(S.k||1)}FS.dist+=s*dt/3600;if(s>R.vmax)R.vmax=s;
+  if(R.pv!=null&&R.pv>=1&&!moving)R.stops++;R.dist+=s*dt/3600;if(obd&&d.cut&&moving)R.cutKm=(R.cutKm||0)+s*dt/3600;if(d.lphRaw!=null){R.fuel+=d.lphRaw*dt/3600;FS.used+=d.lphRaw*dt/3600*(S.k||1)}FS.dist+=s*dt/3600;if(s>R.vmax)R.vmax=s;
   if(rpm!=null){R.rpmSum+=rpm;R.rpmN++;if(rpm>R.rpmMax)R.rpmMax=rpm;if(rpm<R.rpmMin)R.rpmMin=rpm;if(rpm>=S.redline){if(!R.ov){R.over++;R.ov=true}}else R.ov=false}
   if(d.coolant!=null){R.tSum+=d.coolant;R.tN++;if(d.coolant>R.tMax)R.tMax=d.coolant}
   if(d.volt!=null){R.vSum+=d.volt;R.vN++;if(d.volt<R.vMin)R.vMin=d.volt}
@@ -4685,7 +4709,7 @@ function recSave(R,recovered){
   var pr=priceOf(D.snap)||(D.snap&&D.snap.price)||null,t0=Math.round(R.t0/1000)*1000;
   D.trips[t0]={t0:t0,dur:Math.round(R.dur),dist:Math.round(R.dist*10)/10,fuel:Math.round(R.fuel*(drvSet().k||1)*100)/100,vmax:Math.round(R.vmax),hard:R.hard,accel:R.accel,over:R.over,idle:Math.round(R.idle),eco:eco,rpm:Math.round(rpmAvg/10)*10,fav:null,
     drive:Math.round(R.mov),stops:R.stops,brakes:R.brakes,rpmMax:R.rpmMax?Math.round(R.rpmMax/10)*10:null,rpmMin:R.rpmMin<99999?Math.round(R.rpmMin/10)*10:null,tMax:R.tN?R.tMax:null,tAvg:R.tN?Math.round(R.tSum/R.tN):null,
-    batMin:R.vN?Math.round(R.vMin*10)/10:null,batAvg:R.vN?Math.round(R.vSum/R.vN*10)/10:null,load:R.lN?Math.round(R.load/R.lN):null,price:pr,meas:obd,src:'iphone'};
+    batMin:R.vN?Math.round(R.vMin*10)/10:null,batAvg:R.vN?Math.round(R.vSum/R.vN*10)/10:null,load:R.lN?Math.round(R.load/R.lN):null,price:pr,meas:obd,src:'iphone',cutKm:obd?Math.round((R.cutKm!=null&&R.cutKm>0?R.cutKm:cutFromP(R.P||[]))*100)/100:null};
   D.trips[t0].eco=ecoCalc(D.trips[t0]).score;D.trips[t0].ecoP=1;
   /* tracé : même format que les QR (1e-4°, base36 signée, cumulé) + détail CONSO,VITESSE,TEMPS */
   var P=deSpike(R.P||[]);if(P.length>=2){
@@ -5019,7 +5043,7 @@ function natLive(o){
   if(OBD.ok&&DRV.mode==='gps'){if(DRV.rec&&DRV.rec.dist<1){DRV.rec=null;try{localStorage.removeItem(ACTK)}catch(e){}}else if(DRV.rec)recEnd();gpsStop();wakeOff();DRV.mode=''}
   if(DRV.mode!=='gps'){
     if(OBD.ok||o.rec){if(!DRV.on||DRV.mode!=='nat')drvStart('nat');DRV.d=Object.assign({},o.d||{});DRV.d.t=Date.now();
-      DRV.rec=o.rec?{t0:o.rec.t0,dist:o.rec.dist,dur:o.rec.dur,fuel:o.rec.fuel,src:'obd',nat:true}:null;DRV.ngps=o.gps||null;if(DRV.ngps)gpsFix(drvPos())}
+      DRV.rec=o.rec?{t0:o.rec.t0,dist:o.rec.dist,dur:o.rec.dur,fuel:o.rec.fuel,cutKm:o.rec.cutKm,src:'obd',nat:true}:null;DRV.ngps=o.gps||null;if(DRV.ngps)gpsFix(drvPos())}
     else if(DRV.on&&DRV.mode==='nat'){DRV.on=false;DRV.mode='';DRV.rec=null;clearInterval(DRV.timer);DRV.timer=null}
   }
   if(OBD.ok&&!was){BATS={first:true,runN:0,runPush:false};setTimeout(function(){if(OBD.ok&&DRV.mode==='nat')dtcRead(true)},4000)}
@@ -5037,6 +5061,9 @@ function tripEndIsland(keys){
     lt:f1(km)+' km',ls:one?dur(du):L.length+' trajets',lbl:'dépensé',
     title:one?'Trajet terminé':L.length+' trajets enregistrés',sub:f1(km)+' km · '+dur(du)+(fu>0?' · '+f1(fu)+' L':''),
     right:e||'',ms:5000,fallback:1});
+  var ck=0;L.forEach(function(r){ck+=r.cutKm||0});
+  if(ck>=.05&&km>0)island({icon:'leaf',tone:'good',lt:f1(ck)+' km',ls:'à 0 L/100',lbl:'du trajet',right:Math.round(ck/km*100)+' %',progress:ck/km,
+    title:f1(ck)+' km sans consommer',sub:'Pied levé, injection coupée · '+Math.round(ck/km*100)+' % du trajet',ms:4200});
 }
 /* trajets enregistrés par l'appli (même écran verrouillé) : on les range comme les autres */
 function natImport(L){
@@ -5205,7 +5232,7 @@ $('#mapfit').onclick=function(){if(!MAP||!window.maplibregl)return;if(MODE==='sp
 $('#sclose').onclick=function(){var part=SC.any&&scLeft()>0,d=SC.total-scLeft(),t=SC.total;stopScan();if(part)toast('Synchro partielle : '+d+' code'+(d>1?'s':'')+' sur '+t+'. Relance-la pour finir.',4000)};
 
 /* ---------- démarrage ---------- */
-load();try{ecoMigrate()}catch(e){}
+load();try{ecoMigrate()}catch(e){}try{cutMigrate()}catch(e){}
 function fromHash(){
   if(location.hash.indexOf('#s=')!==0)return;
   var r=null;try{r=importFromUrl(location.href);island({fallback:1,icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total:'Depuis l’appli, utilise plutôt le bouton Scanner',right:r.total>1?r.page+'/'+r.total:'',ms:4200})}catch(e){toast('Données illisibles.')}

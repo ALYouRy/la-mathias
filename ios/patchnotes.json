@@ -1,5 +1,16 @@
 [
  {
+  "v": "2.85",
+  "date": "2026-11-23",
+  "title": "Km à 0 L/100 + trophées",
+  "notes": [
+   "Nouveau : les km roulés pied levé sans consommer, par trajet et au total (À vie)",
+   "Bulle verte en fin de trajet avec la part du trajet à 0 L/100",
+   "Chaque trophée débloqué s’affiche dans la Dynamic Island",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.84",
   "date": "2026-11-23",
   "title": "Nouveau score éco",
