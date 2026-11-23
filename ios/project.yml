@@ -2,13 +2,16 @@ name: LaMathias
 options:
   bundleIdPrefix: fr.lamathias
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "16.2"
 targets:
   LaMathias:
     type: application
     platform: iOS
     sources:
       - LaMathias
+      - Shared
+    dependencies:
+      - target: LaMathiasWidget
     info:
       path: LaMathias/Info.plist
       properties:
@@ -30,6 +33,8 @@ targets:
         NSCameraUsageDescription: "La caméra sert à scanner les QR codes de l’autoradio."
         NSPhotoLibraryUsageDescription: "Pour choisir une photo de QR code ou une sauvegarde."
         ITSAppUsesNonExemptEncryption: false
+        NSSupportsLiveActivities: true
+        NSSupportsLiveActivitiesFrequentUpdates: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: fr.lamathias.app
@@ -41,3 +46,28 @@ targets:
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGN_IDENTITY: ""
         GENERATE_INFOPLIST_FILE: "NO"
+  LaMathiasWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - LaMathiasWidget
+      - Shared
+    info:
+      path: LaMathiasWidget/Info.plist
+      properties:
+        CFBundleDisplayName: La Mathias
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fr.lamathias.app.widget
+        PRODUCT_NAME: LaMathiasWidget
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
+        GENERATE_INFOPLIST_FILE: "NO"
+        SKIP_INSTALL: "YES"

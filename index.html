@@ -962,7 +962,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.61';
+var APP_V='2.62';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4407,7 +4407,7 @@ var OBD={dev:null,w:null,n:null,buf:'',wait:null,q:Promise.resolve(),ok:false,su
   DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0,hist:[],tab:'gps',cm:'l100',sig:'',trail:[],trT:0,acc:{t0:0,idle:0,cutS:0,cutKm:0},g3d:true},
   ACTK='sandero-actif',OBDK='sandero-obd-dev',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
 function drvSet(){var s={};try{s=JSON.parse(localStorage.getItem('sandero-drv')||'{}')}catch(e){}if(!s.disp)s.disp=1.2;if(!s.k)s.k=1;if(!s.redline)s.redline=5000;if(!s.endMin)s.endMin=5;if(s.auto==null)s.auto=true;return s}
-function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}if(NAT)natPost({op:'set',disp:s.disp,k:s.k,redline:s.redline,endMin:s.endMin})}
+function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}if(NAT)natPost({op:'set',disp:s.disp,k:s.k,redline:s.redline,endMin:s.endMin,price:priceOf(db.snap)||0})}
 /* --- liaison Bluetooth LE (Web Bluetooth : Bluefy sur iPhone, Chrome sur ordinateur) --- */
 OBD.knownName=function(){try{var o=JSON.parse(localStorage.getItem(OBDK)||'null');return o&&navigator.bluetooth&&navigator.bluetooth.getDevices?(o.name||'l’adaptateur'):''}catch(e){return ''}};
 function obdPick(known,silent){
@@ -4933,7 +4933,7 @@ function natPickDraw(){
   el.innerHTML=h;var r=$('#natre');if(r)r.onclick=natScan;
   Array.prototype.forEach.call(el.querySelectorAll('[data-id]'),function(b){b.onclick=function(){natPost({op:'pick',id:b.getAttribute('data-id')});sheetClose();island({icon:'check',tone:'good',title:'Connexion…',sub:b.querySelector('b').textContent,ms:2500,fallback:1})}});
 }
-if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin}});setTimeout(function(){natPost({op:'trips'})},1500)}
+if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500)}
 
 
 /* ---------- 2.61 : écran GPS en direct, avec toute la conso ---------- */

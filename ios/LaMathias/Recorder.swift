@@ -64,7 +64,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         return s
     }
     func setSettings(_ m: [String: Any]) {
-        for k in ["disp", "k", "redline", "endMin"] { if let v = (m[k] as? NSNumber)?.doubleValue, v > 0 { UserDefaults.standard.set(v, forKey: k) } }
+        for k in ["disp", "k", "redline", "endMin", "price"] { if let v = (m[k] as? NSNumber)?.doubleValue, v > 0 { UserDefaults.standard.set(v, forKey: k) } }
     }
 
     func setup() {
@@ -325,7 +325,46 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         let dt = min(5, now.timeIntervalSince(last))
         last = now
         recTick(dt)
+        liveTick()
         if UIApplication.shared.applicationState == .active { pushLive() }
+    }
+
+    // MARK: - Dynamic Island
+
+    func activityState() -> TripAttributes.ContentState? {
+        guard let R = trip else { return nil }
+        let k = settings.k
+        var gear: Int? = nil
+        if let r = d["rpm"], let v = d["speed"], v >= 4, r >= 650 {
+            let ratio = v / (r / 1000)
+            var best = 0, bd = 1e9
+            for (i, g) in Recorder.gearK.enumerated() { let x = abs(log(ratio / g)); if x < bd { bd = x; best = i + 1 } }
+            if bd < 0.22 { gear = best }
+        }
+        let price = UserDefaults.standard.double(forKey: "price")
+        return TripAttributes.ContentState(
+            speed: Int((d["speed"] ?? 0).rounded()),
+            cons: cut ? 0 : d["cons"], lph: d["lph"],
+            avg: R.dist > 0.3 ? R.fuel * k / R.dist * 100 : nil,
+            km: R.dist, minutes: Int(R.dur / 60), cut: cut, gear: gear,
+            cost: price > 0 ? R.fuel * k * price : nil)
+    }
+
+    private func liveTick() {
+        guard let st = activityState() else { return }
+        let la = LiveAct.shared
+        if !la.running, UIApplication.shared.applicationState == .active, let R = trip {
+            la.start(st, since: Date(timeIntervalSince1970: R.t0 / 1000))
+        }
+        la.update(st)
+    }
+
+    private func notifyStart() {
+        if UIApplication.shared.applicationState == .active || LiveAct.shared.running || !LiveAct.shared.enabled { return }
+        let c = UNMutableNotificationContent()
+        c.title = "Trajet démarré"
+        c.body = "Touche ici pour afficher la vitesse et la conso dans la Dynamic Island."
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "trip-start", content: c, trigger: nil))
     }
 
     private func recTick(_ dt: Double) {
@@ -339,6 +378,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
                 trip = Trip()
                 setLoc("best")
                 pushLive()
+                notifyStart()
             }
             return
         }
@@ -398,6 +438,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
 
     func endTrip() {
         guard let R = trip else { return }
+        LiveAct.shared.end(activityState())
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["trip-start"])
         trip = nil
         UserDefaults.standard.removeObject(forKey: "activeTrip")
         if !obd.ready { setLoc("off") } else { setLoc("low") }
