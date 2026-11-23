@@ -202,6 +202,7 @@ button{font:inherit;color:inherit}
 .isl .nr.val small{font-size:11.5px}
 .isl .nr.val b{font-size:27px;line-height:30px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;display:block;font-variant-numeric:tabular-nums}
 .isl .nr.val.long b{font-size:20px;line-height:24px}
+.isl .nr.val b .u{font-size:15px;font-weight:600;letter-spacing:0}
 .isl[data-tone="good"] .nr.val b,.isl[data-tone="good"] .nr.val small{color:#34d17a}
 .isl[data-tone="warn"] .nr.val b,.isl[data-tone="warn"] .nr.val small{color:#ffb020}
 .isl[data-tone="bad"] .nr.val b,.isl[data-tone="bad"] .nr.val small{color:#ff4d4f}
@@ -999,7 +1000,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.80';
+var APP_V='2.81';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1106,7 +1107,11 @@ function islNext(){
   if(sb){var NL=el.querySelector('.nl'),NR=el.querySelector('.nr');
     function nsF(box,b,sm,top){box.textContent='';var B=document.createElement('b'),S=document.createElement('small');B.textContent=b||'';S.textContent=sm||'';if(top){if(sm)box.appendChild(S);box.appendChild(B)}else{if(b)box.appendChild(B);if(sm)box.appendChild(S)}}
     nsF(NL,o.lt,o.ls);NR.className='nr'+(o.right?' val'+(String(o.right).length>7?' long':''):'');
-    if(o.right)nsF(NR,o.right,o.lbl||o.title,true);else nsF(NR,o.title,o.sub)
+    if(o.right){nsF(NR,o.right,o.lbl||o.title,true);var rb=NR.querySelector('b'),mu=/^(.*\d)\s*([^\d\s][^\d]*)$/.exec(String(o.right));
+      /* 2.81 : l'unité (km, L, %) en petit à côté du nombre, et la taille s'ajuste pour ne jamais couper */
+      if(mu){rb.textContent=mu[1];var u=document.createElement('span');u.className='u';u.textContent=' '+mu[2];rb.appendChild(u)}
+      rb.style.fontSize='';requestAnimationFrame(function(){var fs=27;while(rb.scrollWidth>rb.clientWidth+1&&fs>15){fs-=1;rb.style.fontSize=fs+'px'}})}
+    else nsF(NR,o.title,o.sub);
     /* 2.79 : jauge sous la caméra (réservoir…) quand le message a une progression */
     var NG=el.querySelector('.ng'),gi=NG.firstChild,pr=o.progress!=null&&isFinite(o.progress)?Math.max(0,Math.min(1,o.progress)):null;
     NG.classList.toggle('on',pr!=null);gi.style.transition='none';gi.style.width='0';void gi.offsetWidth;gi.style.transition='';

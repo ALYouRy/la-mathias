@@ -1,5 +1,14 @@
 [
  {
+  "v": "2.81",
+  "date": "2026-11-23",
+  "title": "Plus de « k… »",
+  "notes": [
+   "« km » écrit en petit à côté du nombre, jamais coupé",
+   "La taille s’ajuste toute seule si la valeur est longue"
+  ]
+ },
+ {
   "v": "2.80",
   "date": "2026-11-23",
   "title": "Mini graphe du trajet",
