@@ -91,6 +91,15 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         case "islandTest":
             let r = LiveAct.shared.diagnose()
             core.js("window.LMN&&LMN.islTest(" + Core.json(r) + ")")
+        case "share":
+            // sauvegarde : fichier partagé avec la feuille de partage d'iOS (Enregistrer dans Fichiers, AirDrop…)
+            let name = (m["name"] as? String) ?? "la-mathias.json"
+            let data = ((m["data"] as? String) ?? "").data(using: .utf8) ?? Data()
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+            try? data.write(to: url, options: .atomic)
+            let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            vc.popoverPresentationController?.sourceView = view
+            if presentedViewController == nil { present(vc, animated: true) }
         case "gps":
             let vc = GPSViewController()
             vc.range = (m["range"] as? NSNumber)?.doubleValue

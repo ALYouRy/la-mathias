@@ -535,7 +535,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         for (k, v) in d where v.isFinite { dd[k] = v }
         dd["cut"] = cut
         dd["src"] = src
-        var o: [String: Any] = ["st": obd.state, "err": obd.err, "name": obd.savedName, "known": obd.savedId != nil, "can": obd.can, "d": dd, "loc": locAuth, "pending": Store.count()]
+        var o: [String: Any] = ["st": obd.state, "err": obd.err, "name": obd.savedName, "known": obd.savedId != nil, "can": obd.can, "d": dd, "loc": locAuth, "pending": Store.count(), "isl": LiveAct.shared.available]
         if let R = trip { o["rec"] = ["t0": R.t0, "dist": R.dist, "dur": R.dur, "fuel": R.fuel, "P": R.P.count] }
         if let g = gps { o["gps"] = ["la": g.coordinate.latitude, "lo": g.coordinate.longitude, "acc": g.horizontalAccuracy, "crs": g.course, "sp": g.speed >= 0 ? g.speed * 3.6 : -1, "t": g.timestamp.timeIntervalSince1970 * 1000] }
         return o

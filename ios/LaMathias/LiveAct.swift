@@ -14,6 +14,12 @@ final class LiveAct {
         return act != nil
     }
     var enabled: Bool { ActivityAuthorizationInfo().areActivitiesEnabled }
+    /// le module (extension) est-il bien installé ? SideStore peut le retirer.
+    var hasExtension: Bool {
+        guard let u = Bundle.main.builtInPlugInsURL, let l = try? FileManager.default.contentsOfDirectory(atPath: u.path) else { return false }
+        return l.contains { $0.hasSuffix(".appex") }
+    }
+    var available: Bool { enabled && hasExtension }
 
     func start(_ s: TripAttributes.ContentState, since: Date) {
         if act != nil || !enabled { return }

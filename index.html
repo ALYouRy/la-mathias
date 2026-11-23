@@ -963,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.70';
+var APP_V='2.71';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1057,7 +1057,7 @@ var ICO={car:'<path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8
   warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.5"/>',qr:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"/>',
   star:'<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
   wrench:'<path d="M14.5 5.5a4 4 0 0 0-4.9 5.3L4 16.4 7.6 20l5.6-5.6a4 4 0 0 0 5.3-4.9l-2.7 2.7-2.6-.7-.7-2.6z"/>'};
-function island(o){if(typeof NAT!=='undefined'&&NAT){if(SET.nisl===false&&!o.fallback)return;natPost({op:'island',icon:o.icon||'car',title:o.title||'',sub:o.sub||'',right:o.right||'',tone:o.tone||'info',ms:(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1)*1.3,progress:o.progress!=null?o.progress:null});return}if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:''));return}o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext()}
+function island(o){if(typeof NAT!=='undefined'&&NAT&&NATL&&NATL.isl){if(SET.nisl===false&&!o.fallback)return;natPost({op:'island',icon:o.icon||'car',title:o.title||'',sub:o.sub||'',right:o.right||'',tone:o.tone||'info',ms:(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1)*1.3,progress:o.progress!=null?o.progress:null});return}if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:''));return}o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext()}
 function islNext(){
   var o=ISL.q.shift(),el=document.getElementById('isl');if(!o||!el){ISL.busy=false;return}
   ISL.busy=true;
@@ -4164,7 +4164,7 @@ function setHtml(D,L){
     '<div><span>Dernière synchro</span><b>'+(db.snap?ago(db.snap.t):'jamais')+'</b></div></div>'+
     '<div class="sbtns"><button type="button" class="btn" id="sscan">Synchroniser avec l’autoradio</button>'+
     '<button type="button" class="btn ghost" id="sexp">Exporter une sauvegarde</button>'+
-    '<button type="button" class="btn ghost" id="simp">Importer une sauvegarde</button><input type="file" id="sfile" accept=".json,application/json" hidden>'+
+    '<button type="button" class="btn ghost" id="simp">Importer une sauvegarde</button><input type="file" id="sfile" hidden>'+
     (nT?'':'<button type="button" class="btn ghost" id="sdemo">'+(sample?'Quitter le mode exemple':'Voir le mode exemple')+'</button>')+
     '<button type="button" class="btn danger" id="swipe">Effacer les données de ce téléphone</button></div></div>';
   h+='<div class="card sgc"><h2>À propos</h2><div class="det"><div><span>Appli</span><b>La Mathias · iPhone</b></div><div><span>Version</span><b>'+APP_V+'</b></div><div><span>Adresse</span><b style="white-space:normal;text-align:right;font-size:12px">'+esc(location.host+location.pathname)+'</b></div></div>'+
@@ -4184,6 +4184,7 @@ function setWire(){var it=$('#isltest');if(it)it.onclick=function(){NATIT=0;natP
   $('#sexp').onclick=function(){
     var ls={};for(var q=0;q<localStorage.length;q++){var lk=localStorage.key(q);if(/^sandero-/.test(lk)&&lk!=='sandero-phone-1')ls[lk]=localStorage.getItem(lk)}
     var j=JSON.stringify({app:'la-mathias',v:2,t:Date.now(),db:db,set:SET,ent:entLoad(),photos:PHC,ls:ls}),n='la-mathias-'+new Date().toISOString().slice(0,10)+'.json';
+    if(NAT){natPost({op:'share',name:n,data:j});return}
     try{var f=new File([j],n,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Sauvegarde La Mathias'}).catch(function(){});return}}catch(e){}
     var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));a.download=n;document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},1000);
   };
