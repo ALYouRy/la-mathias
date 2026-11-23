@@ -1,5 +1,14 @@
 [
  {
+  "v": "2.78",
+  "date": "2026-11-23",
+  "title": "Vraie Dynamic Island",
+  "notes": [
+   "Même forme que le minuteur de l’iPhone, autour de la caméra",
+   "Icône et litres à gauche, grande valeur à droite, tout centré"
+  ]
+ },
+ {
   "v": "2.77",
   "date": "2026-11-23",
   "title": "Île plus fine et centrée",

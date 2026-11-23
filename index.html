@@ -184,15 +184,30 @@ button{font:inherit;color:inherit}
 .isl.web.big{top:8px}
 .isl.nat,.isl.nat.big{top:calc(env(safe-area-inset-top,50px) + 8px)}
 /* 2.75 : appli iPhone, l'île sort de la vraie Dynamic Island (la barre d'état se cache le temps du message) */
-/* 2.77 : île appli compacte et centrée, contenu juste sous la caméra */
-.isl.natsb{top:11px}
-.isl.natsb.big{top:11px;height:86px;border-radius:38px;width:min(316px,calc(100vw - 40px));margin-left:calc(min(316px,calc(100vw - 40px)) / -2);align-items:flex-end;justify-content:center;padding:0 20px 12px;box-sizing:border-box}
-.isl.natsb.big .ic{width:28px;height:28px;margin:0 10px 1px 0}
-.isl.natsb.big .ic svg{width:16px;height:16px}
-.isl.natsb.big .tx{flex:0 1 auto;margin:0}
-.isl.natsb.big .tx b{font-size:14px}
-.isl.natsb.big .tx small{font-size:11.5px}
-.isl.natsb.big .rt{margin:0 0 7px 12px;font-size:14px}
+/* 2.78 : île appli façon vraie Dynamic Island (comme le minuteur iOS) : grande pilule autour de la caméra,
+   icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
+.isl .nl,.isl .nr{display:none}
+.isl.natsb{top:11px;--sw:min(380px,calc(100vw - 14px));--side:calc((var(--sw) - 126px) / 2)}
+.isl.natsb.big{top:4px;height:78px;border-radius:39px;width:var(--sw);margin-left:calc(var(--sw) / -2)}
+.isl.natsb.big .tx,.isl.natsb.big .rt{display:none}
+.isl.natsb.big .ic{position:absolute;left:18px;top:21px;width:36px;height:36px;margin:0}
+.isl.natsb.big .ic svg{width:19px;height:19px}
+.isl.natsb.big .nl,.isl.natsb.big .nr{display:flex;flex-direction:column;justify-content:center;position:absolute;top:0;bottom:0;min-width:0;animation:nsIn .35s ease .15s both}
+.isl.natsb.big .nl{left:61px;width:calc(var(--side) - 64px)}
+.isl.natsb.big .nr{right:22px;width:calc(var(--side) - 30px);text-align:right}
+.isl .nl b,.isl .nr b{display:block;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.isl .nl small,.isl .nr small{display:block;color:rgba(235,235,245,.6);font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.isl .nl b{font-size:14.5px;line-height:18px}
+.isl .nr b{font-size:13.5px;line-height:16px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.isl .nr.val small{font-size:11.5px}
+.isl .nr.val b{font-size:27px;line-height:30px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;display:block;font-variant-numeric:tabular-nums}
+.isl .nr.val.long b{font-size:20px;line-height:24px}
+.isl[data-tone="good"] .nr.val b,.isl[data-tone="good"] .nr.val small{color:#34d17a}
+.isl[data-tone="warn"] .nr.val b,.isl[data-tone="warn"] .nr.val small{color:#ffb020}
+.isl[data-tone="bad"] .nr.val b,.isl[data-tone="bad"] .nr.val small{color:#ff4d4f}
+.isl[data-tone="info"] .nr.val b,.isl[data-tone="info"] .nr.val small{color:#00e5ff}
+.isl .nr.val small{opacity:.85}
+@keyframes nsIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 .isl.glue.big{top:11px;width:232px;margin-left:-116px;height:84px;border-radius:34px}
 .isl.glue .ic{width:36px;height:36px;margin-left:12px}.isl.glue svg{width:20px;height:20px}
 .isl.glue .tx{margin:0 6px 0 10px}.isl.glue .tx b{font-size:14px}.isl.glue .tx small{font-size:11.5px}.isl.glue .rt{margin-right:14px;font-size:13.5px}
@@ -935,7 +950,7 @@ button{font:inherit;color:inherit}
 <div id="main"></div>
 <div class="tabmap hide" id="tabmap"><div id="tmc"></div><div class="tm-leg" id="tmleg"></div><button type="button" class="tm-3d" id="tm3d">3D</button><div class="tm-info hide" id="tminfo"></div></div><div class="fogtab hide" id="fogtab"></div>
 
-<div class="topbar"></div><div class="isl" id="isl" role="status" aria-live="polite"><div class="ic"></div><div class="tx"><b></b><small></small></div><div class="rt"></div></div>
+<div class="topbar"></div><div class="isl" id="isl" role="status" aria-live="polite"><div class="ic"></div><div class="tx"><b></b><small></small></div><div class="rt"></div><div class="nl"></div><div class="nr"></div></div>
 <nav class="tabs hide" id="tabs" role="tablist">
 <button type="button" role="tab" data-t="car"><svg viewBox="0 0 24 24"><path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8l2 5v3a1 1 0 0 1-1 1h-1M6 17H5a1 1 0 0 1-1-1"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/></svg>Voiture</button>
 <button type="button" role="tab" data-t="bilan"><svg viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg>Bilan</button>
@@ -973,7 +988,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.77';
+var APP_V='2.78';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1077,6 +1092,10 @@ function islNext(){
   el.setAttribute('data-tone',o.tone||'info');
   var ic=el.querySelector('.ic');ic.className='ic'+(o.pop?' pop':'');ic.innerHTML='<svg viewBox="0 0 24 24">'+(ICO[o.icon]||ICO.car)+'</svg>';
   el.querySelector('.tx b').textContent=o.title||'';el.querySelector('.tx small').textContent=o.sub||'';el.querySelector('.rt').textContent=o.right||'';
+  if(sb){var NL=el.querySelector('.nl'),NR=el.querySelector('.nr');
+    function nsF(box,b,sm,top){box.textContent='';var B=document.createElement('b'),S=document.createElement('small');B.textContent=b||'';S.textContent=sm||'';if(top){if(sm)box.appendChild(S);box.appendChild(B)}else{if(b)box.appendChild(B);if(sm)box.appendChild(S)}}
+    nsF(NL,o.lt,o.ls);NR.className='nr'+(o.right?' val'+(String(o.right).length>7?' long':''):'');
+    if(o.right)nsF(NR,o.right,o.lbl||o.title,true);else nsF(NR,o.title,o.sub)}
   el.classList.remove('big');el.classList.add('on');
   requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('big')})});
   clearTimeout(ISL.timer);ISL.timer=setTimeout(islClose,o.ms||2800);
@@ -5118,9 +5137,9 @@ function welcomeIsland(){
   /* appli iPhone : au démarrage, la vraie Dynamic Island affiche l'essence qui reste et l'autonomie, puis le dernier trajet */
   if(typeof NAT!=='undefined'&&NAT&&!sample){var FI=null;try{FI=fuelInfo()}catch(e){}
     if(SET.welcome===false){}else if(FI&&FI.rem!=null){var rg=FI.range!=null?Math.round(FI.range/5)*5:null,low=FI.pct!=null&&FI.pct<.15;
-      island({icon:'fuel',tone:low?'warn':'good',title:(low?'Réservoir bas · ':'Essence : ')+f1(FI.rem)+' L',sub:(low?'Pense au plein · ':'')+(rg!=null?'Autonomie ':'')+(FI.meas?'niveau mesuré':'estimée'),right:rg!=null?fi(rg)+' km':Math.round((FI.pct||0)*100)+' %',progress:FI.pct,ms:6000,fallback:1})}
+      island({lt:f1(FI.rem)+' L',ls:low?'réservoir bas':'essence',lbl:rg!=null?'autonomie':'réservoir',icon:'fuel',tone:low?'warn':'good',title:(low?'Réservoir bas · ':'Essence : ')+f1(FI.rem)+' L',sub:(low?'Pense au plein · ':'')+(rg!=null?'Autonomie ':'')+(FI.meas?'niveau mesuré':'estimée'),right:rg!=null?fi(rg)+' km':Math.round((FI.pct||0)*100)+' %',progress:FI.pct,ms:6000,fallback:1})}
     else if(SET.welcome)island({icon:'fuel',tone:'info',title:'La Mathias',sub:'Fais « Plein / niveau » dans Conduite pour suivre ton essence',ms:4500});
-    var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):'',ms:4500})}
+    var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({lt:f1(lt.dist)+' km',ls:dur(lt.dur),lbl:c!=null?'L/100':'score',icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):String(lt.eco),ms:4500})}
     var H0=D.health;
     if(SET.alerts&&H0&&H0.dtc&&H0.dtc.length)island({fallback:1,icon:'warn',tone:'bad',title:'Voyant moteur',sub:H0.dtc.join(', '),right:H0.dtc.length+' code'+(H0.dtc.length>1?'s':''),ms:5000});
     if(SET.alerts&&H0&&H0.rest!=null&&H0.rest<12.2)island({fallback:1,icon:'battery',tone:'warn',title:'Batterie faible',sub:f1(H0.rest)+' V moteur arrêté',ms:4500});
