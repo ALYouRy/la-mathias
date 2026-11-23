@@ -963,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.69';
+var APP_V='2.70';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4150,7 +4150,7 @@ function setHtml(D,L){
     segRow('alerts','Alertes','Réservoir bas, voyant moteur et entretien en retard.',ONOFF)+
     (typeof NAT!=='undefined'&&NAT?'':segRow('islPos','Position','« Collée » s’ouvre depuis la Dynamic Island. « En dessous » la fait descendre sous l’heure et la batterie.',[['glue','Collée'],['below','En dessous']]))+
     segRow('islDur','Durée d’affichage','',[['s','Courte'],['m','Normale'],['l','Longue']])+(typeof NAT!=='undefined'&&NAT?'<div class="sbtns"><button type="button" class="btn ghost" id="isltest">Tester la Dynamic Island</button></div>':'')+
-    '<div class="sbtns"><button type="button" class="btn ghost" id="islt">Tester l’animation</button></div></div>';
+    (typeof NAT!=='undefined'&&NAT?'':'<div class="sbtns"><button type="button" class="btn ghost" id="islt">Tester l’animation</button></div>')+'</div>';
   h+='<div class="card sgc"><h2>Calculs</h2>'+
     '<div class="srow"><div class="sl">Prix du carburant</div><p class="sh">Laisse vide pour utiliser celui de l’autoradio'+(S&&S.price?' ('+f2(S.price)+' €/L)':'')+'.</p><div class="sin"><input id="sprice" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Auto" value="'+(SET.price>0?SET.price:'')+'"><span>€/L</span></div></div>'+
     segRow('low','Alerte réservoir bas','Sous ce niveau, la jauge passe en orange et l’alerte s’affiche.',[[10,'10 %'],[15,'15 %'],[20,'20 %'],[25,'25 %']])+
@@ -4171,7 +4171,7 @@ function setHtml(D,L){
     '<div class="sbtns"><button type="button" class="btn ghost" id="sreset">Remettre les réglages par défaut</button></div></div>';
   return h;
 }
-function setWire(){var it=$('#isltest');if(it)it.onclick=function(){natPost({op:'islandTest'})};
+function setWire(){var it=$('#isltest');if(it)it.onclick=function(){NATIT=0;natPost({op:'islandTest'});setTimeout(function(){if(!NATIT)sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">La partie iPhone de La Mathias n’est pas à jour. Ouvre <b>SideStore</b> › <b>My Apps</b> et touche <b>Update</b> sur La Mathias (version 1.0.15 ou plus), en gardant les extensions si on te le demande. Puis réessaie.</p>')},2500)};
   Array.prototype.forEach.call(document.querySelectorAll('.seg button[data-k]'),function(b){b.onclick=function(){
     var k=b.getAttribute('data-k'),v=b.getAttribute('data-v'),d=SDEF[k];
     SET[k]=typeof d==='boolean'?v==='true':typeof d==='number'?+v:v;if(k==='accent')SET.harm='';setSave();
@@ -4890,7 +4890,7 @@ function tyreSheet(){
 
 
 /* ---------- 2.57 : appli iPhone (SideStore) — l'OBD et le GPS tournent dans l'appli, même téléphone verrouillé ---------- */
-var NAT=!!(window.LM_NATIVE&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lm),NATL=null,NATCB={},NATID=0,NATF=null,NATB=0;
+var NATIT=0,NAT=!!(window.LM_NATIVE&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lm),NATL=null,NATCB={},NATID=0,NATF=null,NATB=0;
 function natPost(o){try{window.webkit.messageHandlers.lm.postMessage(o)}catch(e){}}
 window.LMN={
   live:function(o){NATL=o;natLive(o)},
@@ -4898,7 +4898,7 @@ window.LMN={
   res:function(id,a){var f=NATCB[id];delete NATCB[id];if(f)f(a?a[0]:null)},
   tripsReady:function(){natPost({op:'trips'})},
   trips:function(L){natImport(L||[])},
-  islTest:function(o){var t=!o?'Pas de réponse de l’appli.':!o.enabled?'« Activités en direct » est désactivé pour La Mathias : Réglages › Apps › La Mathias › Activités en direct.':!o.ext?'Le module Dynamic Island n’est pas installé : SideStore l’a retiré. Réinstalle La Mathias dans SideStore en gardant les extensions (« Keep »).':o.ok?'Test envoyé : regarde la Dynamic Island (8 s).':'Refusé par iOS : '+(o.err||'?');sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">'+esc(t)+'</p><p class="note">Détails : activées '+(o&&o.enabled?'oui':'non')+' · module '+esc(o&&o.ext||'aucun')+' · demande '+(o&&o.ok?'acceptée':'refusée')+(o&&o.err?' · '+esc(o.err):'')+'</p>')}
+  islTest:function(o){NATIT=1;var t=!o?'Pas de réponse de l’appli.':!o.enabled?'« Activités en direct » est désactivé pour La Mathias : Réglages › Apps › La Mathias › Activités en direct.':!o.ext?'Le module Dynamic Island n’est pas installé : SideStore l’a retiré. Réinstalle La Mathias dans SideStore en gardant les extensions (« Keep »).':o.ok?'Test envoyé : regarde la Dynamic Island (8 s).':'Refusé par iOS : '+(o.err||'?');sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">'+esc(t)+'</p><p class="note">Détails : activées '+(o&&o.enabled?'oui':'non')+' · module '+esc(o&&o.ext||'aucun')+' · demande '+(o&&o.ok?'acceptée':'refusée')+(o&&o.err?' · '+esc(o.err):'')+'</p>')}
 };
 function natLive(o){
   var was=OBD.ok;OBD.ok=o.st==='ok';OBD.st=o.st;OBD.can=!!o.can;OBD.err=o.st==='ok'?'':(o.err||'');OBD.dev=o.name?{name:o.name}:null;
