@@ -187,6 +187,13 @@ button{font:inherit;color:inherit}
 /* 2.78 : île appli façon vraie Dynamic Island (comme le minuteur iOS) : grande pilule autour de la caméra,
    icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
 .isl .nl,.isl .nr{display:none}
+.eco[data-t]{cursor:pointer}
+.sheet.ecotop{z-index:66}
+.ecs-big{text-align:center;margin:4px 0 16px}.ecs-big b{font-size:54px;font-weight:800;letter-spacing:-.03em}.ecs-big u{text-decoration:none;opacity:.55;font-size:18px;margin-left:4px}
+.ecs-r{margin:0 0 14px}.ecs-h{display:flex;justify-content:space-between;align-items:baseline}.ecs-h b{font-size:15px}.ecs-h span{font-size:13px;opacity:.7;font-variant-numeric:tabular-nums}
+.ecs-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.08);margin:6px 0 5px;overflow:hidden}.ecs-bar i{display:block;height:100%;border-radius:4px;background:#34d17a}
+.ecs-bar i[data-s="warn"]{background:#ffb020}.ecs-bar i[data-s="bad"]{background:#ff4d4f}
+.ecs-r small{font-size:12.5px;opacity:.65}.ecs-n{font-size:12.5px;opacity:.6;margin:10px 0 0}
 .isl.natsb{top:11px;--sw:min(380px,calc(100vw - 14px));--side:calc((var(--sw) - 126px) / 2)}
 .isl.natsb.big{top:4px;height:78px;border-radius:39px;width:var(--sw);margin-left:calc(var(--sw) / -2)}
 .isl.natsb.big .tx,.isl.natsb.big .rt{display:none}
@@ -1000,7 +1007,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.83';
+var APP_V='2.84';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -2657,7 +2664,7 @@ function maintCard(){
 function mtWire(){var a=$('#mtadd');if(a)a.onclick=function(){mtForm(null)};var b=$('#mtall');if(b)b.onclick=mtList;
   Array.prototype.forEach.call(document.querySelectorAll('.mtc2 [data-me]'),function(x){x.onclick=function(){mtForm(x.getAttribute('data-me'))}})}
 function sheetOpen(title,html){var S=$('#sheet');S.innerHTML='<div class="sh-hd"><b>'+title+'</b><button type="button" class="mapx" id="shx" aria-label="Fermer">✕</button></div><div class="sh-c">'+html+'</div>';S.classList.remove('hide');document.body.style.overflow='hidden';$('#shx').onclick=sheetClose;S.querySelector('.sh-c').scrollTop=0}
-function sheetClose(){if(typeof FICM!=='undefined'&&FICM){try{FICM.remove()}catch(e){}FICM=null}$('#sheet').classList.add('hide');$('#sheet').innerHTML='';document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
+function sheetClose(){$('#sheet').classList.remove('ecotop');if(typeof FICM!=='undefined'&&FICM){try{FICM.remove()}catch(e){}FICM=null}$('#sheet').classList.add('hide');$('#sheet').innerHTML='';document.body.style.overflow='';var y=window.scrollY;render();window.scrollTo(0,y)}
 function mtList(){
   var E=entLoad().slice().sort(function(a,b){return Date.parse(b.d)-Date.parse(a.d)}),Y={},T={},h='',O=odo();
   E.forEach(function(e){var y=new Date(e.d).getFullYear();(Y[y]=Y[y]||[]).push(e);var nm=entName(e);T[nm]=(T[nm]||0)+(e.prix||0)});
@@ -3152,7 +3159,40 @@ function harmRow(){
 function harmWire(){Array.prototype.forEach.call(document.querySelectorAll('[data-hm]'),function(b){b.onclick=function(){var k=b.getAttribute('data-hm');SET.harm=SET.harm===k?'':k;if(SET.harm)SET.mapStyle=HARM[k][4];setSave();var y=window.scrollY;render();window.scrollTo(0,y)}})}
 /* feuille : symbole du score éco */
 var ECOI='<svg class="ecoi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15"/><path d="M5 19c3-4 6-7 10-9"/></svg>';
-function ecoPill(v){return '<span class="eco" data-s="'+eState(v)+'" title="Score éco">'+ECOI+v+'</span>'}
+function ecoPill(v,r){return '<span class="eco" data-s="'+eState(v)+'" title="Score éco"'+(r&&r.ecoP?' data-t="'+r.t0+'" role="button" tabindex="0"':'')+'>'+ECOI+v+'</span>'}
+/* ---------- 2.84 : nouveau score éco ----------
+   Avant : les à-coups étaient comptés sur des écarts de 1 km/h toutes les 0,15 s (bruit du compteur) → score faux.
+   Maintenant : accélérations/freinages mesurés sur 2 à 5 s, et le score combine 4 choses :
+   fluidité 40 pts · conso par rapport au type de trajet 35 pts · régime moteur 15 pts · ralenti 10 pts (sans OBD : fluidité + ralenti seulement) */
+function ecoEvents(v,t){var hb=0,ha=0,inB=false,inA=false,n=v.length;
+  for(var i=0;i<n;i++){if(v[i]==null)continue;var s=0,j=i;while(j+1<n&&s<2){j++;s+=t[j]||0}if(s<1.5||s>5||v[j]==null)continue;
+    var a=(v[j]-v[i])/s;/* km/h par seconde */
+    if(a<=-11){if(!inB){hb++;inB=true}}else if(a>-6)inB=false;
+    if(a>=8.5){if(!inA){ha++;inA=true}}else if(a<4.5)inA=false}
+  return {hb:hb,ha:ha}}
+function ecoExp(v){v=Math.max(5,v||30);return 5.3+80/(v+10)+Math.max(0,v-80)*.04}
+function ecoCalc(r){
+  var km=Math.max(r.dist||0,.1),drive=r.drive||Math.max(1,(r.dur||0)-(r.idle||0)),vav=km/(drive/3600),obd=r.meas===true;
+  var ev=(r.hard||0)*1.3+(r.accel||0),E=ev*10/Math.max(km,4),fl=40*Math.exp(-E/9);
+  var parts=[{k:'fl',l:'Fluidité',max:40,p:fl,txt:(r.hard||0)+' freinage'+((r.hard||0)>1?'s':'')+' fort'+((r.hard||0)>1?'s':'')+' · '+(r.accel||0)+' accélération'+((r.accel||0)>1?'s':'')+' forte'+((r.accel||0)>1?'s':'')}];
+  var idl=r.dur>0?(r.idle||0)/r.dur:0,ip=10*Math.max(0,Math.min(1,(0.45-idl)/0.33));
+  if(obd&&r.fuel>0&&km>=.5){var c=r.fuel/km*100,ex=ecoExp(vav),q=c/ex,cp=35*Math.max(0,Math.min(1,(1.5-q)/0.6));
+    parts.push({k:'co',l:'Conso',max:35,p:cp,txt:f1(c)+' L/100 · attendu ≈ '+f1(ex)+' à '+Math.round(vav)+' km/h de moyenne'});
+    var rp=r.rpm||0,rr=rp?15*Math.max(0,Math.min(1,(3000-rp)/1000)):10;parts.push({k:'rp',l:'Régime',max:15,p:rr,txt:rp?'≈ '+fi(rp)+' tr/min en moyenne':'régime inconnu'})}
+  parts.push({k:'id',l:'Ralenti',max:10,p:ip,txt:Math.round(idl*100)+' % du temps à l’arrêt moteur tournant'});
+  var mx=0,tot=0;parts.forEach(function(x){mx+=x.max;tot+=x.p});var sc=Math.round(tot/mx*100)-(r.over||0)*4;
+  return {score:Math.max(0,Math.min(100,sc)),parts:parts,over:r.over||0}}
+function ecoSheet(t0){var r=data().trips[t0];if(!r)return;var E=ecoCalc(r);
+  var h='<div class="ecs"><div class="ecs-big"><b>'+E.score+'</b><u>/100</u></div>'+E.parts.map(function(x){var pc=Math.round(x.p/x.max*100);
+    return '<div class="ecs-r"><div class="ecs-h"><b>'+x.l+'</b><span>'+Math.round(x.p)+' / '+x.max+'</span></div><div class="ecs-bar"><i data-s="'+eState(pc)+'" style="width:'+pc+'%"></i></div><small>'+x.txt+'</small></div>'}).join('')+
+    (E.over?'<p class="ecs-n">−'+(E.over*4)+' : '+E.over+' passage'+(E.over>1?'s':'')+' dans la zone rouge</p>':'')+
+    '<p class="ecs-n">Le score compare ta conso à ce qu’une Sandero consomme normalement au même rythme (ville, route…), donc un trajet en ville peut avoir un bon score.</p></div>';
+  sheetOpen('Score éco',h);$('#sheet').classList.add('ecotop')}
+document.addEventListener('click',function(e){var p=e.target.closest&&e.target.closest('.eco[data-t]');if(!p)return;e.stopPropagation();e.preventDefault();ecoSheet(+p.getAttribute('data-t'))},true);
+/* recalcule les trajets enregistrés par l'iPhone avec la nouvelle méthode (une seule fois) */
+function ecoMigrate(){var D=db,ch=false;Object.keys(D.trips||{}).forEach(function(k){var r=D.trips[k];if(!r||r.src!=='iphone'||r.ecoP)return;
+  var De=null;try{var ds=D.details&&D.details[r.t0];if(ds){var L=ds.split(','),f=function(x){return (x||'').split('.').map(function(v){var n=v===''?null:parseInt(v,36);return n==null||isNaN(n)?null:n})};De={v:f(L[1]),t:f(L[2])}}}catch(e){}if(De&&De.v&&De.v.length>3&&De.t){var ev=ecoEvents(De.v,De.t);r.hard=ev.hb;r.accel=ev.ha}
+  r.eco=ecoCalc(r).score;r.ecoP=1;ch=true});if(ch)save()}
 /* ---------- 2.30 : rétrospective du mois en 3D néon ---------- */
 var RT={map:null,raf:0,t:null,i:0,n:0,S:[],o:null,phase:0,ms:4600};
 var RCOL=['#00e5ff','#ff3fd0','#b26bff','#3ad6ff','#ff7ae6','#7c6bff'];
@@ -3992,7 +4032,7 @@ function tripRevealShow(o,el){
     '<div class="trv-km"><b class="cu" data-v="'+r.dist+'" data-f="1">'+f1(r.dist)+'</b><u>km</u></div>'+
     '<div class="trv-st"><span><b>'+dur(r.dur)+'</b><small>durée</small></span>'+
     (c!=null?'<span><b style="color:'+consoCol(c)+'">'+f1(c)+'</b><small>L/100'+(r.meas===true?' · mesurée':r.meas===false?' · estimée':'')+'</small></span>':'')+
-    '<span><b>'+ecoPill(r.eco)+'</b><small>score éco</small></span><span><b>'+f2(r.fuel*tPrice(r,pr))+' €</b><small>coût</small></span></div>'+
+    '<span><b>'+ecoPill(r.eco,r)+'</b><small>score éco</small></span><span><b>'+f2(r.fuel*tPrice(r,pr))+' €</b><small>coût</small></span></div>'+
     (V?'<p class="trv-v '+V[0]+'">'+(V[0]==='rec'?'🏁 ':'')+V[1]+'</p>':'')+
     (o.more>0?'<p class="trv-more">+ '+o.more+' autre'+(o.more>1?'s':'')+' trajet'+(o.more>1?'s':'')+' reçu'+(o.more>1?'s':'')+'</p>':'')+
     '<div class="trv-b">'+(P?'<button type="button" class="btn" id="trvgo">Voir le trajet</button>':'')+'<button type="button" class="btn ghost" id="trvx">Fermer</button></div></div>';
@@ -4058,7 +4098,7 @@ function render(){
   /* dernier trajet (onglet Voiture) */
   if(L.length){
     var lr=L[0],ldt=new Date(lr.t0),lcons=lr.dist>.5&&lr.fuel>0?f1(lr.fuel/lr.dist*100)+' L/100':'–';
-    h+='<div class="card lt"><h2>Dernier trajet</h2><div class="t1" style="display:flex;justify-content:space-between;align-items:center"><b>'+dayLabel(ldt)+' · '+HF.format(ldt)+(lr.demo?'<span class="ptag dm">DÉMO</span>':'')+'</b>'+ecoPill(lr.eco)+'</div>'+
+    h+='<div class="card lt"><h2>Dernier trajet</h2><div class="t1" style="display:flex;justify-content:space-between;align-items:center"><b>'+dayLabel(ldt)+' · '+HF.format(ldt)+(lr.demo?'<span class="ptag dm">DÉMO</span>':'')+'</b>'+ecoPill(lr.eco,lr)+'</div>'+
       '<div class="sub" style="border:0;padding-top:6px"><span><b>'+f1(lr.dist)+'</b> km</span><span><b>'+dur(lr.dur)+'</b></span><span><b>'+lcons+'</b></span><span><b>'+f2(lr.fuel*priceOf(S))+'</b> €</span></div>'+(trackOf(lr)?mapBtn(lr.t0,trackOf(lr)):'')+'</div>';
   }
   h+=parkCard();
@@ -4129,7 +4169,7 @@ function render(){
     if(dk!==lastDay){lastDay=dk;h+='<div class="day">'+dayLabel(dt)+'</div>'}
     var cons=r.dist>.5&&r.fuel>0?f1(r.fuel/r.dist*100)+' L/100':'–';
     var P=trackOf(r);
-    h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b>'+ecoPill(r.eco)+'</div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+(r.meas===true?'<i class="mb ok">mesurée</i>':r.meas===false?'<i class="mb">estimée</i>':'')+'</span><span>'+f2(r.fuel*tPrice(r,price))+' €</span>'+(r.demo?'<span class="ptag dm">DÉMO</span>':'')+(P?'<span class="tk-on">• tracé</span>':'')+(isPro(r)?'<span class="ptag">PRO</span>':tagOf(r)==='perso'?'<span class="ptag ps">PERSO</span>':'')+'</div>'+
+    h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b>'+ecoPill(r.eco,r)+'</div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+(r.meas===true?'<i class="mb ok">mesurée</i>':r.meas===false?'<i class="mb">estimée</i>':'')+'</span><span>'+f2(r.fuel*tPrice(r,price))+' €</span>'+(r.demo?'<span class="ptag dm">DÉMO</span>':'')+(P?'<span class="tk-on">• tracé</span>':'')+(isPro(r)?'<span class="ptag">PRO</span>':tagOf(r)==='perso'?'<span class="ptag ps">PERSO</span>':'')+'</div>'+
       '<div class="more det">'+(sample?'':'<div class="pps"><span>Type de trajet</span><span class="seg"><button type="button" data-pp="'+r.t0+'" data-v="perso" aria-pressed="'+!isPro(r)+'">Perso</button><button type="button" data-pp="'+r.t0+'" data-v="pro" aria-pressed="'+isPro(r)+'">Pro</button></span></div>')+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div>'+tripExtra(r,price)+'</div></div>';
   });
   if(L.length>SET.nTrips)h+='<p class="note" style="text-align:center">Les '+SET.nTrips+' derniers trajets sont affichés (modifiable dans Réglages).</p>';
@@ -4641,11 +4681,12 @@ function recEnd(){if(DRV.mode==='nat'){natPost({op:'end'});return}var R=DRV.rec;
 function recSave(R,recovered){
   if(R.dist<0.2||R.dur<30)return false;
   var D=db,obd=R.src==='obd',km=Math.max(R.dist,5),rpmAvg=R.rpmN?R.rpmSum/R.rpmN:0;
-  var eco=Math.round(Math.max(0,Math.min(100,100-(R.hard*6+R.accel*3+R.over*8)*10/km-(obd?Math.max(0,rpmAvg-2300)/15:0))));
+  var EV=(R.P&&R.P.length>3)?ecoEvents(R.P.map(function(p){return p[3]}),R.P.map(function(p){return p[4]||0})):null;if(EV){R.hard=EV.hb;R.accel=EV.ha}var eco=0;
   var pr=priceOf(D.snap)||(D.snap&&D.snap.price)||null,t0=Math.round(R.t0/1000)*1000;
   D.trips[t0]={t0:t0,dur:Math.round(R.dur),dist:Math.round(R.dist*10)/10,fuel:Math.round(R.fuel*(drvSet().k||1)*100)/100,vmax:Math.round(R.vmax),hard:R.hard,accel:R.accel,over:R.over,idle:Math.round(R.idle),eco:eco,rpm:Math.round(rpmAvg/10)*10,fav:null,
     drive:Math.round(R.mov),stops:R.stops,brakes:R.brakes,rpmMax:R.rpmMax?Math.round(R.rpmMax/10)*10:null,rpmMin:R.rpmMin<99999?Math.round(R.rpmMin/10)*10:null,tMax:R.tN?R.tMax:null,tAvg:R.tN?Math.round(R.tSum/R.tN):null,
     batMin:R.vN?Math.round(R.vMin*10)/10:null,batAvg:R.vN?Math.round(R.vSum/R.vN*10)/10:null,load:R.lN?Math.round(R.load/R.lN):null,price:pr,meas:obd,src:'iphone'};
+  D.trips[t0].eco=ecoCalc(D.trips[t0]).score;D.trips[t0].ecoP=1;
   /* tracé : même format que les QR (1e-4°, base36 signée, cumulé) + détail CONSO,VITESSE,TEMPS */
   var P=deSpike(R.P||[]);if(P.length>=2){
     /* 2.60 : tracé précis au mètre (simplifié à ~2 m, 600 points max) */
@@ -5164,7 +5205,7 @@ $('#mapfit').onclick=function(){if(!MAP||!window.maplibregl)return;if(MODE==='sp
 $('#sclose').onclick=function(){var part=SC.any&&scLeft()>0,d=SC.total-scLeft(),t=SC.total;stopScan();if(part)toast('Synchro partielle : '+d+' code'+(d>1?'s':'')+' sur '+t+'. Relance-la pour finir.',4000)};
 
 /* ---------- démarrage ---------- */
-load();
+load();try{ecoMigrate()}catch(e){}
 function fromHash(){
   if(location.hash.indexOf('#s=')!==0)return;
   var r=null;try{r=importFromUrl(location.href);island({fallback:1,icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total:'Depuis l’appli, utilise plutôt le bouton Scanner',right:r.total>1?r.page+'/'+r.total:'',ms:4200})}catch(e){toast('Données illisibles.')}

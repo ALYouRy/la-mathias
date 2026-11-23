@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.84",
+  "date": "2026-11-23",
+  "title": "Nouveau score éco",
+  "notes": [
+   "Plus de faux freinages : les à-coups sont mesurés sur 2 à 5 secondes",
+   "Score sur 4 critères : fluidité, conso, régime, ralenti",
+   "Touche le score d’un trajet pour voir le détail"
+  ]
+ },
+ {
   "v": "2.83",
   "date": "2026-11-23",
   "title": "Tracés sans crochets",
