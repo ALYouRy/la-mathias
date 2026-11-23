@@ -88,6 +88,9 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             let st = InfoAttributes.ContentState(icon: (m["icon"] as? String) ?? "car", title: (m["title"] as? String) ?? "", sub: (m["sub"] as? String) ?? "",
                                                  right: (m["right"] as? String) ?? "", tone: (m["tone"] as? String) ?? "info", progress: (m["progress"] as? NSNumber)?.doubleValue)
             LiveAct.shared.info(st, seconds: ((m["ms"] as? NSNumber)?.doubleValue ?? 3000) / 1000)
+        case "islandTest":
+            let r = LiveAct.shared.diagnose()
+            core.js("window.LMN&&LMN.islTest(" + Core.json(r) + ")")
         case "gps":
             let vc = GPSViewController()
             vc.range = (m["range"] as? NSNumber)?.doubleValue

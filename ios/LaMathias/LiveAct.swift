@@ -44,6 +44,7 @@ final class LiveAct {
     private var infoQueue: [(InfoAttributes.ContentState, Double)] = []
     private var infoAct: Activity<InfoAttributes>?
     private var infoBusy = false
+    var lastErr = ""
 
     func info(_ s: InfoAttributes.ContentState, seconds: Double) {
         if !enabled { return }
@@ -56,12 +57,35 @@ final class LiveAct {
         infoBusy = true
         let (s, sec) = infoQueue.removeFirst()
         for a in Activity<InfoAttributes>.activities { Task { await a.end(nil, dismissalPolicy: .immediate) } }
-        infoAct = try? Activity.request(attributes: InfoAttributes(kind: s.icon), content: .init(state: s, staleDate: nil), pushType: nil)
+        do { infoAct = try Activity.request(attributes: InfoAttributes(kind: s.icon), content: .init(state: s, staleDate: nil), pushType: nil); lastErr = "" }
+        catch { infoAct = nil; lastErr = String(describing: error) }
         DispatchQueue.main.asyncAfter(deadline: .now() + sec) { [weak self] in
             guard let self = self else { return }
             if let a = self.infoAct { Task { await a.end(nil, dismissalPolicy: .immediate) } }
             self.infoAct = nil
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.nextInfo() }
         }
+    }
+
+    // MARK: - Diagnostic (bouton « Tester » dans Réglages)
+
+    func diagnose() -> [String: Any] {
+        var o: [String: Any] = [:]
+        let info = ActivityAuthorizationInfo()
+        o["enabled"] = info.areActivitiesEnabled
+        let plug = Bundle.main.builtInPlugInsURL
+        let exts = (try? FileManager.default.contentsOfDirectory(atPath: plug?.path ?? "")) ?? []
+        o["ext"] = exts.joined(separator: ",")
+        let s = InfoAttributes.ContentState(icon: "check", title: "Test Dynamic Island", sub: "Si tu vois ce message, tout marche", right: "OK", tone: "good", progress: 0.7)
+        do {
+            let a = try Activity.request(attributes: InfoAttributes(kind: "test"), content: .init(state: s, staleDate: nil), pushType: nil)
+            o["ok"] = true
+            o["count"] = Activity<InfoAttributes>.activities.count
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8) { Task { await a.end(nil, dismissalPolicy: .immediate) } }
+        } catch {
+            o["ok"] = false
+            o["err"] = String(describing: error)
+        }
+        return o
     }
 }
