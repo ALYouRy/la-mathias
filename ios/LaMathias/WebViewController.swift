@@ -9,6 +9,10 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
     private let errorLabel = UILabel()
 
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
+    /// barre d'état masquée pendant que l'île de l'appli est ouverte (comme la vraie Dynamic Island qui prend la place de l'heure)
+    private var sbHidden = false
+    override var prefersStatusBarHidden: Bool { sbHidden }
+    override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation { .fade }
 
     override func loadView() {
         let cfg = WKWebViewConfiguration()
@@ -17,7 +21,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         cfg.mediaTypesRequiringUserActionForPlayback = []
         let ucc = WKUserContentController()
         ucc.add(WeakHandler(self), name: "lm")
-        ucc.addUserScript(WKUserScript(source: "window.LM_NATIVE={v:1,platform:'ios'};", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        ucc.addUserScript(WKUserScript(source: "window.LM_NATIVE={v:1,platform:'ios',sbar:1};", injectionTime: .atDocumentStart, forMainFrameOnly: true))
         cfg.userContentController = ucc
         let w = WKWebView(frame: .zero, configuration: cfg)
         w.navigationDelegate = self
@@ -88,6 +92,9 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             let st = InfoAttributes.ContentState(icon: (m["icon"] as? String) ?? "car", title: (m["title"] as? String) ?? "", sub: (m["sub"] as? String) ?? "",
                                                  right: (m["right"] as? String) ?? "", tone: (m["tone"] as? String) ?? "info", progress: (m["progress"] as? NSNumber)?.doubleValue)
             LiveAct.shared.info(st, seconds: ((m["ms"] as? NSNumber)?.doubleValue ?? 3000) / 1000)
+        case "sbar":
+            let h = (m["hide"] as? Bool) ?? false
+            if h != sbHidden { sbHidden = h; UIView.animate(withDuration: 0.25) { self.setNeedsStatusBarAppearanceUpdate() } }
         case "islandTest":
             let r = LiveAct.shared.diagnose()
             core.js("window.LMN&&LMN.islTest(" + Core.json(r) + ")")

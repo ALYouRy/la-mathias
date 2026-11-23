@@ -183,6 +183,10 @@ button{font:inherit;color:inherit}
 .isl.big{top:calc(env(safe-area-inset-top,47px) + 6px)}
 .isl.web.big{top:8px}
 .isl.nat,.isl.nat.big{top:calc(env(safe-area-inset-top,50px) + 8px)}
+/* 2.75 : appli iPhone, l'île sort de la vraie Dynamic Island (la barre d'état se cache le temps du message) */
+.isl.natsb{top:11px}
+.isl.natsb.big{top:11px;height:96px;border-radius:44px}
+.isl.natsb.big .ic,.isl.natsb.big .tx,.isl.natsb.big .rt{margin-top:30px}
 .isl.glue.big{top:11px;width:232px;margin-left:-116px;height:84px;border-radius:34px}
 .isl.glue .ic{width:36px;height:36px;margin-left:12px}.isl.glue svg{width:20px;height:20px}
 .isl.glue .tx{margin:0 6px 0 10px}.isl.glue .tx b{font-size:14px}.isl.glue .tx small{font-size:11.5px}.isl.glue .rt{margin-right:14px;font-size:13.5px}
@@ -963,7 +967,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.74';
+var APP_V='2.75';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1061,9 +1065,9 @@ function island(o){if(typeof NAT!=='undefined'&&NAT&&NATL&&NATL.isl){if(SET.nisl
   /* iOS n'affiche pas l'activité d'une appli dans la Dynamic Island tant qu'elle est à l'écran : on montre donc aussi le message en haut de l'appli */
   o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext();return}if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:''));return}o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext()}
 function islNext(){
-  var o=ISL.q.shift(),el=document.getElementById('isl');if(!o||!el){ISL.busy=false;return}
+  var o=ISL.q.shift(),el=document.getElementById('isl');if(!o||!el){ISL.busy=false;if(ISL.sb){ISL.sb=0;natPost({op:'sbar',hide:false})}return}
   ISL.busy=true;
-  var nat=typeof NAT!=='undefined'&&NAT;el.classList.toggle('nat',nat);el.classList.toggle('web',!nat&&!navigator.standalone);el.classList.toggle('glue',!nat&&!!navigator.standalone&&SET.islPos==='glue');
+  var nat=typeof NAT!=='undefined'&&NAT,sb=nat&&!!(window.LM_NATIVE&&LM_NATIVE.sbar);el.classList.toggle('nat',nat&&!sb);el.classList.toggle('natsb',sb);if(sb&&!ISL.sb){ISL.sb=1;natPost({op:'sbar',hide:true})}el.classList.toggle('web',!nat&&!navigator.standalone);el.classList.toggle('glue',!nat&&!!navigator.standalone&&SET.islPos==='glue');
   el.setAttribute('data-tone',o.tone||'info');
   var ic=el.querySelector('.ic');ic.className='ic'+(o.pop?' pop':'');ic.innerHTML='<svg viewBox="0 0 24 24">'+(ICO[o.icon]||ICO.car)+'</svg>';
   el.querySelector('.tx b').textContent=o.title||'';el.querySelector('.tx small').textContent=o.sub||'';el.querySelector('.rt').textContent=o.right||'';
