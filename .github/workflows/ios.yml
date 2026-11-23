@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'ios/**'
+      - '!ios/patchnotes.json'
       - '.github/workflows/ios.yml'
   workflow_dispatch:
 
@@ -66,7 +67,5 @@ jobs:
           DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/LaMathias.ipa"
           ICON="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/icon.png"
-          cat > ios/source.json <<JSON
-          {"name":"La Mathias","identifier":"fr.lamathias.source","sourceURL":"https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/source.json","apps":[{"name":"La Mathias","bundleIdentifier":"fr.lamathias.app","developerName":"La Mathias","subtitle":"Ta voiture, tes trajets","localizedDescription":"Trajets, conso et OBD pour la Sandero.","iconURL":"${ICON}","tintColor":"00E5FF","version":"${VER}","versionDate":"${DATE}","downloadURL":"${URL}","size":${SIZE},"versions":[{"version":"${VER}","buildVersion":"${GITHUB_RUN_NUMBER}","date":"${DATE}","downloadURL":"${URL}","size":${SIZE},"minOSVersion":"16.0"}],"appPermissions":{"entitlements":[],"privacy":{}}}],"news":[]}
-          JSON
-          gh release create "$TAG" ios/LaMathias.ipa ios/source.json --title "Appli iPhone 1.0.${GITHUB_RUN_NUMBER}" --notes "Appli iPhone La Mathias à installer avec SideStore." --latest
+          python3 ios/make-source.py "${GITHUB_REPOSITORY}" "$TAG" "$SIZE" "$DATE" > ios/source.json
+          gh release create "$TAG" ios/LaMathias.ipa ios/source.json --title "Appli iPhone 1.0.${GITHUB_RUN_NUMBER}" --notes-file <(python3 -c "import json;n=json.load(open('ios/patchnotes.json'))[0];print(n['v']+' · '+n['title']);[print('• '+x) for x in n['notes']]") --latest

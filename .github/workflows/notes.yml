@@ -1,0 +1,33 @@
+name: Notes de patch SideStore
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/patchnotes.json'
+      - 'ios/make-source.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-notes
+  cancel-in-progress: false
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Met à jour source.json sur la dernière version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release list --limit 30 --json tagName,isLatest -q '.[] | select(.isLatest) | .tagName')
+          echo "Dernière version : $TAG"
+          SIZE=$(gh release view "$TAG" --json assets -q '.assets[] | select(.name=="LaMathias.ipa") | .size')
+          DATE=$(gh release view "$TAG" --json assets -q '.assets[] | select(.name=="LaMathias.ipa") | .createdAt')
+          python3 ios/make-source.py "${GITHUB_REPOSITORY}" "$TAG" "$SIZE" "$DATE" > source.json
+          python3 -m json.tool source.json > /dev/null
+          gh release upload "$TAG" source.json --clobber
