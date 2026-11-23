@@ -78,6 +78,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         obd.onLost = { [weak self] in self?.onLost() }
         obd.onState = { [weak self] in self?.pushLive() }
         restoreActive()
+        NotificationCenter.default.addObserver(self, selector: #selector(appActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
         RunLoop.main.add(timer!, forMode: .common)
     }
@@ -118,15 +120,32 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         loc.startUpdatingLocation()
     }
 
+    private var lastPush = Date.distantPast
     func locationManager(_ m: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let l = locations.last { gps = l }
+        guard let l = locations.last else { return }
+        // on ignore les mesures très imprécises si on en a une bonne récente
+        if let g = gps, l.horizontalAccuracy > 50, g.horizontalAccuracy <= 20, l.timestamp.timeIntervalSince(g.timestamp) < 5 { return }
+        gps = l
+        // appli ouverte : position envoyée tout de suite à l'écran GPS (jusqu'à 5 fois par seconde)
+        if UIApplication.shared.applicationState == .active, Date().timeIntervalSince(lastPush) > 0.2 {
+            lastPush = Date()
+            pushLive()
+        }
+    }
+
+    /// Appli à l'écran : GPS au maximum de précision, même sans trajet. En arrière-plan : seulement ce qu'il faut.
+    @objc private func appActive() { foreground = true; applyLoc() }
+    @objc private func appBackground() { foreground = false; applyLoc() }
+    private var foreground = false
+    private func applyLoc() {
+        if foreground || trip != nil { setLoc("best") } else if obd.ready { setLoc("low") } else { setLoc("off") }
     }
 
     // MARK: - Lecture en boucle
 
     private func onReady() {
         mafBad = 0
-        setLoc(trip != nil ? "best" : "low")
+        applyLoc()
         // tension batterie juste à la connexion (moteur arrêté = tension de repos)
         read("rpm") { _ in
             self.obd.send("ATRV") { r in
@@ -142,7 +161,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         if let t = trip, (d["speed"] ?? 0) < 5 { _ = t; endTrip() }
         d = [:]
         dataT = 0
-        if trip == nil { setLoc("off") }
+        applyLoc()
         pushLive()
     }
 
@@ -442,7 +461,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["trip-start"])
         trip = nil
         UserDefaults.standard.removeObject(forKey: "activeTrip")
-        if !obd.ready { setLoc("off") } else { setLoc("low") }
+        applyLoc()
         if R.dist >= 0.2 && R.dur >= 30 {
             Store.add(R.dict())
             notifyTrip(R)

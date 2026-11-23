@@ -894,6 +894,7 @@ button{font:inherit;color:inherit}
 .gpan{position:absolute;left:8px;right:8px;bottom:8px;background:rgba(10,8,30,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:10px 12px}
 .gg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;text-align:center}.gg3 b{display:block;font-size:21px;font-variant-numeric:tabular-nums}.gg3 small{font-size:11px;color:var(--fg-3)}
 .gpan canvas{width:100%;height:42px;margin:6px 0 2px}.gline{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12.5px;color:var(--fg-3)}.gline b{color:var(--fg);font-size:14px}.gline.g2{margin-top:4px;color:#9be7b4}
+.gh u{display:block;text-decoration:none;font-size:10.5px;color:var(--fg-3);margin-top:3px}
 </style>
 </head>
 <body>
@@ -962,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.62';
+var APP_V='2.63';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4527,7 +4528,7 @@ function drvDerive(){
 }
 /* --- GPS --- */
 function gpsStart(){if(DRV.gw!=null||!navigator.geolocation)return;
-  DRV.gw=navigator.geolocation.watchPosition(function(p){var c=p.coords;DRV.gps={la:c.latitude,lo:c.longitude,acc:c.accuracy,sp:c.speed!=null&&c.speed>=0?c.speed*3.6:null,t:p.timestamp};if(DRV.mode==='gps')drvGpsTick()},
+  DRV.gw=navigator.geolocation.watchPosition(function(p){var c=p.coords;DRV.gps={la:c.latitude,lo:c.longitude,acc:c.accuracy,sp:c.speed!=null&&c.speed>=0?c.speed*3.6:null,crs:c.heading!=null&&!isNaN(c.heading)&&c.heading>=0?c.heading:null,t:p.timestamp};if(DRV.tab==='gps')gpsFix(drvPos());if(DRV.mode==='gps')drvGpsTick()},
     function(e){DRV.gpsErr=e.code===1?'refusé':'indisponible';drvDraw()},{enableHighAccuracy:true,maximumAge:0,timeout:20000})}
 function gpsStop(){if(DRV.gw!=null&&navigator.geolocation)navigator.geolocation.clearWatch(DRV.gw);DRV.gw=null}
 /* conso estimée sans OBD (mode GPS seul) : modèle simple ralenti + roulage + accélérations, pour une petite essence */
@@ -4900,7 +4901,7 @@ function natLive(o){
   if(OBD.ok&&DRV.mode==='gps'){if(DRV.rec&&DRV.rec.dist<1){DRV.rec=null;try{localStorage.removeItem(ACTK)}catch(e){}}else if(DRV.rec)recEnd();gpsStop();wakeOff();DRV.mode=''}
   if(DRV.mode!=='gps'){
     if(OBD.ok||o.rec){if(!DRV.on||DRV.mode!=='nat')drvStart('nat');DRV.d=Object.assign({},o.d||{});DRV.d.t=Date.now();
-      DRV.rec=o.rec?{t0:o.rec.t0,dist:o.rec.dist,dur:o.rec.dur,fuel:o.rec.fuel,src:'obd',nat:true}:null;DRV.ngps=o.gps||null}
+      DRV.rec=o.rec?{t0:o.rec.t0,dist:o.rec.dist,dur:o.rec.dur,fuel:o.rec.fuel,src:'obd',nat:true}:null;DRV.ngps=o.gps||null;if(DRV.ngps)gpsFix(drvPos())}
     else if(DRV.on&&DRV.mode==='nat'){DRV.on=false;DRV.mode='';DRV.rec=null;clearInterval(DRV.timer);DRV.timer=null}
   }
   if(OBD.ok&&!was){BATS={first:true,runN:0,runPush:false};setTimeout(function(){if(OBD.ok&&DRV.mode==='nat')dtcRead(true)},4000)}
@@ -4938,8 +4939,8 @@ if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.
 
 /* ---------- 2.61 : écran GPS en direct, avec toute la conso ---------- */
 function drvPos(){
-  if(DRV.mode==='nat'&&DRV.ngps){var q=DRV.ngps;return {la:q.la,lo:q.lo,acc:q.acc,crs:q.crs!=null&&q.crs>=0?q.crs:null,sp:q.sp!=null&&q.sp>=0?q.sp:null}}
-  var g=DRV.gps;if(!g||Date.now()-g.t>15000)return null;return {la:g.la,lo:g.lo,acc:g.acc,crs:null,sp:g.sp};
+  if(DRV.mode==='nat'&&DRV.ngps){var q=DRV.ngps;return {la:q.la,lo:q.lo,acc:q.acc,t:q.t,crs:q.crs!=null&&q.crs>=0?q.crs:null,sp:q.sp!=null&&q.sp>=0?q.sp:null}}
+  var g=DRV.gps;if(!g||Date.now()-g.t>15000)return null;return {la:g.la,lo:g.lo,acc:g.acc,t:g.t,crs:g.crs!=null?g.crs:null,sp:g.sp};
 }
 function gpsTick(dt){
   var d=DRV.d,R=DRV.rec,v=d.speed||0,p=drvPos(),t0=R&&R.t0||0;
@@ -4950,7 +4951,7 @@ function gpsTick(dt){
 }
 function gpsHtml(){
   return '<div class="gpsv"><div id="gpsbox" class="gpsbox"></div>'+
-    '<div class="gh gtl"><b data-v="spd">–</b><small>km/h</small><i data-v="gearS"></i></div>'+
+    '<div class="gh gtl"><b data-v="spd">–</b><small>km/h</small><i data-v="gearS"></i><u data-v="gacc"></u></div>'+
     '<div class="gh gtr"><b data-v="cons" data-c="cons">–</b><small data-v="consU">L/100</small><div class="gbar"><i id="gbar"></i></div><em data-v="cutS"></em></div>'+
     '<div class="gbtns"><button type="button" class="gbtn" id="g3d">'+(DRV.g3d?'3D':'2D')+'</button><button type="button" class="gbtn" id="grec" aria-label="Recentrer">◎</button></div>'+
     '<div class="gpan"><div class="gg3"><div><b data-v="avgG" data-c="avgc">–</b><small>moy. trajet</small></div><div><b data-v="c1mG">–</b><small>dernière min.</small></div><div><b data-v="c5mG">–</b><small>5 dernières min.</small></div>'+
@@ -4960,7 +4961,7 @@ function gpsHtml(){
     '<div class="gline g2"><span data-v="idleT"></span><span data-v="cutT"></span></div></div></div>';
 }
 function gpsVals(V,d,R,k,pr,FI,avg,g){
-  var A=DRV.acc,c5=winAvg(300);V.gearS=g?gearTxt(g):'';V.cutS=d.cut?'coupure · 0 L':'';
+  var A=DRV.acc,c5=winAvg(300),pp=drvPos();V.gearS=g?gearTxt(g):'';V.gacc=pp&&pp.acc!=null?'GPS ±'+Math.max(1,Math.round(pp.acc))+' m':'GPS…';V.cutS=d.cut?'coupure · 0 L':'';
   V.avgG=avg!=null?f1(avg):'–';var c1=winAvg(60);V.c1mG=c1!=null?f1(c1):'–';V.c5mG=c5!=null?f1(c5):'–';V.lphG=d.lph!=null?f1(d.lph):'–';
   V.fuelG=R?f2(R.fuel*k).replace(/0$/,'')+' L':'–';V.costG=R?f2(R.fuel*k*pr)+' €':'–';V.rangeG=FI.range!=null?Math.round(FI.range/5)*5:'–';
   V.idleT=R?'Ralenti : '+f2(A.idle).replace(/0$/,'')+' L':'';V.cutT=R?'Coupure : '+f1(A.cutKm)+' km sans carburant ('+dur(A.cutS)+')':'';
@@ -4992,16 +4993,55 @@ function gpsUpd(o){
   if(!m||!m.isStyleLoaded()||!p)return;
   var T=DRV.trail,F=[];for(var i=1;i<T.length;i++)F.push({type:'Feature',properties:{c:T[i][2]==null?'#8f86c9':consoCol(T[i][2])},geometry:{type:'LineString',coordinates:[[T[i-1][1],T[i-1][0]],[T[i][1],T[i][0]]]}});
   var src=m.getSource('gtr');if(src&&(DRV.gtrN!==T.length)){DRV.gtrN=T.length;src.setData({type:'FeatureCollection',features:F})}
-  var crs=p.crs;if(crs==null&&T.length>1){var a=T[Math.max(0,T.length-4)],b=T[T.length-1];if(hav([a[0],a[1]],[b[0],b[1]])>.008)crs=brgLL([a[1],a[0]],[b[1],b[0]])}
-  var v=p.sp!=null?p.sp:(d.speed||0);if(crs!=null&&v>4)DRV.gcrs=crs;
-  if(DRV.gmk){DRV.gmk.setLngLat([p.lo,p.la]);if(!DRV.gmk._on){DRV.gmk.addTo(m);DRV.gmk._on=1}if(DRV.gmk.aimAt&&DRV.gcrs!=null)DRV.gmk.aimAt(DRV.gcrs,.35)}
-  if(DRV.gfree&&Date.now()-DRV.gfree<12000)return;DRV.gfree=0;
-  m.easeTo({center:[p.lo,p.la],bearing:DRV.gcrs!=null?DRV.gcrs:m.getBearing(),zoom:17.3-Math.min(2.8,v/42),pitch:DRV.g3d?55:0,padding:{top:0,bottom:Math.round((DRV.gmEl.clientHeight||600)*.32),left:0,right:0},duration:950,easing:function(t){return t}});
+  gpsFix(p);if(!DRV.graf)gpsLoop();
 }
 function gpsSpark(cv){
   var x=cv.getContext('2d'),W=cv.width,H=cv.height,A=DRV.hist.slice(-120);x.clearRect(0,0,W,H);if(A.length<2)return;
   var mx=12;A.forEach(function(p){if(p.c!=null&&p.c>mx)mx=Math.min(30,p.c)});var st=W/119,off=120-A.length;x.lineWidth=4;x.lineCap='round';
   for(var i=1;i<A.length;i++){var a=A[i-1].c,b=A[i].c;if(a==null||b==null)continue;x.strokeStyle=consoCol(b);x.beginPath();x.moveTo((off+i-1)*st,H-3-Math.min(a,mx)/mx*(H-6));x.lineTo((off+i)*st,H-3-Math.min(b,mx)/mx*(H-6));x.stroke()}
+}
+
+/* 2.63 : position fluide et précise — chaque mesure GPS est prolongée selon la vitesse et le cap (60 images/s),
+   puis posée sur la route la plus proche de la carte quand on roule (comme une appli de navigation). */
+function gpsFix(p){
+  if(!p)return;var t=p.t||Date.now(),F=DRV.gfix;
+  if(F&&F.la===p.la&&F.lo===p.lo&&F.t===t)return;
+  var crs=p.crs;if((crs==null||crs<0)&&F){var dd=hav([F.la,F.lo],[p.la,p.lo]);if(dd>.004)crs=brgLL([F.lo,F.la],[p.lo,p.la])}
+  var sp=p.sp!=null&&p.sp>=0?p.sp:(DRV.d.speed||0);
+  DRV.gfix={la:p.la,lo:p.lo,t:t,crs:crs!=null&&crs>=0?crs:(F?F.crs:null),sp:sp,acc:p.acc};
+}
+function gpsRoadLayers(m){if(DRV.grl&&DRV.grlm===m)return DRV.grl;var st=m.getStyle(),L=[];(st&&st.layers||[]).forEach(function(l){if(l.type==='line'&&l['source-layer']==='transportation'&&!/rail|ferry|path|pier|aerialway|bridge-case|casing/i.test(l.id))L.push(l.id)});DRV.grl=L;DRV.grlm=m;return L}
+function gpsSnap(m,lng,lat,crs){
+  var L=gpsRoadLayers(m);if(!L.length)return null;var c=m.project([lng,lat]),r=34,fs;
+  try{fs=m.queryRenderedFeatures([[c.x-r,c.y-r],[c.x+r,c.y+r]],{layers:L})}catch(e){return null}
+  var best=null,bd=1e9;
+  fs.forEach(function(f){var g=f.geometry,lines=g.type==='LineString'?[g.coordinates]:g.type==='MultiLineString'?g.coordinates:[];
+    lines.forEach(function(ln){for(var i=1;i<ln.length;i++){var a=m.project(ln[i-1]),b=m.project(ln[i]),dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy;if(!l2)continue;
+      var u=Math.max(0,Math.min(1,((c.x-a.x)*dx+(c.y-a.y)*dy)/l2)),px=a.x+u*dx,py=a.y+u*dy,dist=Math.hypot(c.x-px,c.y-py);
+      var rb=brgLL(ln[i-1],ln[i]);if(crs!=null){var db=Math.abs(((rb-crs+540)%360)-180);if(db>90){db=180-db;rb=(rb+180)%360}if(db>40)continue;dist+=db*.15}
+      if(dist<bd){bd=dist;best={p:m.unproject([px,py]),brg:rb,px:dist}}}})});
+  if(!best)return null;var mpp=156543.03*Math.cos(lat*Math.PI/180)/Math.pow(2,m.getZoom());
+  return best.px*mpp<=22?best:null;
+}
+function gpsLoop(){
+  var m=DRV.gm;if(!m||DRV.tab!=='gps'||$('#drive').classList.contains('hide')||!DRV.on){DRV.graf=0;return}
+  DRV.graf=requestAnimationFrame(gpsLoop);var F=DRV.gfix;if(!F||!m.isStyleLoaded())return;
+  var now=Date.now(),dtp=Math.max(0,Math.min(1.6,(now-F.t)/1000)),la=F.la,lo=F.lo,v=F.sp||0;
+  if(F.crs!=null&&v>3){var dm=v/3.6*dtp,br=F.crs*Math.PI/180;la+=dm*Math.cos(br)/111320;lo+=dm*Math.sin(br)/(111320*Math.cos(la*Math.PI/180))}
+  var S=DRV.gs||(DRV.gs={la:la,lo:lo,b:F.crs||0,z:17,snapT:0,sn:null});
+  var k=.22;S.la+=(la-S.la)*k;S.lo+=(lo-S.lo)*k;
+  var tla=S.la,tlo=S.lo,tb=F.crs;
+  if(v>6&&now-S.snapT>200){S.snapT=now;S.sn=gpsSnap(m,S.lo,S.la,F.crs)}
+  if(v>6&&S.sn){tla=S.sn.p.lat;tlo=S.sn.p.lng;tb=S.sn.brg}
+  if(v<=6)S.sn=null;
+  S.dla=S.dla==null?tla:S.dla+(tla-S.dla)*.35;S.dlo=S.dlo==null?tlo:S.dlo+(tlo-S.dlo)*.35;
+  if(tb!=null&&v>4){var dd=((tb-S.b+540)%360)-180;S.b=(S.b+dd*.08+360)%360}
+  var tz=17.4-Math.min(2.8,v/42);S.z+=(tz-S.z)*.03;
+  if(DRV.gmk){DRV.gmk.setLngLat([S.dlo,S.dla]);if(!DRV.gmk._on){DRV.gmk.addTo(m);DRV.gmk._on=1}if(DRV.gmk.aimAt)DRV.gmk.aimAt(S.b)}
+  if(DRV.gfree&&now-DRV.gfree<12000)return;DRV.gfree=0;
+  var h=DRV.gmEl.clientHeight||600,pad=Math.round(h*.3);
+  if(DRV.gpad!==pad){DRV.gpad=pad;m.setPadding({top:0,bottom:pad,left:0,right:0})}
+  m.jumpTo({center:[S.dlo,S.dla],bearing:S.b,zoom:S.z,pitch:DRV.g3d?55:0});
 }
 function drvPill(){var p=$('#dvpill');if(!p)return;var R=DRV.rec;p.hidden=!DRV.on;if(!DRV.on)return;p.innerHTML='<i class="'+(R?'rec':'')+'"></i>'+(R?f1(R.dist)+' km · '+dur(R.dur):DRV.mode==='obd'||DRV.mode==='nat'?'OBD prêt':'GPS prêt')}
 
