@@ -1000,7 +1000,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.82';
+var APP_V='2.83';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1397,7 +1397,15 @@ function trackPts(s){if(!s)return null;var a=s.split('.'),la=0,lo=0,P=[];
 var SNAPK='sandero-snap',SNAP=null,SNQ={busy:false,last:0},OSRM='https://routing.openstreetmap.de/routed-car/route/v1/driving/';
 function snapLoad(){if(SNAP)return SNAP;try{SNAP=JSON.parse(localStorage.getItem(SNAPK)||'{}')}catch(e){SNAP={}}return SNAP}
 function snapSave(){try{localStorage.setItem(SNAPK,JSON.stringify(SNAP))}catch(e){}}
-function rawTrack(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var Q=mmDec(D.trk5[r.t0]);if(Q)return Q}return D.tracks?trackPts(D.tracks[r.t0]):null}
+/* 2.83 : supprime les « crochets » GPS (aller-retour brusque de quelques mètres) ; même nombre de points (le détail conso/vitesse reste aligné) */
+function deSpike(P,maxM){if(!P||P.length<3)return P;maxM=maxM||40;var Q=P.map(function(p){return p.slice()}),ch=true,pass=0;
+  function v(a,b){var k=Math.cos(a[0]*Math.PI/180);return [(b[1]-a[1])*111320*k,(b[0]-a[0])*111320]}
+  while(ch&&pass++<4){ch=false;for(var i=1;i<Q.length-1;i++){var a=Q[i-1],b=Q[i],c=Q[i+1],u=v(a,b),w=v(b,c),lu=Math.hypot(u[0],u[1]),lw=Math.hypot(w[0],w[1]);
+    if(lu<1.5||lw<1.5||Math.min(lu,lw)>maxM)continue;var cs=(u[0]*w[0]+u[1]*w[1])/(lu*lw);
+    if(cs<-.8){var t=lu/(lu+lw);b[0]=a[0]+(c[0]-a[0])*t;b[1]=a[1]+(c[1]-a[1])*t;ch=true}}}
+  return Q}
+var DSPK={};
+function rawTrack(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q);DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
 function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
 function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
 /* tracé fiable ? (recalé sur les routes, ou GPS assez dense) — sinon les grands sauts en ligne droite ne comptent pas pour la carte à dévoiler */
@@ -4639,7 +4647,7 @@ function recSave(R,recovered){
     drive:Math.round(R.mov),stops:R.stops,brakes:R.brakes,rpmMax:R.rpmMax?Math.round(R.rpmMax/10)*10:null,rpmMin:R.rpmMin<99999?Math.round(R.rpmMin/10)*10:null,tMax:R.tN?R.tMax:null,tAvg:R.tN?Math.round(R.tSum/R.tN):null,
     batMin:R.vN?Math.round(R.vMin*10)/10:null,batAvg:R.vN?Math.round(R.vSum/R.vN*10)/10:null,load:R.lN?Math.round(R.load/R.lN):null,price:pr,meas:obd,src:'iphone'};
   /* tracé : même format que les QR (1e-4°, base36 signée, cumulé) + détail CONSO,VITESSE,TEMPS */
-  var P=R.P||[];if(P.length>=2){
+  var P=deSpike(R.P||[]);if(P.length>=2){
     /* 2.60 : tracé précis au mètre (simplifié à ~2 m, 600 points max) */
     var PP=P.map(function(p){return [p[0],p[1]]}),tol=.00002,keep=dpSimp(PP,tol);while(keep.length>600&&tol<.0004){tol*=1.6;keep=dpSimp(PP,tol)}var idx=[],j=0;P.forEach(function(p,i){if(j<keep.length&&p[0]===keep[j][0]&&p[1]===keep[j][1]){idx.push(i);j++}});
     var la=0,lo=0,o=[],C=[],V=[],T=[],acc=0,prev=-1;

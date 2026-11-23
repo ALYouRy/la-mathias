@@ -1,5 +1,14 @@
 [
  {
+  "v": "2.83",
+  "date": "2026-11-23",
+  "title": "Tracés sans crochets",
+  "notes": [
+   "Les petits allers-retours du GPS sont effacés des trajets",
+   "Corrige aussi les anciens trajets"
+  ]
+ },
+ {
   "v": "2.82",
   "date": "2026-11-23",
   "title": "Fin de trajet",
