@@ -345,7 +345,18 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         last = now
         recTick(dt)
         liveTick()
+        hist.append((d["lph"], d["speed"] ?? 0))
+        if hist.count > 600 { hist.removeFirst(hist.count - 600) }
         if UIApplication.shared.applicationState == .active { pushLive() }
+    }
+
+    /// historique seconde par seconde (L/h, km/h) pour les moyennes « dernière minute » / « 5 min »
+    var hist: [(Double?, Double)] = []
+    func winAvg(_ n: Int) -> Double? {
+        let a = hist.suffix(n)
+        var l = 0.0, km = 0.0
+        for (h, v) in a { if let h = h { l += h / 3600 }; km += v / 3600 }
+        return km > 0.02 && l > 0 ? l / km * 100 : nil
     }
 
     // MARK: - Dynamic Island

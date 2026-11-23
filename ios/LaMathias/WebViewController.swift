@@ -84,6 +84,11 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             core.js("window.LMN&&LMN.trips(" + Core.json(Store.all()) + ")")
         case "ack":
             if let ids = m["ids"] as? [NSNumber] { Store.ack(ids.map { $0.doubleValue }) }
+        case "gps":
+            let vc = GPSViewController()
+            vc.range = (m["range"] as? NSNumber)?.doubleValue
+            vc.modalPresentationStyle = .fullScreen
+            if presentedViewController == nil { present(vc, animated: true) }
         case "settings":
             if let u = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(u) }
         default:

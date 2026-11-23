@@ -963,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.64';
+var APP_V='2.65';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4759,7 +4759,7 @@ var SENS=[['rpm','Régime','tr/min',function(v){return Math.round(v/10)*10}],['s
   ['stft','Correction courte','%',f1],['ltft','Correction longue','%',f1],['fuel','Niveau carburant','%',Math.round],['volt','Batterie','V',f1],['lph','Débit carburant','L/h',f1],['fss','Boucle carburant','',function(v){return {1:'ouverte (froid)',2:'fermée',4:'ouverte (charge / coupure)',8:'ouverte (défaut)',16:'fermée (défaut)'}[v]||String(v)}]];
 /* --- écran Conduite : onglets Compteur, Conso, Capteurs, Diagnostic --- */
 var GPATH='M30.3 156A92 92 0 1 1 189.7 156';
-function drvTabs(){var T=[['gps','GPS'],['dir','Compteur'],['con','Conso'],['sen','Capteurs'],['dia','Diagnostic']];return '<div class="seg dvtabs">'+T.map(function(t){return '<button type="button" data-t="'+t[0]+'" aria-pressed="'+(DRV.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'}
+function drvTabs(){if(NAT&&DRV.tab==='gps')DRV.tab='dir';var T=[['gps',NAT?'GPS ↗':'GPS'],['dir','Compteur'],['con','Conso'],['sen','Capteurs'],['dia','Diagnostic']];return '<div class="seg dvtabs">'+T.map(function(t){return '<button type="button" data-t="'+t[0]+'" aria-pressed="'+(DRV.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'}
 function drvBody(){
   var obd=DRV.mode==='obd'||DRV.mode==='nat',R=DRV.rec,t=DRV.tab,S=drvSet();
   if(t==='gps')return gpsHtml();
@@ -4852,7 +4852,7 @@ function drvWire(){
   B('dvgps',function(){drvStart('gps')});B('dvoff',drvStop);B('dvend2',recEnd);B('dvre',function(){OBD.err='';obdConnect(true).catch(cerr)});B('dvwake',function(){nsVideo(true)});B('dvfill',fillSheet);
   B('dtcr',function(){dtcRead(false)});B('natscan',natScan);B('natforget',function(){natPost({op:'forget'})});B('natperm',function(){natPost({op:NATL&&NATL.loc==='none'?'perm':'settings'})});B('dtcc',dtcClear);
   B('dvcopy',function(){try{navigator.clipboard.writeText(location.origin+location.pathname);toast('Lien copié : colle-le dans Bluefy.')}catch(e){toast(location.origin+location.pathname,6000)}});
-  Array.prototype.forEach.call(document.querySelectorAll('#drive .dvtabs button'),function(b){b.onclick=function(){DRV.tab=b.getAttribute('data-t');drvDraw(true)}});
+  Array.prototype.forEach.call(document.querySelectorAll('#drive .dvtabs button'),function(b){b.onclick=function(){var t=b.getAttribute('data-t');if(t==='gps'&&NAT){natGps();return}DRV.tab=t;drvDraw(true)}});B('natgps',natGps);
   if(DRV.tab==='gps'&&DRV.on)gpsMount();B('grec',function(){DRV.gfree=0;gpsUpd()});B('g3d',function(){DRV.g3d=!DRV.g3d;DRV.gfree=0;var b=$('#g3d');if(b)b.textContent=DRV.g3d?'3D':'2D';gpsUpd()});
   Array.prototype.forEach.call(document.querySelectorAll('#drive .dvcm button'),function(b){b.onclick=function(){DRV.cm=b.getAttribute('data-cm');drvDraw(true)}});
   var inp=function(id,k,mn,mx){var i=$('#'+id);if(i)i.onchange=function(){var v=parseFloat(String(i.value).replace(',','.'));if(!(v>=mn&&v<=mx))return;if(k==='tank'){if(!db.snap)snapUpdate();db.snap.tank=Math.round(v);save();return}var s=drvSet();s[k]=v;drvSave(s)}};
@@ -4924,8 +4924,10 @@ function natStart(){
       '<div class="dvbtns" style="margin-top:0"><button type="button" class="btn ghost" id="natscan">Changer d’adaptateur</button><button type="button" class="btn ghost" id="natforget">Oublier</button></div>';
   }else h+='<button type="button" class="btn dvbig" id="natscan">🔌 Connecter l’OBD</button><p class="note">Une seule fois : branche l’adaptateur Bluetooth LE, mets le contact, puis choisis-le dans la liste. Ensuite tout est automatique : plus besoin d’ouvrir l’appli.</p>';
   if(L.err&&st!=='ok')h+='<p class="dverr">'+esc(L.err)+'</p>';
+  h+='<button type="button" class="btn ghost dvbig" id="natgps">🗺 GPS en direct (carte Plans)</button>';
   return h;
 }
+function natGps(){var fi=null;try{fi=fuelInfo()}catch(e){}natPost({op:'gps',range:fi&&fi.range!=null?fi.range:null})}
 function natScan(){NATF=null;natPost({op:'scan'});sheetOpen('Choisir l’adaptateur','<div id="natlist"></div>');natPickDraw()}
 function natPickDraw(){
   var el=$('#natlist');if(!el)return;var F=NATF,h='';
