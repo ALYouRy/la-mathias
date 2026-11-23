@@ -184,13 +184,15 @@ button{font:inherit;color:inherit}
 .isl.web.big{top:8px}
 .isl.nat,.isl.nat.big{top:calc(env(safe-area-inset-top,50px) + 8px)}
 /* 2.75 : appli iPhone, l'île sort de la vraie Dynamic Island (la barre d'état se cache le temps du message) */
-/* 2.76 : disposition façon iOS — icône à gauche de la caméra, valeur à droite, texte centré dessous */
+/* 2.77 : île appli compacte et centrée, contenu juste sous la caméra */
 .isl.natsb{top:11px}
-.isl.natsb.big{top:11px;height:98px;border-radius:44px;display:block}
-.isl.natsb.big .ic{position:absolute;left:28px;top:8px;width:34px;height:34px;margin:0}
-.isl.natsb.big .ic svg{width:19px;height:19px}
-.isl.natsb.big .rt{position:absolute;right:28px;top:14px;margin:0;line-height:22px}
-.isl.natsb.big .tx{position:absolute;left:22px;right:22px;top:51px;margin:0;text-align:center}
+.isl.natsb.big{top:11px;height:86px;border-radius:38px;width:min(316px,calc(100vw - 40px));margin-left:calc(min(316px,calc(100vw - 40px)) / -2);align-items:flex-end;justify-content:center;padding:0 20px 12px;box-sizing:border-box}
+.isl.natsb.big .ic{width:28px;height:28px;margin:0 10px 1px 0}
+.isl.natsb.big .ic svg{width:16px;height:16px}
+.isl.natsb.big .tx{flex:0 1 auto;margin:0}
+.isl.natsb.big .tx b{font-size:14px}
+.isl.natsb.big .tx small{font-size:11.5px}
+.isl.natsb.big .rt{margin:0 0 7px 12px;font-size:14px}
 .isl.glue.big{top:11px;width:232px;margin-left:-116px;height:84px;border-radius:34px}
 .isl.glue .ic{width:36px;height:36px;margin-left:12px}.isl.glue svg{width:20px;height:20px}
 .isl.glue .tx{margin:0 6px 0 10px}.isl.glue .tx b{font-size:14px}.isl.glue .tx small{font-size:11.5px}.isl.glue .rt{margin-right:14px;font-size:13.5px}
@@ -971,7 +973,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.76';
+var APP_V='2.77';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -5116,7 +5118,7 @@ function welcomeIsland(){
   /* appli iPhone : au démarrage, la vraie Dynamic Island affiche l'essence qui reste et l'autonomie, puis le dernier trajet */
   if(typeof NAT!=='undefined'&&NAT&&!sample){var FI=null;try{FI=fuelInfo()}catch(e){}
     if(SET.welcome===false){}else if(FI&&FI.rem!=null){var rg=FI.range!=null?Math.round(FI.range/5)*5:null,low=FI.pct!=null&&FI.pct<.15;
-      island({icon:'fuel',tone:low?'warn':'good',title:(low?'Réservoir bas · ':'Essence : ')+f1(FI.rem)+' L',sub:(rg!=null?'Autonomie '+fi(rg)+' km · ':'')+(FI.meas?'niveau mesuré':'estimée depuis le dernier plein')+(low?' · pense au plein':''),right:rg!=null?fi(rg)+' km':Math.round((FI.pct||0)*100)+' %',progress:FI.pct,ms:6000,fallback:1})}
+      island({icon:'fuel',tone:low?'warn':'good',title:(low?'Réservoir bas · ':'Essence : ')+f1(FI.rem)+' L',sub:(low?'Pense au plein · ':'')+(rg!=null?'Autonomie ':'')+(FI.meas?'niveau mesuré':'estimée'),right:rg!=null?fi(rg)+' km':Math.round((FI.pct||0)*100)+' %',progress:FI.pct,ms:6000,fallback:1})}
     else if(SET.welcome)island({icon:'fuel',tone:'info',title:'La Mathias',sub:'Fais « Plein / niveau » dans Conduite pour suivre ton essence',ms:4500});
     var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):'',ms:4500})}
     var H0=D.health;
