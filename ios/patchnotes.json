@@ -1,5 +1,14 @@
 [
  {
+  "v": "2.76",
+  "date": "2026-11-23",
+  "title": "Île mieux équilibrée",
+  "notes": [
+   "Icône et valeur de chaque côté de la caméra, texte centré dessous",
+   "Animation de la voiture plus douce à l’ouverture"
+  ]
+ },
+ {
   "v": "2.75",
   "date": "2026-11-23",
   "title": "L’île sort de la Dynamic Island",
