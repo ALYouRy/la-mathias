@@ -963,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.67';
+var APP_V='2.68';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1346,7 +1346,9 @@ function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S
 /* tracé fiable ? (recalé sur les routes, ou GPS assez dense) — sinon les grands sauts en ligne droite ne comptent pas pour la carte à dévoiler */
 function trackSure(r){var P=rawTrack(r);if(!P)return false;return !!(mmOf(r)||snapped(r)||!sparse(P,r))}
 function trackPieces(r){var P=trackOf(r)||rawTrack(r);if(!P||P.length<2)return [];if(trackSure(r))return [P];var out=[],cur=[P[0]];for(var i=1;i<P.length;i++){if(hav(P[i-1],P[i])>.15){if(cur.length>1)out.push(cur);cur=[P[i]]}else cur.push(P[i])}if(cur.length>1)out.push(cur);return out}
-function trackOf(r){var P=rawTrack(r);if(!P)return null;var M=mmOf(r);if(M)return M;if(sparse(P,r)){var S=snapped(r);if(S)return S}return P}
+/* 2.68 : un tracé GPS précis enregistré par l'iPhone est déjà sur les routes : on l'affiche tel quel (pas de recalage) */
+function trkPrecise(r){var D=data();return !!(r&&D.trk5&&D.trk5[r.t0])}
+function trackOf(r){var P=rawTrack(r);if(!P)return null;if(trkPrecise(r))return P;var M=mmOf(r);if(M)return M;if(sparse(P,r)){var S=snapped(r);if(S)return S}return P}
 function snapWait(){var w=Math.max(0,SNQ.last+1100-Date.now());return new Promise(function(ok){setTimeout(ok,w)})}
 /* 2.59 : d'abord « map matching » OSRM (tolère les points espacés), sinon itinéraire par les points ; échec retenté après 3 jours */
 var OSRMM='https://routing.openstreetmap.de/routed-car/match/v1/driving/';
@@ -1659,8 +1661,8 @@ function mmSave(){var D=mmLoad(),k=Object.keys(D).filter(function(x){return D[x]
 function mmEnc(P){var la=0,lo=0,o=[];P.forEach(function(p){var a=Math.round(p[0]*1e5),b=Math.round(p[1]*1e5);o.push(sb36(a-la),sb36(b-lo));la=a;lo=b});return o.join('.')}
 function mmDec(s){var a=s.split('.'),la=0,lo=0,P=[];for(var i=0;i+1<a.length;i+=2){la+=parseInt(a[i],36)||0;lo+=parseInt(a[i+1],36)||0;P.push([la/1e5,lo/1e5])}return P.length>=2?P:null}
 var MMC={};
-function mmInfo(r){if(sample||!r||SET.mmOff)return null;var x=mmLoad()[r.t0];if(!x||!x.c)return null;if(MMC[r.t0]&&MMC[r.t0].s===x.c)return MMC[r.t0];var P=mmDec(x.c),W=x.w?x.w.split('.').map(function(v){return parseInt(v,36)}):null;MMC[r.t0]={s:x.c,P:P,W:W};return MMC[r.t0]}
-function mmOf(r){var I=mmInfo(r);return I?I.P:null}
+function mmInfo(r){if(sample||!r||SET.mmOff||trkPrecise(r))return null;var x=mmLoad()[r.t0];if(!x||!x.c)return null;if(MMC[r.t0]&&MMC[r.t0].s===x.c)return MMC[r.t0];var P=mmDec(x.c),W=x.w?x.w.split('.').map(function(v){return parseInt(v,36)}):null;MMC[r.t0]={s:x.c,P:P,W:W};return MMC[r.t0]}
+function mmOf(r){if(trkPrecise(r))return null;var I=mmInfo(r);return I?I.P:null}
 function mmTrip(r){
   var P=rawTrack(r);if(!P||P.length<2)return Promise.resolve(false);
   return mmMatch2(P,r.dist).then(function(m){var D=mmLoad();
@@ -1670,7 +1672,7 @@ function mmTrip(r){
 }
 function mmQueue(){
   if(sample||MM.busy||SET.mmOff)return;var D=mmLoad(),now=Date.now();
-  var L=list().filter(function(r){var x=D[r.t0];return !r.demo&&rawTrack(r)&&(!x||(x.fail&&now-x.fail>3*864e5))}).sort(function(a,b){return b.t0-a.t0});
+  var L=list().filter(function(r){var x=D[r.t0];return !r.demo&&!trkPrecise(r)&&rawTrack(r)&&(!x||(x.fail&&now-x.fail>3*864e5))}).sort(function(a,b){return b.t0-a.t0});
   if(!L.length)return;MM.busy=true;var ch=0,i=0;
   (function nx(){
     if(i>=L.length||i>=12){MM.busy=false;if(ch)mmRefresh();if(i<L.length)setTimeout(mmQueue,3000);return}
