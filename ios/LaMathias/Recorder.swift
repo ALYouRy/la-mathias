@@ -375,12 +375,15 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         }
         R.pv = speed
         // point du tracé : au plus 1 par seconde (12 m mini), avec conso, vitesse et secondes depuis le point précédent
+        // 2.60 : un point par seconde dès 4 m parcourus si le GPS est précis (≤ 25 m), sauts impossibles rejetés
         if let g = gps, g.horizontalAccuracy >= 0, g.horizontalAccuracy <= 60, Date().timeIntervalSince(g.timestamp) < 8 {
             let nowMs = Date().timeIntervalSince1970 * 1000
             var add = R.P.isEmpty
             if let lp = R.P.last, let la = lp[0] as? Double, let lo = lp[1] as? Double {
                 let dd = CLLocation(latitude: la, longitude: lo).distance(from: g)
-                add = (dd >= 12 && nowMs - R.lastP >= 1000) || nowMs - R.lastP >= 15000
+                let dt = max(0.5, (nowMs - R.lastP) / 1000)
+                let minD = g.horizontalAccuracy <= 25 ? 4.0 : 12.0
+                add = ((dd >= minD && nowMs - R.lastP >= 1000) || nowMs - R.lastP >= 15000) && dd / dt < 75
             }
             if add {
                 let c: Any = d["cons"].map { min(99, $0) } ?? NSNull()
