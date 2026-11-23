@@ -884,6 +884,16 @@ button{font:inherit;color:inherit}
 .dvwake{display:block;width:100%;margin:0 0 10px;padding:12px;border-radius:14px;border:1px dashed var(--accent);background:transparent;color:var(--accent);font-size:15px}
 .dvset input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}.dvguide ol{padding-left:20px;margin:8px 0;line-height:1.5}.dvguide li{margin-bottom:6px}
 .natl{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.natl button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);text-align:left;font-size:16px}.natl small{color:var(--fg-3);font-size:12.5px}
+.gpsv{position:relative;margin:0 -18px;height:calc(100vh - 190px);height:calc(100dvh - 190px);min-height:460px;border-radius:22px 22px 0 0;overflow:hidden;background:#0b0820}
+.gpsbox,.gpsmap{position:absolute;inset:0}.gdot{width:18px;height:18px;border-radius:50%;background:#00e5ff;border:3px solid #fff;box-shadow:0 0 14px #00e5ff}
+.gh{position:absolute;top:12px;background:rgba(10,8,30,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:8px 14px;text-align:center;min-width:92px}
+.gh b{display:block;font-size:40px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}.gh small{font-size:12px;color:var(--fg-3)}.gh i{display:block;font-style:normal;color:var(--accent);font-weight:700;font-size:14px;margin-top:2px}
+.gtl{left:12px}.gtr{right:12px;min-width:120px}.gtr em{display:block;font-style:normal;color:#5ee38b;font-size:12px;margin-top:3px}
+.gbar{height:6px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:6px;overflow:hidden}.gbar i{display:block;height:100%;transform-origin:left;transform:scaleX(0);transition:transform .5s,background .5s}
+.gbtns{position:absolute;right:12px;top:120px;display:flex;flex-direction:column;gap:8px}.gbtn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(10,8,30,.8);color:#fff;font-weight:700;font-size:15px}
+.gpan{position:absolute;left:8px;right:8px;bottom:8px;background:rgba(10,8,30,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:10px 12px}
+.gg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;text-align:center}.gg3 b{display:block;font-size:21px;font-variant-numeric:tabular-nums}.gg3 small{font-size:11px;color:var(--fg-3)}
+.gpan canvas{width:100%;height:42px;margin:6px 0 2px}.gline{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:12.5px;color:var(--fg-3)}.gline b{color:var(--fg);font-size:14px}.gline.g2{margin-top:4px;color:#9be7b4}
 </style>
 </head>
 <body>
@@ -952,7 +962,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.60';
+var APP_V='2.61';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4394,7 +4404,7 @@ function drvCardWire(){var a=$('#dvopen');if(a)a.onclick=openDrive;var b=$('#dvf
    d'admission, corrections de mélange, coupure d'injection apprise), même enregistrement des trajets.
    Sans OBD : mode « GPS seul » avec une conso estimée (marquée « estimée »). */
 var OBD={dev:null,w:null,n:null,buf:'',wait:null,q:Promise.resolve(),ok:false,sup:{},can:false,st:'off',err:''},
-  DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0,hist:[],tab:'dir',cm:'l100',sig:''},
+  DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0,hist:[],tab:'gps',cm:'l100',sig:'',trail:[],trT:0,acc:{t0:0,idle:0,cutS:0,cutKm:0},g3d:true},
   ACTK='sandero-actif',OBDK='sandero-obd-dev',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
 function drvSet(){var s={};try{s=JSON.parse(localStorage.getItem('sandero-drv')||'{}')}catch(e){}if(!s.disp)s.disp=1.2;if(!s.k)s.k=1;if(!s.redline)s.redline=5000;if(!s.endMin)s.endMin=5;if(s.auto==null)s.auto=true;return s}
 function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}if(NAT)natPost({op:'set',disp:s.disp,k:s.k,redline:s.redline,endMin:s.endMin})}
@@ -4575,7 +4585,7 @@ function recSave(R,recovered){
 function recRecover(){var a=null;try{a=JSON.parse(localStorage.getItem(ACTK)||'null')}catch(e){}if(a&&a.t0){try{localStorage.removeItem(ACTK)}catch(e){}recSave(a,true)}}
 /* --- écran Conduite --- */
 function drvStart(mode){if(mode==='obd'&&DRV.rec&&DRV.rec.src==='gps'&&DRV.rec.dist<1)DRV.rec.src='obd';DRV.mode=mode;DRV.on=true;if(mode!=='nat'){gpsStart();wakeOn()}if(mode==='obd')obdLoop();
-  if(!DRV.timer){var last=Date.now();DRV.timer=setInterval(function(){var now=Date.now(),dt=Math.min(5,(now-last)/1000);last=now;if(DRV.on){if(DRV.mode!=='nat')recTick(dt);var d=DRV.d;DRV.hist.push({c:d.cons!=null?Math.min(40,d.cons):null,h:d.lph,s:d.speed||0});if(DRV.hist.length>600)DRV.hist.shift()}drvDraw();if(TAB==='car'&&$('#dvcard'))drvCardUpd()},1000)}drvDraw()}
+  if(!DRV.timer){var last=Date.now();DRV.timer=setInterval(function(){var now=Date.now(),dt=Math.min(5,(now-last)/1000);last=now;if(DRV.on){if(DRV.mode!=='nat')recTick(dt);gpsTick(dt);var d=DRV.d;DRV.hist.push({c:d.cons!=null?Math.min(40,d.cons):null,h:d.lph,s:d.speed||0});if(DRV.hist.length>600)DRV.hist.shift()}drvDraw();if(TAB==='car'&&$('#dvcard'))drvCardUpd()},1000)}drvDraw()}
 function drvStop(){if(DRV.rec)recEnd();DRV.on=false;DRV.mode='';clearInterval(DRV.timer);DRV.timer=null;gpsStop();wakeOff();
   if(OBD.dev&&OBD.dev.gatt&&OBD.dev.gatt.connected){OBD.ok=false;try{OBD.dev.gatt.disconnect()}catch(e){}}OBD.st='off';drvDraw()}
 var NSV='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAYXbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAD6AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAmh0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAD6AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAA+gAAAAAAABAAAAAAHgbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAABAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABi21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAUtzdGJsAAAAt3N0c2QAAAAAAAAAAQAAAKdhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAALWF2Y0MBQsAK/+EAFWdCwAraewEQAAADABAAAAMAIPEiagEABWjOAZcgAAAAEHBhc3AAAAABAAAAAQAAABRidHJ0AAAAAAAABUgAAAVIAAAAGHN0dHMAAAAAAAAAAQAAAAQAAEAAAAAAFHN0c3MAAAAAAAAAAQAAAAEAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAEAAAABAAAAJHN0c3oAAAAAAAAAAAAAAAQAAAKGAAAACgAAAAoAAAAKAAAAIHN0Y28AAAAAAAAABAAABlwAAAkCAAAJLAAACVYAAALZdHJhawAAAFx0a2hkAAAAAwAAAAAAAAAAAAAAAgAAAAAAAA+gAAAAAAAAAAAAAAABAQAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAAPoAAABAAAAQAAAAACUW1kaWEAAAAgbWRoZAAAAAAAAAAAAAAAAAAAH0AAAIEAVcQAAAAAAC1oZGxyAAAAAAAAAABzb3VuAAAAAAAAAAAAAAAAU291bmRIYW5kbGVyAAAAAfxtaW5mAAAAEHNtaGQAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAcBzdGJsAAAAfnN0c2QAAAAAAAAAAQAAAG5tcDRhAAAAAAAAAAEAAAAAAAAAAAABABAAAAAAH0AAAAAAADZlc2RzAAAAAAOAgIAlAAIABICAgBdAFQAAAAAAH0AAAAEgBYCAgAUViFblAAaAgIABAgAAABRidHJ0AAAAAAAAH0AAAAEgAAAAIHN0dHMAAAAAAAAAAgAAACAAAAQAAAAAAQAAAQAAAAAoc3RzYwAAAAAAAAACAAAAAQAAAAEAAAABAAAAAgAAAAgAAAABAAAAmHN0c3oAAAAAAAAAAAAAACEAAAAVAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAkc3RjbwAAAAAAAAAFAAAGRwAACOIAAAkMAAAJNgAACWAAAAAac2dwZAEAAAByb2xsAAAAAgAAAAH//wAAABxzYmdwAAAAAHJvbGwAAAABAAAAIQAAAAEAAABidWR0YQAAAFptZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAAC1pbHN0AAAAJal0b28AAAAdZGF0YQAAAAEAAAAATGF2ZjYwLjE2LjEwMAAAAAhmcmVlAAADQW1kYXTeAgBMYXZjNjAuMzEuMTAyAAIwQA4AAAJvBgX//2vcRem95tlIt5Ys2CDZI+7veDI2NCAtIGNvcmUgMTY0IHIzMTA4IDMxZTE5ZjkgLSBILjI2NC9NUEVHLTQgQVZDIGNvZGVjIC0gQ29weWxlZnQgMjAwMy0yMDIzIC0gaHR0cDovL3d3dy52aWRlb2xhbi5vcmcveDI2NC5odG1sIC0gb3B0aW9uczogY2FiYWM9MCByZWY9MSBkZWJsb2NrPTE6LTM6LTMgYW5hbHlzZT0weDE6MHgxIG1lPWhleCBzdWJtZT0yIHBzeT0xIHBzeV9yZD0yLjAwOjAuNzAgbWl4ZWRfcmVmPTAgbWVfcmFuZ2U9MTYgY2hyb21hX21lPTEgdHJlbGxpcz0wIDh4OGRjdD0wIGNxbT0wIGRlYWR6b25lPTIxLDExIGZhc3RfcHNraXA9MSBjaHJvbWFfcXBfb2Zmc2V0PTAgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD0xMCByYz1jcmYgbWJ0cmVlPTEgY3JmPTUxLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjIwAIAAAAAPZYiEBrOf//8PRQABAx+AARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAGQZogGs51ARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAGQZpAGc51ARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAGQZpgGM51ARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAc=';
@@ -4748,12 +4758,13 @@ var SENS=[['rpm','Régime','tr/min',function(v){return Math.round(v/10)*10}],['s
   ['stft','Correction courte','%',f1],['ltft','Correction longue','%',f1],['fuel','Niveau carburant','%',Math.round],['volt','Batterie','V',f1],['lph','Débit carburant','L/h',f1],['fss','Boucle carburant','',function(v){return {1:'ouverte (froid)',2:'fermée',4:'ouverte (charge / coupure)',8:'ouverte (défaut)',16:'fermée (défaut)'}[v]||String(v)}]];
 /* --- écran Conduite : onglets Compteur, Conso, Capteurs, Diagnostic --- */
 var GPATH='M30.3 156A92 92 0 1 1 189.7 156';
-function drvTabs(){var T=[['dir','Compteur'],['con','Conso'],['sen','Capteurs'],['dia','Diagnostic']];return '<div class="seg dvtabs">'+T.map(function(t){return '<button type="button" data-t="'+t[0]+'" aria-pressed="'+(DRV.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'}
+function drvTabs(){var T=[['gps','GPS'],['dir','Compteur'],['con','Conso'],['sen','Capteurs'],['dia','Diagnostic']];return '<div class="seg dvtabs">'+T.map(function(t){return '<button type="button" data-t="'+t[0]+'" aria-pressed="'+(DRV.tab===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'}
 function drvBody(){
   var obd=DRV.mode==='obd'||DRV.mode==='nat',R=DRV.rec,t=DRV.tab,S=drvSet();
+  if(t==='gps')return gpsHtml();
   if(t==='con'){
     return '<div class="dvcons"><b data-v="cons" data-c="cons">–</b><u data-v="consU">L/100</u><em data-v="cut"></em></div>'+
-      '<div class="det dvdet"><div><span>Dernière minute</span><b data-v="c1m">–</b></div><div><span>Moyenne du trajet'+(obd?'':' (estimée)')+'</span><b data-v="avg">–</b></div><div><span>Carburant du trajet</span><b data-v="fuelT">–</b></div><div><span>Calculée d’après</span><b data-v="srcT">–</b></div></div>'+
+      '<div class="det dvdet"><div><span>Dernière minute</span><b data-v="c1m">–</b></div><div><span>Moyenne du trajet'+(obd?'':' (estimée)')+'</span><b data-v="avg">–</b></div><div><span>Carburant du trajet</span><b data-v="fuelT">–</b></div><div><span>Au ralenti (trajet)</span><b data-v="idleT">–</b></div><div><span>Coupure d’injection (trajet)</span><b data-v="cutT">–</b></div><div><span>Coût aux 100 km</span><b data-v="c100">–</b></div><div><span>Calculée d’après</span><b data-v="srcT">–</b></div></div>'+
       '<div class="dvcv"><div class="seg dvcm"><button type="button" data-cm="l100" aria-pressed="'+(DRV.cm!=='lph')+'">L/100</button><button type="button" data-cm="lph" aria-pressed="'+(DRV.cm==='lph')+'">L/h</button></div><canvas id="dvcv" width="600" height="220"></canvas><div class="dvcx"><span>−3 min</span><span>maintenant</span></div></div>'+
       '<div class="dvtank"><div class="dvtk"><span><b data-v="range">–</b> km d’autonomie</span><span><b data-v="rem">–</b> L <i data-v="remTag"></i></span></div><div class="bar"><i id="dvbar"></i></div><p class="note" data-v="tankNote"></p><button type="button" class="btn ghost" id="dvfill">⛽ Plein / niveau</button></div>';
   }
@@ -4790,6 +4801,7 @@ function drvVals(){
   var c1=winAvg(60);V.c1m=c1!=null?f1(c1)+' L/100':'–';if(DRV.tab==='con')V.avg=avg!=null?f1(avg)+' L/100':'–';V.srcT=DRV.mode==='gps'?'le GPS (estimation)':d.src==='mesurée'?'le débit carburant de la voiture':d.src==='débit d’air'?'le débit d’air':d.src?'la pression d’admission et le régime':'–';V.fuelT=R?f2(R.fuel*k).replace(/0$/,'')+' L · '+f2(R.fuel*k*pr)+' €':'–';
   V.range=FI.range!=null?Math.round(FI.range/5)*5:'–';V.rem=FI.rem!=null?f1(FI.rem):'–';V.remTag=FI.rem==null?'':FI.meas?'· mesurés':'· estimés';
   V.tankNote=FI.rem==null?'Touche « Plein / niveau » à ton prochain passage à la pompe : l’appli suivra ensuite ce que tu consommes.':(FI.meas?'Niveau lu sur la voiture. ':'Dernier plein le '+new Date(FS.fillT).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+' · '+fi(Math.round(FS.dist))+' km depuis. ')+'Autonomie calculée avec '+FI.src+' ('+f1(FI.cons)+' L/100).';
+  gpsVals(V,d,R,k,pr,FI,avg,g);
   SENS.forEach(function(s){var v=d[s[0]];V['s_'+s[0]]=v==null?'–':String(s[3](v))+(s[0]==='volt'&&DRV.tab==='dia'?' V':'')});
   return {V:V,fi:FI,avg:avg};
 }
@@ -4800,6 +4812,7 @@ function drvUpd(){
   var ga=$('#dvga');if(ga){var p=d.rpm!=null?Math.max(0,Math.min(100,d.rpm/7000*100)):0;ga.style.strokeDasharray=p.toFixed(1)+' 200';ga.classList.toggle('red',d.rpm!=null&&d.rpm>=(drvSet().redline||5000))}
   var bar=$('#dvbar');if(bar){bar.style.transform='scaleX('+(o.fi.pct||0).toFixed(3)+')';bar.className=o.fi.pct!=null&&o.fi.pct<.09?'bad':o.fi.pct!=null&&o.fi.pct<.15?'warn':''}
   var cv=$('#dvcv');if(cv)drvCurve(cv);
+  if(DRV.tab==='gps')gpsUpd(o);
 }
 function drvCurve(cv){
   var x=cv.getContext('2d'),W=cv.width,H=cv.height,A=DRV.hist.slice(-180),lph=DRV.cm==='lph',vals=A.map(function(p){return lph?p.h:p.c});
@@ -4839,6 +4852,7 @@ function drvWire(){
   B('dtcr',function(){dtcRead(false)});B('natscan',natScan);B('natforget',function(){natPost({op:'forget'})});B('natperm',function(){natPost({op:NATL&&NATL.loc==='none'?'perm':'settings'})});B('dtcc',dtcClear);
   B('dvcopy',function(){try{navigator.clipboard.writeText(location.origin+location.pathname);toast('Lien copié : colle-le dans Bluefy.')}catch(e){toast(location.origin+location.pathname,6000)}});
   Array.prototype.forEach.call(document.querySelectorAll('#drive .dvtabs button'),function(b){b.onclick=function(){DRV.tab=b.getAttribute('data-t');drvDraw(true)}});
+  if(DRV.tab==='gps'&&DRV.on)gpsMount();B('grec',function(){DRV.gfree=0;gpsUpd()});B('g3d',function(){DRV.g3d=!DRV.g3d;DRV.gfree=0;var b=$('#g3d');if(b)b.textContent=DRV.g3d?'3D':'2D';gpsUpd()});
   Array.prototype.forEach.call(document.querySelectorAll('#drive .dvcm button'),function(b){b.onclick=function(){DRV.cm=b.getAttribute('data-cm');drvDraw(true)}});
   var inp=function(id,k,mn,mx){var i=$('#'+id);if(i)i.onchange=function(){var v=parseFloat(String(i.value).replace(',','.'));if(!(v>=mn&&v<=mx))return;if(k==='tank'){if(!db.snap)snapUpdate();db.snap.tank=Math.round(v);save();return}var s=drvSet();s[k]=v;drvSave(s)}};
   var au=$('#dvauto');if(au)au.onchange=function(){var s=drvSet();s.auto=au.checked;drvSave(s)};inp('dvdisp','disp',.6,3);inp('dvk','k',.6,1.6);inp('dvred','redline',3000,7000);inp('dvtank','tank',20,90);inp('dvend','endMin',1,30);
@@ -4886,7 +4900,7 @@ function natLive(o){
   if(OBD.ok&&DRV.mode==='gps'){if(DRV.rec&&DRV.rec.dist<1){DRV.rec=null;try{localStorage.removeItem(ACTK)}catch(e){}}else if(DRV.rec)recEnd();gpsStop();wakeOff();DRV.mode=''}
   if(DRV.mode!=='gps'){
     if(OBD.ok||o.rec){if(!DRV.on||DRV.mode!=='nat')drvStart('nat');DRV.d=Object.assign({},o.d||{});DRV.d.t=Date.now();
-      DRV.rec=o.rec?{dist:o.rec.dist,dur:o.rec.dur,fuel:o.rec.fuel,src:'obd',nat:true}:null}
+      DRV.rec=o.rec?{t0:o.rec.t0,dist:o.rec.dist,dur:o.rec.dur,fuel:o.rec.fuel,src:'obd',nat:true}:null;DRV.ngps=o.gps||null}
     else if(DRV.on&&DRV.mode==='nat'){DRV.on=false;DRV.mode='';DRV.rec=null;clearInterval(DRV.timer);DRV.timer=null}
   }
   if(OBD.ok&&!was){BATS={first:true,runN:0,runPush:false};setTimeout(function(){if(OBD.ok&&DRV.mode==='nat')dtcRead(true)},4000)}
@@ -4921,6 +4935,74 @@ function natPickDraw(){
 }
 if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin}});setTimeout(function(){natPost({op:'trips'})},1500)}
 
+
+/* ---------- 2.61 : écran GPS en direct, avec toute la conso ---------- */
+function drvPos(){
+  if(DRV.mode==='nat'&&DRV.ngps){var q=DRV.ngps;return {la:q.la,lo:q.lo,acc:q.acc,crs:q.crs!=null&&q.crs>=0?q.crs:null,sp:q.sp!=null&&q.sp>=0?q.sp:null}}
+  var g=DRV.gps;if(!g||Date.now()-g.t>15000)return null;return {la:g.la,lo:g.lo,acc:g.acc,crs:null,sp:g.sp};
+}
+function gpsTick(dt){
+  var d=DRV.d,R=DRV.rec,v=d.speed||0,p=drvPos(),t0=R&&R.t0||0;
+  if(t0&&DRV.trT!==t0){DRV.trT=t0;DRV.trail=[]}
+  if(t0&&DRV.acc.t0!==t0)DRV.acc={t0:t0,idle:0,cutS:0,cutKm:0};
+  if(R){if(v<2&&d.lph!=null)DRV.acc.idle+=d.lph*dt/3600;if(d.cut){DRV.acc.cutS+=dt;DRV.acc.cutKm+=v*dt/3600}}
+  if(p&&p.acc<=40){var L=DRV.trail[DRV.trail.length-1];if(!L||hav([L[0],L[1]],[p.la,p.lo])>=.005){DRV.trail.push([p.la,p.lo,d.cut?0:d.cons]);if(DRV.trail.length>2500)DRV.trail.shift()}}
+}
+function gpsHtml(){
+  return '<div class="gpsv"><div id="gpsbox" class="gpsbox"></div>'+
+    '<div class="gh gtl"><b data-v="spd">–</b><small>km/h</small><i data-v="gearS"></i></div>'+
+    '<div class="gh gtr"><b data-v="cons" data-c="cons">–</b><small data-v="consU">L/100</small><div class="gbar"><i id="gbar"></i></div><em data-v="cutS"></em></div>'+
+    '<div class="gbtns"><button type="button" class="gbtn" id="g3d">'+(DRV.g3d?'3D':'2D')+'</button><button type="button" class="gbtn" id="grec" aria-label="Recentrer">◎</button></div>'+
+    '<div class="gpan"><div class="gg3"><div><b data-v="avgG" data-c="avgc">–</b><small>moy. trajet</small></div><div><b data-v="c1mG">–</b><small>dernière min.</small></div><div><b data-v="c5mG">–</b><small>5 dernières min.</small></div>'+
+    '<div><b data-v="lphG">–</b><small>L/h maintenant</small></div><div><b data-v="fuelG">–</b><small>carburant</small></div><div><b data-v="costG">–</b><small>coût</small></div></div>'+
+    '<canvas id="gspark" width="600" height="84"></canvas>'+
+    '<div class="gline"><span><b data-v="dist">–</b> km</span><span><b data-v="dur">–</b></span><span><b data-v="rpm">–</b> tr/min</span><span><b data-v="cool">–</b> eau</span><span><b data-v="rangeG">–</b> km d’autonomie</span></div>'+
+    '<div class="gline g2"><span data-v="idleT"></span><span data-v="cutT"></span></div></div></div>';
+}
+function gpsVals(V,d,R,k,pr,FI,avg,g){
+  var A=DRV.acc,c5=winAvg(300);V.gearS=g?gearTxt(g):'';V.cutS=d.cut?'coupure · 0 L':'';
+  V.avgG=avg!=null?f1(avg):'–';var c1=winAvg(60);V.c1mG=c1!=null?f1(c1):'–';V.c5mG=c5!=null?f1(c5):'–';V.lphG=d.lph!=null?f1(d.lph):'–';
+  V.fuelG=R?f2(R.fuel*k).replace(/0$/,'')+' L':'–';V.costG=R?f2(R.fuel*k*pr)+' €':'–';V.rangeG=FI.range!=null?Math.round(FI.range/5)*5:'–';
+  V.idleT=R?'Ralenti : '+f2(A.idle).replace(/0$/,'')+' L':'';V.cutT=R?'Coupure : '+f1(A.cutKm)+' km sans carburant ('+dur(A.cutS)+')':'';
+  V.c100=avg!=null&&pr?f2(avg*pr)+' €':'–';
+}
+function gpsMount(){
+  var box=$('#gpsbox');if(!box)return;
+  if(!DRV.gmEl){DRV.gmEl=document.createElement('div');DRV.gmEl.className='gpsmap'}
+  box.appendChild(DRV.gmEl);if(DRV.gm){setTimeout(function(){DRV.gm.resize();gpsUpd()},30);return}
+  if(DRV.gmL)return;DRV.gmL=1;
+  Promise.all([maplibre(),styleFor(SET.mapStyle)]).then(function(r){
+    var ml=r[0],p=drvPos();
+    var m=new ml.Map({container:DRV.gmEl,style:r[1],center:p?[p.lo,p.la]:[5.38,43.3],zoom:p?16.5:11,pitch:DRV.g3d?55:0,attributionControl:false,fadeDuration:0,maxPitch:70,dragRotate:false,pitchWithRotate:false});
+    DRV.gm=m;m.touchZoomRotate.disableRotation();
+    m.on('dragstart',function(){DRV.gfree=Date.now()});m.on('zoomstart',function(e){if(e.originalEvent)DRV.gfree=Date.now()});
+    m.on('load',function(){
+      m.addSource('gtr',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+      m.addLayer({id:'gtr-g',type:'line',source:'gtr',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','c'],'line-width':14,'line-opacity':.28,'line-blur':5}});
+      m.addLayer({id:'gtr',type:'line',source:'gtr',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','c'],'line-width':5.5}});
+      DRV.gmk=carMarker(ml,m,58,55);if(!DRV.gmk){var e=document.createElement('div');e.className='gdot';DRV.gmk=new ml.Marker({element:e})}
+      DRV.gmk._ml=ml;gpsUpd();
+    });
+  }).catch(function(){DRV.gmL=0;box.innerHTML='<p class="note dvc" style="padding-top:40%">Carte indisponible (pas de connexion ?)</p>'});
+}
+function gpsUpd(o){
+  var m=DRV.gm,p=drvPos(),d=DRV.d;
+  var bar=$('#gbar');if(bar){var c=d.cut?0:d.cons!=null?d.cons:null;bar.style.transform='scaleX('+(c==null?0:Math.min(1,c/20)).toFixed(3)+')';bar.style.background=c!=null?consoCol(c):''}
+  var sp=$('#gspark');if(sp)gpsSpark(sp);
+  if(!m||!m.isStyleLoaded()||!p)return;
+  var T=DRV.trail,F=[];for(var i=1;i<T.length;i++)F.push({type:'Feature',properties:{c:T[i][2]==null?'#8f86c9':consoCol(T[i][2])},geometry:{type:'LineString',coordinates:[[T[i-1][1],T[i-1][0]],[T[i][1],T[i][0]]]}});
+  var src=m.getSource('gtr');if(src&&(DRV.gtrN!==T.length)){DRV.gtrN=T.length;src.setData({type:'FeatureCollection',features:F})}
+  var crs=p.crs;if(crs==null&&T.length>1){var a=T[Math.max(0,T.length-4)],b=T[T.length-1];if(hav([a[0],a[1]],[b[0],b[1]])>.008)crs=brgLL([a[1],a[0]],[b[1],b[0]])}
+  var v=p.sp!=null?p.sp:(d.speed||0);if(crs!=null&&v>4)DRV.gcrs=crs;
+  if(DRV.gmk){DRV.gmk.setLngLat([p.lo,p.la]);if(!DRV.gmk._on){DRV.gmk.addTo(m);DRV.gmk._on=1}if(DRV.gmk.aimAt&&DRV.gcrs!=null)DRV.gmk.aimAt(DRV.gcrs,.35)}
+  if(DRV.gfree&&Date.now()-DRV.gfree<12000)return;DRV.gfree=0;
+  m.easeTo({center:[p.lo,p.la],bearing:DRV.gcrs!=null?DRV.gcrs:m.getBearing(),zoom:17.3-Math.min(2.8,v/42),pitch:DRV.g3d?55:0,padding:{top:0,bottom:Math.round((DRV.gmEl.clientHeight||600)*.32),left:0,right:0},duration:950,easing:function(t){return t}});
+}
+function gpsSpark(cv){
+  var x=cv.getContext('2d'),W=cv.width,H=cv.height,A=DRV.hist.slice(-120);x.clearRect(0,0,W,H);if(A.length<2)return;
+  var mx=12;A.forEach(function(p){if(p.c!=null&&p.c>mx)mx=Math.min(30,p.c)});var st=W/119,off=120-A.length;x.lineWidth=4;x.lineCap='round';
+  for(var i=1;i<A.length;i++){var a=A[i-1].c,b=A[i].c;if(a==null||b==null)continue;x.strokeStyle=consoCol(b);x.beginPath();x.moveTo((off+i-1)*st,H-3-Math.min(a,mx)/mx*(H-6));x.lineTo((off+i)*st,H-3-Math.min(b,mx)/mx*(H-6));x.stroke()}
+}
 function drvPill(){var p=$('#dvpill');if(!p)return;var R=DRV.rec;p.hidden=!DRV.on;if(!DRV.on)return;p.innerHTML='<i class="'+(R?'rec':'')+'"></i>'+(R?f1(R.dist)+' km · '+dur(R.dur):DRV.mode==='obd'||DRV.mode==='nat'?'OBD prêt':'GPS prêt')}
 
 /* bloque le zoom de Safari (pincement, double-toucher), sauf sur les cartes et la voiture 3D qui gèrent leurs propres gestes */
