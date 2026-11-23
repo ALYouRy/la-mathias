@@ -963,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.66';
+var APP_V='2.67';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4476,9 +4476,10 @@ function obdLoop(){
     if(!DRV.on||!OBD.ok){DRV.loop=false;return}
     var L=['rpm','speed'],sup=function(k){return OBD.sup[parseInt(PIDS[k][0].slice(2),16)]};
     if(sup('maf')&&(OBD.mafBad||0)<3){L.push('maf');if(OBD.mafBad){L.push('map');if(n%3===0)L.push('iat')}}else{L.push('map');if(n%3===0)L.push('iat')}
-    if(sup('fr'))L.push('fr');if(sup('eq')&&n%2===0)L.push('eq');if(sup('thr'))L.push('thr');if(n%4===1&&sup('timing'))L.push('timing');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
+    if(sup('fr'))L.push('fr');if(sup('eq')&&n%3===0)L.push('eq');if(sup('thr'))L.push('thr');if(n%4===1&&sup('timing'))L.push('timing');if(n%5===0){L.push('coolant');if(sup('stft'))L.push('stft');if(sup('ltft'))L.push('ltft')}if(n%10===0)L.push('load');if(n%40===0&&sup('fuel'))L.push('fuel');
     var p=Promise.resolve();L.forEach(function(k){p=p.then(function(){return obdRead(k)})});
-    if(n%2===0)p=p.then(function(){return obdSend('0103',2500).then(function(r){var b=obdBytes(r,'4103');if(b)DRV.d.fss=b[0]},function(){})});
+    p=p.then(function(){drvDerive();DRV.d.t=Date.now();drvDraw()});
+    if(n%3===0)p=p.then(function(){return obdSend('0103',2500).then(function(r){var b=obdBytes(r,'4103');if(b)DRV.d.fss=b[0]},function(){})});
     if(n%30===0)p=p.then(function(){return obdSend('ATRV',2500).then(function(r){var v=parseFloat(String(r).replace(',','.').replace(/[^0-9.]/g,''));if(v>6&&v<20){DRV.d.volt=v;battNote(v)}},function(){})});
     p.then(function(){n++;DRV.d.t=Date.now();drvDerive();setTimeout(nx,0)});
   })();
@@ -4518,12 +4519,12 @@ function drvDerive(){
   var ratio=r&&v>=4?v/(r/1000):null,g=estGear(),stable=ratio!=null&&DRVP.ratio!=null&&Math.abs(ratio/DRVP.ratio-1)<.08,
       notRising=DRVP.r==null||r==null||r-DRVP.r<=60,
       foot=d.thr==null?true:(CUTL.t!=null?d.thr<=CUTL.t+1.5:d.thr<16),
-      vac=d.map!=null?(CUTL.m!=null?d.map<CUTL.m*0.8:d.map<26):(d.load!=null&&d.load<12),
-      cand=src!=='mesurée'&&r!=null&&r>=1250&&v>=15&&g!=null&&stable&&notRising&&foot&&vac&&d.fss!==2;
+      thrK=d.thr!=null&&CUTL.t!=null,vac=d.map!=null?(thrK?d.map<(CUTL.m!=null?CUTL.m*.9:30):(CUTL.m!=null?d.map<CUTL.m*0.8:d.map<26)):(d.load!=null&&d.load<15),
+      cand=src!=='mesurée'&&r!=null&&r>=1200&&notRising&&foot&&vac;
   DRVP.cutN=cand?DRVP.cutN+1:0;DRVP.ratio=ratio;DRVP.r=r;
   d.cut=DRVP.cutN>=2;if(d.cut)lph=0;
   /* léger lissage (pas pendant une coupure) */
-  if(!d.cut&&DRVP.lph!=null&&DRVP.lph>0)lph=DRVP.lph*0.4+lph*0.6;DRVP.lph=lph;
+DRVP.lph=lph;
   d.src=src;d.lphRaw=lph;d.lph=lph*Math.max(.6,Math.min(1.6,S.k||1));d.cons=v>8?d.lph/v*100:null;
 }
 /* --- GPS --- */

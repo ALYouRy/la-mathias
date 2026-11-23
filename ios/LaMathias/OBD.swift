@@ -299,7 +299,7 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         initToken += 1
         let tok = initToken
         state = "init"
-        let seq: [(String, Double)] = [("ATZ", 4), ("ATE0", 2.5), ("ATL0", 2.5), ("ATS0", 2.5), ("ATH0", 2.5), ("ATAT1", 2.5), ("ATSP0", 2.5)]
+        let seq: [(String, Double)] = [("ATZ", 4), ("ATE0", 2.5), ("ATL0", 2.5), ("ATS0", 2.5), ("ATH0", 2.5), ("ATAT2", 2.5), ("ATSP0", 2.5)]
         func step(_ i: Int) {
             if tok != initToken { return }
             if i < seq.count { send(seq[i].0, timeout: seq[i].1) { _ in step(i + 1) }; return }

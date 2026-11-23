@@ -194,10 +194,16 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         return obd.sup.contains(v)
     }
 
+    /// CAN : « 010C1 » = « une seule réponse attendue », l'adaptateur répond sans attendre son délai (bien plus rapide)
+    private var oneResp = true, oneFail = 0
     private func read(_ k: String, _ done: @escaping (Bool) -> Void) {
         guard let p = pids[k] else { done(false); return }
-        obd.send(p.0) { r in
+        let fast = obd.can && oneResp
+        obd.send(p.0 + (fast ? "1" : "")) { r in
             let hdr = "4" + String(p.0.dropFirst())
+            if fast && (k == "rpm" || k == "speed") {
+                if OBD.bytes(r, hdr) == nil { self.oneFail += 1; if self.oneFail >= 3 { self.oneResp = false } } else { self.oneFail = 0 }
+            }
             if let b = OBD.bytes(r, hdr) {
                 self.d[k] = p.1(b)
                 if k == "maf" { self.mafBad = 0 }
@@ -219,12 +225,15 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
 
     private func next() {
         guard loopOn, obd.ready else { loopOn = false; return }
+        // 2.67 : d'abord l'essentiel (régime, vitesse, air, papillon) → conso recalculée et affichée aussitôt
         var L = ["rpm", "speed"]
-        if sup("maf") && mafBad < 3 { L.append("maf") } else { L.append("map"); if n % 3 == 0 { L.append("iat") } }
         if sup("fr") { L.append("fr") }
-        if sup("eq") && n % 2 == 0 { L.append("eq") }
+        else if sup("maf") && mafBad < 3 { L.append("maf"); if mafBad > 0 { L.append("map") } } else { L.append("map") }
         if sup("thr") { L.append("thr") }
-        if n % 4 == 1 && sup("timing") { L.append("timing") }
+        let core = L.count
+        if !(sup("maf") && mafBad < 3) && n % 4 == 0 { L.append("iat") }
+        if sup("eq") && n % 3 == 0 { L.append("eq") }
+        if n % 6 == 1 && sup("timing") { L.append("timing") }
         if n % 5 == 0 { L.append("coolant"); if sup("stft") { L.append("stft") }; if sup("ltft") { L.append("ltft") } }
         if n % 10 == 0 { L.append("load") }
         if n % 40 == 0 && sup("fuel") { L.append("fuel") }
@@ -234,11 +243,11 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             self.derive()
             // voiture coupée (pas de régime) : on interroge moins souvent
             let idle = self.d["rpm"] == nil && self.trip == nil
-            DispatchQueue.main.asyncAfter(deadline: .now() + (idle ? 3 : 0.05)) { self.next() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + (idle ? 3 : 0.01)) { self.next() }
         }
         func extra() {
             var ex: [String] = []
-            if n % 2 == 0 { ex.append("0103") }
+            if n % 3 == 0 { ex.append("0103") }
             if n % 30 == 0 { ex.append("ATRV") }
             var j = 0
             func one() {
@@ -257,6 +266,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             let k = L[i]; i += 1
             read(k) { ok in
                 if ok && (k == "rpm" || k == "speed") { self.dataT = Date().timeIntervalSince1970 }
+                if i == core { self.derive(); self.pushFast() }
                 step()
             }
         }
@@ -323,14 +333,17 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         let stable = ratio != nil && pRatio != nil && abs(ratio! / pRatio! - 1) < 0.08
         let notRising = pR == nil || r == nil || r! - pR! <= 60
         let foot: Bool = d["thr"] == nil ? true : (cutT != nil ? d["thr"]! <= cutT! + 1.5 : d["thr"]! < 16)
-        let vac: Bool = d["map"] != nil ? (cutM != nil ? d["map"]! < cutM! * 0.8 : d["map"]! < 26) : ((d["load"] ?? 100) < 12)
-        let cand = src != "mesurée" && (r ?? 0) >= 1250 && v >= 15 && gear && stable && notRising && foot && vac && fss != 2
+        // papillon connu et fermé : une dépression modérée suffit ; sinon on exige une forte dépression
+        let thrKnown = d["thr"] != nil && cutT != nil
+        let vac: Bool = d["map"] != nil ? (thrKnown ? d["map"]! < (cutM.map { $0 * 0.9 } ?? 30) : (cutM != nil ? d["map"]! < cutM! * 0.8 : d["map"]! < 26)) : ((d["load"] ?? 100) < 15)
+        // coupure d'injection : pied levé + forte dépression + régime ≥ 1200 qui ne monte pas (rapport engagé ou non)
+        _ = gear; _ = stable
+        let cand = src != "mesurée" && (r ?? 0) >= 1200 && notRising && foot && vac
         cutN = cand ? cutN + 1 : 0
         pRatio = ratio
         pR = r
         cut = cutN >= 2
         if cut { l = 0 }
-        if !cut, let p = pLph, p > 0 { l = p * 0.4 + l * 0.6 }
         pLph = l
         d["lphRaw"] = l
         d["lph"] = l * max(0.6, min(1.6, s.k))
@@ -348,6 +361,14 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         hist.append((d["lph"], d["speed"] ?? 0))
         if hist.count > 600 { hist.removeFirst(hist.count - 600) }
         if UIApplication.shared.applicationState == .active { pushLive() }
+    }
+
+    private var fastT = Date.distantPast
+    /// envoi immédiat à l'écran (jusqu'à ~7 fois par seconde) dès qu'une nouvelle conso est calculée
+    func pushFast() {
+        guard UIApplication.shared.applicationState == .active, Date().timeIntervalSince(fastT) > 0.14 else { return }
+        fastT = Date()
+        pushLive()
     }
 
     /// historique seconde par seconde (L/h, km/h) pour les moyennes « dernière minute » / « 5 min »
