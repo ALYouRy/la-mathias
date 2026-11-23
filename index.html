@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.85';
+var APP_V='2.86';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -3012,10 +3012,12 @@ function celTrophies(nw,T){
   if(!nw.length)return;var S=nw.slice().sort(function(a,b){return RANKN[b.tier]-RANKN[a.tier]}),top=S.slice(0,3).reverse(),rest=S.length-top.length;
   top.forEach(function(t){celebrate({kind:'tr',t:t})});
   /* 2.85 : chaque trophée passe aussi dans la Dynamic Island, avec la jauge du prochain trophée de la même catégorie */
-  top.slice().reverse().forEach(function(t){var nx=null;(T||[]).forEach(function(u){if(u.cat===t.cat&&!u.ok&&u.goal>0){var p=u.val/u.goal;if(!nx||p>nx.p)nx={u:u,p:p}}});
+  /* 2.86 : île seulement au moment où le trophée est gagné (pendant ou juste après un trajet), pas au rattrapage à l'ouverture */
+  var live=!!(DRV&&DRV.rec)||Date.now()-TENDT<180000;
+  if(live)top.slice().reverse().forEach(function(t){var nx=null;(T||[]).forEach(function(u){if(u.cat===t.cat&&!u.ok&&u.goal>0){var p=u.val/u.goal;if(!nx||p>nx.p)nx={u:u,p:p}}});
     island({icon:'star',pop:true,tone:'t-'+t.tier,lt:TIER[t.tier][1],ls:'trophée',title:t.name,sub:nx?'Prochain : '+nx.u.name+' · '+progTxt(nx.u):'Catégorie terminée ✓',
       progress:nx?Math.min(1,nx.p):1,ms:4200})});
-  if(rest>0)setTimeout(function(){island({fallback:1,icon:'star',pop:true,tone:'good',title:'+'+rest+' autre'+(rest>1?'s':'')+' trophée'+(rest>1?'s':''),sub:'À voir dans l’onglet À vie',ms:3200})},400);
+  if(rest>0&&live)setTimeout(function(){island({fallback:1,icon:'star',pop:true,tone:'good',title:'+'+rest+' autre'+(rest>1?'s':'')+' trophée'+(rest>1?'s':''),sub:'À voir dans l’onglet À vie',ms:3200})},400);
 }
 /* ---------- 2.23 : autoradio 2.7 ---------- */
 function unz(p){p=String(p||'');if(p.indexOf('z1')===0){var d=typeof LZString!=='undefined'?LZString.decompressFromEncodedURIComponent(p.slice(2)):null;if(!d)throw new Error('lz');return d}return p}
