@@ -4,7 +4,10 @@ import WidgetKit
 
 @main
 struct LaMathiasWidgets: WidgetBundle {
-    var body: some Widget { TripLiveActivity() }
+    var body: some Widget {
+        TripLiveActivity()
+        InfoLiveActivity()
+    }
 }
 
 private func col(_ s: TripAttributes.ContentState) -> Color {

@@ -38,4 +38,30 @@ final class LiveAct {
             Task { await a.end(s.map { .init(state: $0, staleDate: nil) }, dismissalPolicy: .after(Date().addingTimeInterval(10 * 60))) }
         }
     }
+
+    // MARK: - Messages courts (remplacent l'ancienne « Dynamic Island » de la page)
+
+    private var infoQueue: [(InfoAttributes.ContentState, Double)] = []
+    private var infoAct: Activity<InfoAttributes>?
+    private var infoBusy = false
+
+    func info(_ s: InfoAttributes.ContentState, seconds: Double) {
+        if !enabled { return }
+        infoQueue.append((s, max(3, min(12, seconds))))
+        if !infoBusy { nextInfo() }
+    }
+
+    private func nextInfo() {
+        guard !infoQueue.isEmpty else { infoBusy = false; return }
+        infoBusy = true
+        let (s, sec) = infoQueue.removeFirst()
+        for a in Activity<InfoAttributes>.activities { Task { await a.end(nil, dismissalPolicy: .immediate) } }
+        infoAct = try? Activity.request(attributes: InfoAttributes(kind: s.icon), content: .init(state: s, staleDate: nil), pushType: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + sec) { [weak self] in
+            guard let self = self else { return }
+            if let a = self.infoAct { Task { await a.end(nil, dismissalPolicy: .immediate) } }
+            self.infoAct = nil
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.nextInfo() }
+        }
+    }
 }

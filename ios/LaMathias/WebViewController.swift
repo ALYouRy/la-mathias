@@ -84,6 +84,10 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             core.js("window.LMN&&LMN.trips(" + Core.json(Store.all()) + ")")
         case "ack":
             if let ids = m["ids"] as? [NSNumber] { Store.ack(ids.map { $0.doubleValue }) }
+        case "island":
+            let st = InfoAttributes.ContentState(icon: (m["icon"] as? String) ?? "car", title: (m["title"] as? String) ?? "", sub: (m["sub"] as? String) ?? "",
+                                                 right: (m["right"] as? String) ?? "", tone: (m["tone"] as? String) ?? "info", progress: (m["progress"] as? NSNumber)?.doubleValue)
+            LiveAct.shared.info(st, seconds: ((m["ms"] as? NSNumber)?.doubleValue ?? 3000) / 1000)
         case "gps":
             let vc = GPSViewController()
             vc.range = (m["range"] as? NSNumber)?.doubleValue
