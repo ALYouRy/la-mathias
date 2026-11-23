@@ -1000,7 +1000,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.81';
+var APP_V='2.82';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4977,13 +4977,25 @@ function natLive(o){
   if(OBD.ok&&o.d&&o.d.volt){var now=Date.now();if(BATS.first){battNote(o.d.voltFirst||o.d.volt);NATB=now}else if(now-NATB>30000){NATB=now;battNote(o.d.volt)}}
   drvDraw();if(TAB==='car'&&$('#dvcard'))drvCardUpd();
 }
+/* 2.82 : fin de trajet → km parcourus à gauche, argent dépensé en grand à droite, courbe du trajet sous la caméra */
+var TENDT=0;
+function tripEndIsland(keys){
+  var D=data(),L=(keys||[]).map(function(k){return D.trips[k]}).filter(Boolean);if(!L.length)return;
+  var km=0,eur=0,fu=0,du=0,P0=priceOf(D.snap);L.forEach(function(r){km+=r.dist||0;du+=r.dur||0;fu+=r.fuel||0;eur+=(r.fuel||0)*(tPrice(r,P0)||0)});
+  TENDT=Date.now();
+  var one=L.length===1,last=L[L.length-1],e=eur>0?f2(eur)+' €':null;
+  island({icon:'check',pop:true,tone:'good',spark:one?tripSpark(last):null,
+    lt:f1(km)+' km',ls:one?dur(du):L.length+' trajets',lbl:'dépensé',
+    title:one?'Trajet terminé':L.length+' trajets enregistrés',sub:f1(km)+' km · '+dur(du)+(fu>0?' · '+f1(fu)+' L':''),
+    right:e||'',ms:5000,fallback:1});
+}
 /* trajets enregistrés par l'appli (même écran verrouillé) : on les range comme les autres */
 function natImport(L){
   var ids=[],n=0,k=drvSet().k||1;
   L.forEach(function(R){if(!R||!R.t0)return;ids.push(R.t0);var key=Math.round(R.t0/1000)*1000;if(db.trips[key])return;
     FS.used+=(R.fuel||0)*k;FS.dist+=R.dist||0;if(recSave(R,true))n++});
   if(ids.length)natPost({op:'ack',ids:ids});
-  if(n){ANIM=true;render();setTimeout(tripReveal,300);island({icon:'check',pop:true,tone:'good',title:n>1?n+' trajets enregistrés':'Trajet enregistré',sub:'Pendant que l’appli était fermée',ms:3000,fallback:1})}
+  if(n){ANIM=true;render();setTimeout(tripReveal,300);tripEndIsland(NEWT.slice(-n))}
 }
 function natStart(){
   var L=NATL||{},st=L.st,h='';
@@ -5170,7 +5182,7 @@ function welcomeIsland(){
     if(SET.welcome===false){}else if(FI&&FI.rem!=null){var rg=FI.range!=null?Math.round(FI.range/5)*5:null,low=FI.pct!=null&&FI.pct<.15;
       island({lt:f1(FI.rem)+' L',ls:low?'réservoir bas':'essence',lbl:rg!=null?'autonomie':'réservoir',icon:'fuel',tone:low?'warn':'good',title:(low?'Réservoir bas · ':'Essence : ')+f1(FI.rem)+' L',sub:(low?'Pense au plein · ':'')+(rg!=null?'Autonomie ':'')+(FI.meas?'niveau mesuré':'estimée'),right:rg!=null?fi(rg)+' km':Math.round((FI.pct||0)*100)+' %',progress:FI.pct,ms:6000,fallback:1})}
     else if(SET.welcome)island({icon:'fuel',tone:'info',title:'La Mathias',sub:'Fais « Plein / niveau » dans Conduite pour suivre ton essence',ms:4500});
-    var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({spark:tripSpark(lt),lt:f1(lt.dist)+' km',ls:dur(lt.dur),lbl:c!=null?'L/100':'score',icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):String(lt.eco),ms:4500})}
+    var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3&&Date.now()-TENDT>120000){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({spark:tripSpark(lt),lt:f1(lt.dist)+' km',ls:dur(lt.dur),lbl:c!=null?'L/100':'score',icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):String(lt.eco),ms:4500})}
     var H0=D.health;
     if(SET.alerts&&H0&&H0.dtc&&H0.dtc.length)island({fallback:1,icon:'warn',tone:'bad',title:'Voyant moteur',sub:H0.dtc.join(', '),right:H0.dtc.length+' code'+(H0.dtc.length>1?'s':''),ms:5000});
     if(SET.alerts&&H0&&H0.rest!=null&&H0.rest<12.2)island({fallback:1,icon:'battery',tone:'warn',title:'Batterie faible',sub:f1(H0.rest)+' V moteur arrêté',ms:4500});
