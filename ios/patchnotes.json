@@ -1,5 +1,14 @@
 [
  {
+  "v": "2.80",
+  "date": "2026-11-23",
+  "title": "Mini graphe du trajet",
+  "notes": [
+   "Courbe de conso du dernier trajet sous la caméra",
+   "Elle se dessine en direct à l’ouverture"
+  ]
+ },
+ {
   "v": "2.79",
   "date": "2026-11-23",
   "title": "Jauge sous la caméra",

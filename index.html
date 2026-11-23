@@ -211,6 +211,13 @@ button{font:inherit;color:inherit}
 .isl.natsb.big .ng.on{display:block;position:absolute;left:50%;top:55px;width:112px;margin-left:-56px;height:6px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;animation:nsIn .35s ease .15s both}
 .isl .ng i{display:block;height:100%;width:0;border-radius:3px;background:#00e5ff;transition:width .9s cubic-bezier(.3,.8,.3,1) .35s}
 .isl[data-tone="good"] .ng i{background:#34d17a}.isl[data-tone="warn"] .ng i{background:#ffb020}.isl[data-tone="bad"] .ng i{background:#ff4d4f}
+.isl .nsp{display:none}
+.isl.natsb.big .nsp.on{display:block;position:absolute;left:50%;top:47px;width:116px;margin-left:-58px;height:24px;animation:nsIn .35s ease .15s both}
+.isl .nsp svg{display:block;width:100%;height:100%;overflow:visible}
+.isl .nsp path{fill:none;stroke:#00e5ff;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:400;stroke-dashoffset:400;transition:stroke-dashoffset 1.2s ease .35s}
+.isl .nsp path.f{fill:rgba(0,229,255,.12);stroke:none}
+.isl .nsp.go path{stroke-dashoffset:0}
+.isl[data-tone="good"] .nsp path{stroke:#34d17a}.isl[data-tone="warn"] .nsp path{stroke:#ffb020}.isl[data-tone="bad"] .nsp path{stroke:#ff4d4f}
 @keyframes nsIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 .isl.glue.big{top:11px;width:232px;margin-left:-116px;height:84px;border-radius:34px}
 .isl.glue .ic{width:36px;height:36px;margin-left:12px}.isl.glue svg{width:20px;height:20px}
@@ -954,7 +961,7 @@ button{font:inherit;color:inherit}
 <div id="main"></div>
 <div class="tabmap hide" id="tabmap"><div id="tmc"></div><div class="tm-leg" id="tmleg"></div><button type="button" class="tm-3d" id="tm3d">3D</button><div class="tm-info hide" id="tminfo"></div></div><div class="fogtab hide" id="fogtab"></div>
 
-<div class="topbar"></div><div class="isl" id="isl" role="status" aria-live="polite"><div class="ic"></div><div class="tx"><b></b><small></small></div><div class="rt"></div><div class="nl"></div><div class="nr"></div><div class="ng"><i></i></div></div>
+<div class="topbar"></div><div class="isl" id="isl" role="status" aria-live="polite"><div class="ic"></div><div class="tx"><b></b><small></small></div><div class="rt"></div><div class="nl"></div><div class="nr"></div><div class="ng"><i></i></div><div class="nsp"></div></div>
 <nav class="tabs hide" id="tabs" role="tablist">
 <button type="button" role="tab" data-t="car"><svg viewBox="0 0 24 24"><path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8l2 5v3a1 1 0 0 1-1 1h-1M6 17H5a1 1 0 0 1-1-1"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/></svg>Voiture</button>
 <button type="button" role="tab" data-t="bilan"><svg viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg>Bilan</button>
@@ -992,7 +999,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.79';
+var APP_V='2.80';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1103,7 +1110,13 @@ function islNext(){
     /* 2.79 : jauge sous la caméra (réservoir…) quand le message a une progression */
     var NG=el.querySelector('.ng'),gi=NG.firstChild,pr=o.progress!=null&&isFinite(o.progress)?Math.max(0,Math.min(1,o.progress)):null;
     NG.classList.toggle('on',pr!=null);gi.style.transition='none';gi.style.width='0';void gi.offsetWidth;gi.style.transition='';
-    if(pr!=null)setTimeout(function(){gi.style.width=Math.round(pr*100)+'%'},30)}
+    if(pr!=null)setTimeout(function(){gi.style.width=Math.round(pr*100)+'%'},30)
+    /* 2.80 : mini graphe (conso du trajet) sous la caméra */
+    var SP=el.querySelector('.nsp'),sv=o.spark&&o.spark.length>2?o.spark:null;SP.className='nsp'+(sv?' on':'');SP.innerHTML='';
+    if(sv){var mn=Math.min.apply(null,sv),mx=Math.max.apply(null,sv),rg=mx-mn||1,W=116,H=22,pts=sv.map(function(v,i){return [(i/(sv.length-1)*W).toFixed(1),(H-1-(v-mn)/rg*(H-4)).toFixed(1)]});
+      var d='M'+pts.map(function(q){return q.join(' ')}).join(' L');
+      SP.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path class="f" d="'+d+' L'+W+' '+H+' L0 '+H+' Z"/><path d="'+d+'"/></svg>';
+      setTimeout(function(){SP.classList.add('go')},30)}}
   el.classList.remove('big');el.classList.add('on');
   requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('big')})});
   clearTimeout(ISL.timer);ISL.timer=setTimeout(islClose,o.ms||2800);
@@ -5140,6 +5153,11 @@ recRecover();
 setTimeout(autoGo,600);
 render();
 
+/* courbe compacte d'un trajet : conso point par point (sinon vitesse), ramenée à ~28 valeurs lissées */
+function tripSpark(r){try{var De=detOf(r);if(!De)return null;var src=De.c.filter(function(x){return x!=null}).length>3?De.c:De.v;
+  var v=src.filter(function(x){return x!=null&&isFinite(x)});if(v.length<4)return null;var N=Math.min(28,v.length),o=[];
+  for(var i=0;i<N;i++){var a=Math.floor(i*v.length/N),b=Math.max(a+1,Math.floor((i+1)*v.length/N)),m=0;for(var k=a;k<b;k++)m+=v[k];o.push(m/(b-a))}
+  return o.map(function(x,i){var a=o[i-1]!=null?o[i-1]:x,b=o[i+1]!=null?o[i+1]:x;return (a+2*x+b)/4})}catch(e){return null}}
 function welcomeIsland(){
   var D=data(),S=D.snap;
   /* appli iPhone : au démarrage, la vraie Dynamic Island affiche l'essence qui reste et l'autonomie, puis le dernier trajet */
@@ -5147,7 +5165,7 @@ function welcomeIsland(){
     if(SET.welcome===false){}else if(FI&&FI.rem!=null){var rg=FI.range!=null?Math.round(FI.range/5)*5:null,low=FI.pct!=null&&FI.pct<.15;
       island({lt:f1(FI.rem)+' L',ls:low?'réservoir bas':'essence',lbl:rg!=null?'autonomie':'réservoir',icon:'fuel',tone:low?'warn':'good',title:(low?'Réservoir bas · ':'Essence : ')+f1(FI.rem)+' L',sub:(low?'Pense au plein · ':'')+(rg!=null?'Autonomie ':'')+(FI.meas?'niveau mesuré':'estimée'),right:rg!=null?fi(rg)+' km':Math.round((FI.pct||0)*100)+' %',progress:FI.pct,ms:6000,fallback:1})}
     else if(SET.welcome)island({icon:'fuel',tone:'info',title:'La Mathias',sub:'Fais « Plein / niveau » dans Conduite pour suivre ton essence',ms:4500});
-    var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({lt:f1(lt.dist)+' km',ls:dur(lt.dur),lbl:c!=null?'L/100':'score',icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):String(lt.eco),ms:4500})}
+    var lt=realList()[0];if(lt&&Date.now()-lt.t0<36*3600e3){var c=lt.dist>.5&&lt.fuel>0?lt.fuel/lt.dist*100:null;island({spark:tripSpark(lt),lt:f1(lt.dist)+' km',ls:dur(lt.dur),lbl:c!=null?'L/100':'score',icon:'road',tone:'info',title:'Dernier trajet · '+f1(lt.dist)+' km',sub:dur(lt.dur)+(c!=null?' · '+f1(c)+' L/100':'')+' · score '+lt.eco,right:c!=null?f1(c):String(lt.eco),ms:4500})}
     var H0=D.health;
     if(SET.alerts&&H0&&H0.dtc&&H0.dtc.length)island({fallback:1,icon:'warn',tone:'bad',title:'Voyant moteur',sub:H0.dtc.join(', '),right:H0.dtc.length+' code'+(H0.dtc.length>1?'s':''),ms:5000});
     if(SET.alerts&&H0&&H0.rest!=null&&H0.rest<12.2)island({fallback:1,icon:'battery',tone:'warn',title:'Batterie faible',sub:f1(H0.rest)+' V moteur arrêté',ms:4500});
