@@ -1,5 +1,14 @@
 [
  {
+  "v": "2.79",
+  "date": "2026-11-23",
+  "title": "Jauge sous la caméra",
+  "notes": [
+   "Le niveau du réservoir se remplit sous la caméra à l’ouverture",
+   "Couleur verte, orange ou rouge selon le niveau"
+  ]
+ },
+ {
   "v": "2.78",
   "date": "2026-11-23",
   "title": "Vraie Dynamic Island",
