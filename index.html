@@ -952,8 +952,7 @@ button{font:inherit;color:inherit}
 <div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div class="mapw"><div id="mapc"></div><button type="button" class="rpl hide" id="rpl"></button><div class="ghc hide" id="ghc"></div><div class="mleg hide" id="mleg"></div></div><div class="prof hide" id="prof"><div class="prof-l" id="profl"></div><svg id="profs" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-label="Profil du trajet : fais glisser le doigt"></svg><div class="prof-x"><span>0 km</span><span id="profk"></span><span id="profx"></span></div></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
 
 <script src="car-model.js"></script>
-<script src="car3d.js?v=2.39"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="car3d.js?v=2.74"></script>
 <script>/* LZString 1.5.0 · Copyright (c) 2013 Pieroxy · licence MIT · https://github.com/pieroxy/lz-string */
 var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
 </script>
@@ -964,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.73';
+var APP_V='2.74';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4251,8 +4250,15 @@ var SC={done:{},total:0,added:0,last:'',any:false};
 function scLeft(){var n=0;for(var i=1;i<=SC.total;i++)if(!SC.done[i])n++;return n}
 function progDraw(){var p=$('#sprog'),h='';if(SC.total>1)for(var i=1;i<=SC.total;i++)h+='<i'+(SC.done[i]?' class="ok"':'')+'></i>';p.innerHTML=h}
 function stopScan(){running=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}$('#scan').classList.add('hide');if(SC.any){SC.any=false;ANIM=true;render()}}
+/* 2.74 : lecteur QR chargé seulement quand on en a besoin (ne ralentit plus l'ouverture) */
+var QRL=null;
+function qrLoad(cb){if(typeof jsQR==='function'){cb&&cb();return}
+  if(!QRL){QRL=[];var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';sc.async=true;
+    sc.onload=function(){var L=QRL;QRL=null;L.forEach(function(f){f&&f(true)})};
+    sc.onerror=function(){var L=QRL;QRL=null;L.forEach(function(f){f&&f(false)})};document.head.appendChild(sc)}
+  QRL.push(cb?function(ok){if(ok&&typeof jsQR==='function')cb();else toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500)}:null)}
 function scan(){
-  if(typeof jsQR!=='function'){toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500);return}
+  if(typeof jsQR!=='function'){qrLoad(scan);return}
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){codeSheet();return}
   SC={done:{},total:0,added:0,tracks:0,last:'',any:false};progDraw();
   $('#scan').classList.remove('hide');$('#smsg').textContent='Vise le QR code affiché sur l’autoradio';
@@ -4372,7 +4378,7 @@ function qrFromImage(file){
   });
 }
 function photoScan(files){
-  if(typeof jsQR!=='function'){toast('Le lecteur de QR code n’a pas pu se charger : vérifie la connexion internet du téléphone.',4500);return}
+  if(typeof jsQR!=='function'){qrLoad(function(){photoScan(files)});return}
   var L=Array.prototype.slice.call(files||[]);if(!L.length)return;var open=!$('#scan').classList.contains('hide');
   if(!open||!SC||!SC.done)SC={done:{},total:0,added:0,tracks:0,last:'',any:false};
   var msg=function(s){if(open)$('#smsg').textContent=s};msg('Lecture de '+L.length+' photo'+(L.length>1?'s':'')+'…');
@@ -5120,12 +5126,14 @@ function welcomeIsland(){
 /* ---------- animation d'ouverture : ta Sandero en 3D (sinon la version néon) ---------- */
 (function(){
   var sp=document.getElementById('splash');if(!sp)return;
+  /* 2.74 : dans l'appli iPhone, ouverture express (animation 2× plus courte, île tout de suite) */
+  var FAST=typeof NAT!=='undefined'&&NAT;if(FAST)sp.classList.add('fast');
   var snap=(db&&db.snap)||null;
   if(snap&&snap.plate)document.getElementById('spplt').textContent=snap.plate;else if(!snap)document.getElementById('sppl').style.display='none';
   var done=false,cv=document.getElementById('car-gl'),home=cv.parentNode,next=cv.nextSibling;
   function putBack(){cv.classList.remove('cvfly');cv.style.left=cv.style.top=cv.style.width=cv.style.height='';if(cv.parentNode!==home)home.insertBefore(cv,next)}
-  function end(){if(done)return;done=true;var was3d=sp&&sp.classList.contains('sp3d');putBack();if(sp&&sp.parentNode)sp.parentNode.removeChild(sp);sp=null;ANIM=true;try{render()}catch(e){}setTimeout(welcomeIsland,was3d?1500:300);if(was3d&&SET.flash&&window.Car3D&&window.Car3D.flash)setTimeout(function(){window.Car3D.flash()},120)}
-  function neon(){if(!sp)return;sp.classList.remove('sp3d');putBack();sp.classList.remove('wait');setTimeout(end,3200)}
+  function end(){if(done)return;done=true;var was3d=sp&&sp.classList.contains('sp3d');putBack();if(sp&&sp.parentNode)sp.parentNode.removeChild(sp);sp=null;ANIM=true;try{render()}catch(e){}setTimeout(function(){try{qrLoad()}catch(e){}},4000);setTimeout(welcomeIsland,FAST?250:(was3d?1500:300));if(was3d&&SET.flash&&window.Car3D&&window.Car3D.flash)setTimeout(function(){window.Car3D.flash()},120)}
+  function neon(){if(!sp)return;sp.classList.remove('sp3d');putBack();sp.classList.remove('wait');setTimeout(end,FAST?1300:3200)}
   sp.addEventListener('click',function(){if(!sp||done)return;sp.classList.add('skip');sp.classList.remove('wait');setTimeout(end,320)});
   sp.addEventListener('animationend',function(e){if(e.target===sp&&(e.animationName==='spOut'||e.animationName==='spBg'))end()});
   var gl=null;try{gl=document.createElement('canvas').getContext('webgl')}catch(e){}
@@ -5133,8 +5141,8 @@ function welcomeIsland(){
   if(SET.splash==='neon'||!window.Car3D||!gl||matchMedia('(prefers-reduced-motion: reduce)').matches){neon();return}
   sp.classList.add('sp3d');
   document.getElementById('spst').appendChild(cv);
-  var started=false,slow=setTimeout(function(){if(!started)neon()},2600);
-  Car3D.cine(cv,{plate:(snap&&snap.plate)||'',paint:(snap&&snap.paint)||[24,42,126]},function(){started=true;clearTimeout(slow);if(sp)sp.classList.remove('wait')}).then(function(ok){
+  var started=false,slow=setTimeout(function(){if(!started)neon()},FAST?1200:2600);
+  Car3D.cine(cv,{plate:(snap&&snap.plate)||'',paint:(snap&&snap.paint)||[24,42,126],speed:FAST?2:1},function(){started=true;clearTimeout(slow);if(sp)sp.classList.remove('wait')}).then(function(ok){
     if(!sp||done||!started)return;
     c3=true;
     var box=document.getElementById('car3d');

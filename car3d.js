@@ -379,7 +379,7 @@ window.Car3D={
   /* animation d'ouverture sur ce canvas ; la promesse se résout à la fin du mouvement de caméra */
   cine:function(cv,opt,onStart){
     return new Promise(function(res){
-      V.pendingCine={y0:-3.55,y1:-0.75,p0:0.03,p1:0.18,d0:4.3,d1:5.4,move:2.4,dur:2.7,res:res,onStart:onStart};
+      var sp=(opt&&opt.speed)||1;V.pendingCine={y0:-3.55,y1:-0.75,p0:0.03,p1:0.18,d0:4.3,d1:5.4,move:2.4/sp,dur:2.7/sp,res:res,onStart:onStart};
       V.head=0;V.tail=0;
       Car3D.mount(cv,opt).then(function(){startCine()},function(){V.pendingCine=null;res(false)});
     });
