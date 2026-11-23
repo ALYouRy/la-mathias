@@ -963,7 +963,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.71';
+var APP_V='2.72';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1057,7 +1057,9 @@ var ICO={car:'<path d="M5 16h14M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8
   warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.5"/>',qr:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"/>',
   star:'<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
   wrench:'<path d="M14.5 5.5a4 4 0 0 0-4.9 5.3L4 16.4 7.6 20l5.6-5.6a4 4 0 0 0 5.3-4.9l-2.7 2.7-2.6-.7-.7-2.6z"/>'};
-function island(o){if(typeof NAT!=='undefined'&&NAT&&NATL&&NATL.isl){if(SET.nisl===false&&!o.fallback)return;natPost({op:'island',icon:o.icon||'car',title:o.title||'',sub:o.sub||'',right:o.right||'',tone:o.tone||'info',ms:(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1)*1.3,progress:o.progress!=null?o.progress:null});return}if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:''));return}o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext()}
+function island(o){if(typeof NAT!=='undefined'&&NAT&&NATL&&NATL.isl){if(SET.nisl===false&&!o.fallback)return;natPost({op:'island',icon:o.icon||'car',title:o.title||'',sub:o.sub||'',right:o.right||'',tone:o.tone||'info',ms:(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1)*1.3,progress:o.progress!=null?o.progress:null});
+  /* iOS n'affiche pas l'activité d'une appli dans la Dynamic Island tant qu'elle est à l'écran : on montre donc aussi le message en haut de l'appli */
+  o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext();return}if(!SET.isl){if(o.fallback)toast(o.title+(o.sub?' · '+o.sub:''));return}o.ms=(o.ms||2800)*({s:.65,m:1,l:1.6}[SET.islDur]||1);ISL.q.push(o);if(!ISL.busy)islNext()}
 function islNext(){
   var o=ISL.q.shift(),el=document.getElementById('isl');if(!o||!el){ISL.busy=false;return}
   ISL.busy=true;
@@ -4899,7 +4901,7 @@ window.LMN={
   res:function(id,a){var f=NATCB[id];delete NATCB[id];if(f)f(a?a[0]:null)},
   tripsReady:function(){natPost({op:'trips'})},
   trips:function(L){natImport(L||[])},
-  islTest:function(o){NATIT=1;var t=!o?'Pas de réponse de l’appli.':!o.enabled?'« Activités en direct » est désactivé pour La Mathias : Réglages › Apps › La Mathias › Activités en direct.':!o.ext?'Le module Dynamic Island n’est pas installé : SideStore l’a retiré. Réinstalle La Mathias dans SideStore en gardant les extensions (« Keep »).':o.ok?'Test envoyé : regarde la Dynamic Island (8 s).':'Refusé par iOS : '+(o.err||'?');sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">'+esc(t)+'</p><p class="note">Détails : activées '+(o&&o.enabled?'oui':'non')+' · module '+esc(o&&o.ext||'aucun')+' · demande '+(o&&o.ok?'acceptée':'refusée')+(o&&o.err?' · '+esc(o.err):'')+'</p>')}
+  islTest:function(o){NATIT=1;var t=!o?'Pas de réponse de l’appli.':!o.enabled?'« Activités en direct » est désactivé pour La Mathias : Réglages › Apps › La Mathias › Activités en direct.':!o.ext?'Le module Dynamic Island n’est pas installé : SideStore l’a retiré. Réinstalle La Mathias dans SideStore en gardant les extensions (« Keep »).':o.ok?'Test envoyé ! Retourne tout de suite sur l’écran d’accueil (ou verrouille l’iPhone) : il s’affiche dans la Dynamic Island pendant 15 s. Tant que La Mathias est ouverte, iOS ne l’affiche pas.':'Refusé par iOS : '+(o.err||'?');sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">'+esc(t)+'</p><p class="note">Détails : activées '+(o&&o.enabled?'oui':'non')+' · module '+esc(o&&o.ext||'aucun')+' · demande '+(o&&o.ok?'acceptée':'refusée')+(o&&o.err?' · '+esc(o.err):'')+'</p>')}
 };
 function natLive(o){
   var was=OBD.ok;OBD.ok=o.st==='ok';OBD.st=o.st;OBD.can=!!o.can;OBD.err=o.st==='ok'?'':(o.err||'');OBD.dev=o.name?{name:o.name}:null;

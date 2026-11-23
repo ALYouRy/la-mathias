@@ -1,5 +1,6 @@
 import ActivityKit
 import Foundation
+import UIKit
 
 /// Activité en direct (Dynamic Island + écran verrouillé) pendant un trajet.
 /// iOS ne permet de la lancer que quand l'appli est ouverte ; ensuite elle se met à jour même téléphone verrouillé.
@@ -65,7 +66,11 @@ final class LiveAct {
         for a in Activity<InfoAttributes>.activities { Task { await a.end(nil, dismissalPolicy: .immediate) } }
         do { infoAct = try Activity.request(attributes: InfoAttributes(kind: s.icon), content: .init(state: s, staleDate: nil), pushType: nil); lastErr = "" }
         catch { infoAct = nil; lastErr = String(describing: error) }
+        // si on quitte l'appli pendant le message, iOS laisse un peu de temps pour le refermer à l'heure
+        var bg = UIBackgroundTaskIdentifier.invalid
+        bg = UIApplication.shared.beginBackgroundTask { UIApplication.shared.endBackgroundTask(bg); bg = .invalid }
         DispatchQueue.main.asyncAfter(deadline: .now() + sec) { [weak self] in
+            defer { if bg != .invalid { UIApplication.shared.endBackgroundTask(bg); bg = .invalid } }
             guard let self = self else { return }
             if let a = self.infoAct { Task { await a.end(nil, dismissalPolicy: .immediate) } }
             self.infoAct = nil
@@ -87,7 +92,12 @@ final class LiveAct {
             let a = try Activity.request(attributes: InfoAttributes(kind: "test"), content: .init(state: s, staleDate: nil), pushType: nil)
             o["ok"] = true
             o["count"] = Activity<InfoAttributes>.activities.count
-            DispatchQueue.main.asyncAfter(deadline: .now() + 8) { Task { await a.end(nil, dismissalPolicy: .immediate) } }
+            var bg = UIBackgroundTaskIdentifier.invalid
+            bg = UIApplication.shared.beginBackgroundTask { UIApplication.shared.endBackgroundTask(bg); bg = .invalid }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+                Task { await a.end(nil, dismissalPolicy: .immediate) }
+                if bg != .invalid { UIApplication.shared.endBackgroundTask(bg); bg = .invalid }
+            }
         } catch {
             o["ok"] = false
             o["err"] = String(describing: error)
