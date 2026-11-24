@@ -85,6 +85,13 @@ struct TripStateView: View {
     }
 }
 
+private func standbyLine(_ s: TripAttributes.ContentState) -> String {
+    if s.km <= 0 { return "Prête pour le prochain trajet" }
+    var t: String = "Dernier trajet " + LMFmt.n1(s.km) + " km"
+    if let a = s.avg { t += " · " + LMFmt.n1(a) + " L/100" }
+    return t
+}
+
 /// 2.90 : widget « prêt » entre deux trajets (reste en place pour s'afficher sur CarPlay dès le départ)
 private func standbyIsland(_ s: TripAttributes.ContentState) -> DynamicIsland {
     DynamicIsland {
@@ -95,7 +102,7 @@ private func standbyIsland(_ s: TripAttributes.ContentState) -> DynamicIsland {
             Text(s.range != nil ? "\(s.range!) km" : "prête").font(.system(size: 20, weight: .heavy, design: .rounded)).monospacedDigit().foregroundColor(green).padding(.trailing, 4)
         }
         DynamicIslandExpandedRegion(.bottom) {
-            Text(s.km > 0 ? "Dernier trajet " + LMFmt.n1(s.km) + " km" + (s.avg != nil ? " · " + LMFmt.n1(s.avg!) + " L/100" : "") : "Prête pour le prochain trajet")
+            Text(standbyLine(s))
                 .font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundColor(.white.opacity(0.7))
         }
     } compactLeading: {
@@ -110,6 +117,13 @@ private func standbyIsland(_ s: TripAttributes.ContentState) -> DynamicIsland {
 struct StandbyView: View {
     let s: TripAttributes.ContentState
     let small: Bool
+    private var lastTxt: String {
+        var t: String = "Dernier trajet · " + LMFmt.n1(s.km) + " km"
+        t += " · \(s.minutes) min"
+        if let a = s.avg { t += " · " + LMFmt.n1(a) + " L/100" }
+        if let c = s.cost { t += " · " + euro(c) }
+        return t
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: small ? 3 : 6) {
             HStack(alignment: .firstTextBaseline) {
@@ -123,7 +137,7 @@ struct StandbyView: View {
                 if let l = s.left { Label(LMFmt.n1(l) + " L", systemImage: "fuelpump.fill").font(.system(size: 13, weight: .bold, design: .rounded)) }
             }.lineLimit(1).minimumScaleFactor(0.6)
             if s.km > 0 {
-                Text("Dernier trajet · " + LMFmt.n1(s.km) + " km · \(s.minutes) min" + (s.avg != nil ? " · " + LMFmt.n1(s.avg!) + " L/100" : "") + (s.cost != nil ? " · " + euro(s.cost!) : ""))
+                Text(lastTxt)
                     .font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundColor(.white.opacity(0.7)).lineLimit(1).minimumScaleFactor(0.6)
             }
         }
