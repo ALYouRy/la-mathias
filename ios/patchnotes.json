@@ -1,5 +1,16 @@
 [
  {
+  "v": "2.87",
+  "date": "2026-11-24",
+  "title": "Trajets recalés sur Plans",
+  "notes": [
+   "Chaque trajet est replacé sur les vraies routes d’Apple Plans",
+   "Bouton « Voir sur Plans » pour revoir le trajet sur la carte Apple",
+   "Graphe vitesse / conso plus fluide",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.86",
   "date": "2026-11-23",
   "title": "Trophées au bon moment",

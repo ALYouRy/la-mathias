@@ -1002,7 +1002,7 @@ button{font:inherit;color:inherit}
 <div class="wrap hide" id="wrap" role="dialog" aria-label="Ton année"></div>
 <div class="retro hide" id="retro" role="dialog" aria-label="Rétrospective du mois"></div>
 <div class="fog hide" id="fog" role="dialog" aria-label="Carte à dévoiler"></div>
-<div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div class="mapw"><div id="mapc"></div><button type="button" class="rpl hide" id="rpl"></button><div class="ghc hide" id="ghc"></div><div class="mleg hide" id="mleg"></div></div><div class="prof hide" id="prof"><div class="prof-l" id="profl"></div><svg id="profs" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-label="Profil du trajet : fais glisser le doigt"></svg><div class="prof-x"><span>0 km</span><span id="profk"></span><span id="profx"></span></div></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a></div></div>
+<div class="mapv hide" id="mapv" role="dialog" aria-label="Carte du trajet"><div class="map-hd"><div><b id="mapt"></b><small id="maps"></small></div><button type="button" class="mapx" id="mapx" aria-label="Fermer la carte">✕</button></div><div class="map-lg"><span><i style="background:#34d17a"></i>Départ</span><span><i style="background:#ff4d4f"></i>Arrivée</span></div><div class="map-st" id="mapst"></div><div class="mapw"><div id="mapc"></div><button type="button" class="rpl hide" id="rpl"></button><div class="ghc hide" id="ghc"></div><div class="mleg hide" id="mleg"></div></div><div class="prof hide" id="prof"><div class="prof-l" id="profl"></div><svg id="profs" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-label="Profil du trajet : fais glisser le doigt"></svg><div class="prof-x"><span>0 km</span><span id="profk"></span><span id="profx"></span></div></div><div class="map-ft"><button type="button" class="btn ghost" id="mapfit">⤢ Recentrer</button><a class="btn ghost" id="mapapple" target="_blank" rel="noopener">Itinéraire dans Plans</a><button type="button" class="btn ghost hide" id="mapplan">Voir sur Plans</button></div></div>
 
 <script src="car-model.js"></script>
 <script src="car3d.js?v=2.74"></script>
@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.86';
+var APP_V='2.87';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1421,7 +1421,51 @@ function deSpike(P,maxM){if(!P||P.length<3)return P;maxM=maxM||40;var Q=P.map(fu
     if(cs<-.8){var t=lu/(lu+lw);b[0]=a[0]+(c[0]-a[0])*t;b[1]=a[1]+(c[1]-a[1])*t;ch=true}}}
   return Q}
 var DSPK={};
-function rawTrack(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q);DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
+/* ---------- 2.87 : recalage des trajets sur les routes Apple Plans ----------
+   On prend des points du trajet tous les ~250 m, on demande à Plans l'itinéraire voiture entre deux points voisins,
+   on garde la variante qui colle le mieux au passage réel (sinon on coupe en deux, sinon on garde le GPS),
+   puis chaque point GPS est replacé sur la route Plans, dans l'ordre. Même nombre de points : conso/vitesse restent alignées. */
+var SNP={cb:{},n:0,busy:false,want:null};
+function plansCan(){return typeof NAT!=='undefined'&&NAT&&!!(window.LM_NATIVE&&LM_NATIVE.route)&&!sample}
+function plansRoute(a,b){return new Promise(function(res){var id='r'+(++SNP.n),to=setTimeout(function(){delete SNP.cb[id];res({err:'timeout'})},20000);
+  SNP.cb[id]=function(o){clearTimeout(to);res(o||{err:'fail'})};natPost({op:'route',id:id,a:[a[0],a[1]],b:[b[0],b[1]]})})}
+function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function xyOf(o){var k=Math.cos(o[0]*Math.PI/180);return function(p){return [(p[1]-o[1])*111320*k,(p[0]-o[0])*111320]}}
+/* distance d'un point à une polyligne (m) + position le long */
+function plProj(R,xy,p,from,maxS){var q=xy(p),best=null;for(var i=from;i<R.length-1;i++){if(maxS!=null&&R[i].s>maxS)break;var a=R[i].xy,b=R[i+1].xy,dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy,t=L2?Math.max(0,Math.min(1,((q[0]-a[0])*dx+(q[1]-a[1])*dy)/L2)):0,
+  x=a[0]+dx*t,y=a[1]+dy*t,d=Math.hypot(q[0]-x,q[1]-y);if(!best||d<best.d)best={d:d,i:i,t:t,s:R[i].s+Math.sqrt(L2)*t}}return best}
+function plBuild(pts,xy){var R=[],s=0;for(var i=0;i<pts.length;i++){var c=xy(pts[i]);if(i)s+=Math.hypot(c[0]-R[i-1].xy[0],c[1]-R[i-1].xy[1]);R.push({p:pts[i],xy:c,s:s})}return R}
+function routeFit(route,P,i,j,xy){var R=plBuild(route,xy),len=R.length?R[R.length-1].s:0,raw=0,sum=0,mx=0,n=0;
+  for(var k=i;k<=j;k++){if(k>i)raw+=hav(P[k-1],P[k])*1000;var pr=plProj(R,xy,P[k],0);if(!pr)return null;sum+=pr.d;n++;if(pr.d>mx)mx=pr.d}
+  return {R:R,mean:sum/Math.max(1,n),max:mx,len:len,raw:raw}}
+async function plansSeg(P,i,j,xy,depth){
+  var o=null;for(var tr=0;tr<4;tr++){o=await plansRoute(P[i],P[j]);if(o&&o.err==='throttled'){await wait(4000+tr*3000);continue}break}
+  await wait(700);
+  var best=null;((o&&o.routes)||[]).forEach(function(rt){if(!rt||rt.length<2)return;var f=routeFit(rt,P,i,j,xy);if(!f)return;
+    var ok=f.mean<=13&&f.max<=38&&f.len<=f.raw*1.3+60;if(ok&&(!best||f.mean<best.mean))best=f});
+  if(best)return [{i:i,j:j,R:best.R}];
+  if(depth<2&&j-i>=6){var m=Math.floor((i+j)/2);return (await plansSeg(P,i,m,xy,depth+1)).concat(await plansSeg(P,m,j,xy,depth+1))}
+  return [{i:i,j:j,R:null}]}
+async function plansSnap(r){
+  var D=db;if(!r||!D.trk5||!D.trk5[r.t0])return false;var P=rawTrack0(r);if(!P||P.length<3)return false;
+  var xy=xyOf(P[0]),an=[0],acc=0;for(var k=1;k<P.length;k++){acc+=hav(P[k-1],P[k])*1000;if(acc>=250&&k<P.length-1){an.push(k);acc=0}}an.push(P.length-1);
+  if(an.length<2)return false;var segs=[];
+  for(var a=0;a<an.length-1;a++){if(an[a+1]<=an[a])continue;segs=segs.concat(await plansSeg(P,an[a],an[a+1],xy,0))}
+  var Q=P.map(function(p){return p.slice(0,2)}),good=0,tot=0;
+  segs.forEach(function(g){if(!g.R)return;var R=g.R,from=0,lastS=-1;
+    for(var k=g.i;k<=g.j;k++){tot++;var pr=plProj(R,xy,P[k],from,lastS<0?null:lastS+300);if(!pr||pr.d>30||pr.s<lastS-2)continue;
+      var A=R[pr.i].p,B=R[pr.i+1].p;Q[k]=[A[0]+(B[0]-A[0])*pr.t,A[1]+(B[1]-A[1])*pr.t];from=pr.i;lastS=Math.max(lastS,pr.s);good++}});
+  r.snapV=1;if(good>=3){D.trkS=D.trkS||{};D.trkS[r.t0]=mmEnc(Q);delete DSPK['s'+r.t0]}save();return good>=3}
+/* file d'attente : le trajet demandé d'abord, puis les plus récents */
+function plansQueue(first){if(!plansCan())return;if(first!=null)SNP.want=first;if(SNP.busy)return;SNP.busy=true;
+  (async function(){try{for(var guard=0;guard<400;guard++){var D=db,r=null;
+      if(SNP.want!=null){r=D.trips[SNP.want];SNP.want=null;if(r&&r.snapV)r=null}
+      if(!r){var L=realList().filter(function(x){return x.src==='iphone'&&!x.snapV&&D.trk5&&D.trk5[x.t0]});r=L[0]||null}
+      if(!r)break;var ok=false;try{ok=await plansSnap(r)}catch(e){r.snapV=1;save()}
+      if(ok&&MAPR&&MAPR.t0===r.t0&&!$('#mapv').classList.contains('hide')&&MODE==='trip'){try{openMap(r.t0,1)}catch(e){}}}}
+    finally{SNP.busy=false}})()}
+function rawTrack(r){var D=data();if(!r)return null;if(D.trkS&&D.trkS[r.t0]&&D.trk5&&D.trk5[r.t0]){var ks=D.trkS[r.t0];if(DSPK['s'+r.t0]&&DSPK['s'+r.t0].k===ks)return DSPK['s'+r.t0].P;var Qs=mmDec(ks);if(Qs){DSPK['s'+r.t0]={k:ks,P:Qs};return Qs}}return rawTrack0(r)}
+function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q);DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
 function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
 function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
 /* tracé fiable ? (recalé sur les routes, ou GPS assez dense) — sinon les grands sauts en ligne droite ne comptent pas pour la carte à dévoiler */
@@ -2007,13 +2051,19 @@ function profDraw(M){
   M.c.forEach(function(c){if(c!=null&&c>cm)cm=c});cm=Math.min(cm*1.1,25);M.v.forEach(function(v){if(v!=null&&v>vm)vm=v});vm=Math.ceil(vm/10)*10;
   var X=function(i){return M.d[i]/(M.d[M.d.length-1]||1)*(W-12)+6};
   M._x=[];M._yv=[];M._yc=[];
-  for(i=0;i<M.P.length;i++){M._x[i]=X(i);M._yv[i]=M.v[i]!=null?bot-M.v[i]/vm*(bot-top):null;M._yc[i]=M.c[i]!=null?bot-Math.min(1,M.c[i]/cm)*(bot-top)*.78:null}
+  /* 2.87 : courbes lissées sur la distance (≈ 80 m pour la conso, 40 m pour la vitesse) : plus fluide, sans perdre la forme */
+  var tk=M.d[M.d.length-1]||1,wc=Math.max(.04,tk/90),wv=Math.max(.02,tk/160),SC=[],SVv=[];
+  (function(){var a=0,b=0,sc=0,nc=0,a2=0,b2=0,sv2=0,nv=0,n=M.P.length;
+    for(var k=0;k<n;k++){while(b<n&&M.d[b]<=M.d[k]+wc){if(M.c[b]!=null){sc+=M.c[b];nc++}b++}while(M.d[a]<M.d[k]-wc){if(M.c[a]!=null){sc-=M.c[a];nc--}a++}
+      while(b2<n&&M.d[b2]<=M.d[k]+wv){if(M.v[b2]!=null){sv2+=M.v[b2];nv++}b2++}while(M.d[a2]<M.d[k]-wv){if(M.v[a2]!=null){sv2-=M.v[a2];nv--}a2++}
+      SC[k]=M.c[k]!=null&&nc>0?sc/nc:null;SVv[k]=M.v[k]!=null&&nv>0?sv2/nv:null}})();
+  for(i=0;i<M.P.length;i++){M._x[i]=X(i);M._yv[i]=SVv[i]!=null?bot-SVv[i]/vm*(bot-top):null;M._yc[i]=SC[i]!=null?bot-Math.min(1,SC[i]/cm)*(bot-top)*.78:null}
   sv.setAttribute('viewBox','0 0 '+W+' '+H);
   s+='<defs><linearGradient id="pfv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity=".15"/></linearGradient>'+
      '<mask id="pfm"><rect width="'+W+'" height="'+H+'" fill="url(#pfv)"/></mask>'+
      '<linearGradient id="pfs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'+
      '<filter id="pfg" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>';
-  var cs=[];for(i=0;i<M.P.length;i++)if(M.c[i]!=null)cs.push(i);
+  var cs=[],lx=-9;for(i=0;i<M.P.length;i++)if(M.c[i]!=null&&(M._x[i]-lx>=3||i===M.P.length-1)){cs.push(i);lx=M._x[i]}
   if(cs.length){s+='<linearGradient id="pfc" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="'+W+'" y2="0">'+cs.map(function(i){return '<stop offset="'+(M._x[i]/W).toFixed(4)+'" stop-color="'+consoCol(M.c[i])+'"/>'}).join('')+'</linearGradient>'}
   s+='</defs>';
   /* repères de vitesse */
@@ -2023,7 +2073,7 @@ function profDraw(M){
     s+='<path class="pf-a" d="'+cl+'L'+cp[cp.length-1][0].toFixed(1)+' '+H+'L'+cp[0][0].toFixed(1)+' '+H+'Z" fill="url(#pfc)" mask="url(#pfm)" opacity=".95"/>'+
        '<path class="pf-l" pathLength="1" d="'+cl+'" fill="none" stroke="url(#pfc)" stroke-width="2.4" stroke-linecap="round"/>'}
   /* vitesse */
-  var vs=[];for(i=0;i<M.P.length;i++)if(M.v[i]!=null)vs.push([M._x[i],M._yv[i]]);
+  var vs=[],lv=-9;for(i=0;i<M.P.length;i++)if(M.v[i]!=null&&(M._x[i]-lv>=3||i===M.P.length-1)){vs.push([M._x[i],M._yv[i]]);lv=M._x[i]}
   if(vs.length>1){var vl=smooth(vs,top,bot);
     s+='<path d="'+vl+'L'+vs[vs.length-1][0].toFixed(1)+' '+H+'L'+vs[0][0].toFixed(1)+' '+H+'Z" fill="url(#pfs)"/>'+
        '<path d="'+vl+'" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="5" filter="url(#pfg)"/>'+
@@ -2197,10 +2247,12 @@ function showMap(bfn){
 function openMap(t0,noSnap){
   var r=data().trips[t0],P=trackOf(r);if(!P)return;
   if(!noSnap&&!sample&&sparse(rawTrack(r),r)&&!mmOf(r)&&(!snapLoad()[t0]||snapBad(snapLoad()[t0]))){toast('Recalage du tracé sur les routes…');snapOne(r).then(function(){openMap(t0,1)},function(){openMap(t0,1)});return}
-  rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');
+  rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');if(r.src==='iphone'&&!r.snapV&&plansCan())plansQueue(r.t0);
   var dt=new Date(r.t0);
   $('#mapt').textContent=dayLabel(dt)+' · '+HF.format(dt);
-  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
+  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(data().trkS&&data().trkS[r.t0]?' · tracé recalé sur les routes Plans':r.src==='iphone'&&!r.snapV&&plansCan()?' · recalage Plans en cours…':snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
+  var mpb=$('#mapplan');if(mpb){var tm=typeof NAT!=='undefined'&&NAT&&window.LM_NATIVE&&LM_NATIVE.tmap;mpb.classList.toggle('hide',!tm);$('#mapapple').classList.toggle('hide',!!tm);
+    mpb.onclick=function(){var M=MAPM,PP=M&&M.P||P;natPost({op:'tripMap',title:$('#mapt').textContent,sub:f1(r.dist)+' km · '+dur(r.dur),pts:PP.map(function(p,i){var c=M&&M.c?M.c[i]:null;return [p[0],p[1],c==null?-1:c]})})}}
   $('#mapapple').href='https://maps.apple.com/?saddr='+P[0].join(',')+'&daddr='+P[P.length-1].join(',')+'&dirflg=d';
   mapStyleBar();
   MAPM=routeModel(r,P);MAPC=P;CUR=MAPM.det?(MAPM.has?hungriest(MAPM):0):-1;
@@ -4323,7 +4375,7 @@ function setWire(){var it=$('#isltest');if(it)it.onclick=function(){NATIT=0;natP
   fi_.onchange=function(){var f=fi_.files&&fi_.files[0];if(!f)return;var r=new FileReader();r.onload=function(){
     try{var o=JSON.parse(r.result),d=o.db||o;if(!d||typeof d.trips!=='object')throw 0;
       var before=Object.keys(db.trips).length;
-      db.trips=Object.assign({},db.trips,d.trips);db.fills=Object.assign({},db.fills||{},d.fills||{});db.favs=Object.assign({},db.favs||{},d.favs||{});db.tracks=Object.assign({},db.tracks||{},d.tracks||{});db.trk5=Object.assign({},db.trk5||{},d.trk5||{});db.details=Object.assign({},db.details||{},d.details||{});db.tags=Object.assign({},db.tags||{},d.tags||{});
+      db.trips=Object.assign({},db.trips,d.trips);db.fills=Object.assign({},db.fills||{},d.fills||{});db.favs=Object.assign({},db.favs||{},d.favs||{});db.tracks=Object.assign({},db.tracks||{},d.tracks||{});db.trk5=Object.assign({},db.trk5||{},d.trk5||{});db.trkS=Object.assign({},db.trkS||{},d.trkS||{});db.details=Object.assign({},db.details||{},d.details||{});db.tags=Object.assign({},db.tags||{},d.tags||{});
       if(d.snap&&(!db.snap||d.snap.t>db.snap.t))db.snap=d.snap;if(d.health&&(!db.health||d.health.t>(db.health.t||0)))db.health=d.health;
       if(Array.isArray(o.ent)){var E=entLoad(),ids={};E.forEach(function(x){ids[x.id]=1});o.ent.forEach(function(x){if(x&&x.id&&!ids[x.id])E.push(x)});entSave();if(o.photos)Object.keys(o.photos).forEach(function(k){if(!PHC[k])phPut(k,o.photos[k])})}
       if(o.ls)lsMerge(o.ls);
@@ -5033,6 +5085,7 @@ function tyreSheet(){
 var NATIT=0,NAT=!!(window.LM_NATIVE&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lm),NATL=null,NATCB={},NATID=0,NATF=null,NATB=0;
 function natPost(o){try{window.webkit.messageHandlers.lm.postMessage(o)}catch(e){}}
 window.LMN={
+  route:function(o){var f=o&&SNP.cb[o.id];if(f){delete SNP.cb[o.id];f(o)}},
   live:function(o){NATL=o;natLive(o)},
   found:function(list,fin,err){NATF={list:list||[],fin:fin,err:err&&err[0]};natPickDraw()},
   res:function(id,a){var f=NATCB[id];delete NATCB[id];if(f)f(a?a[0]:null)},
@@ -5073,7 +5126,7 @@ function natImport(L){
   L.forEach(function(R){if(!R||!R.t0)return;ids.push(R.t0);var key=Math.round(R.t0/1000)*1000;if(db.trips[key])return;
     FS.used+=(R.fuel||0)*k;FS.dist+=R.dist||0;if(recSave(R,true))n++});
   if(ids.length)natPost({op:'ack',ids:ids});
-  if(n){ANIM=true;render();setTimeout(tripReveal,300);tripEndIsland(NEWT.slice(-n))}
+  if(n){ANIM=true;render();setTimeout(tripReveal,300);tripEndIsland(NEWT.slice(-n));setTimeout(function(){try{plansQueue(NEWT[NEWT.length-1])}catch(e){}},2500)}
 }
 function natStart(){
   var L=NATL||{},st=L.st,h='';
@@ -5234,7 +5287,7 @@ $('#mapfit').onclick=function(){if(!MAP||!window.maplibregl)return;if(MODE==='sp
 $('#sclose').onclick=function(){var part=SC.any&&scLeft()>0,d=SC.total-scLeft(),t=SC.total;stopScan();if(part)toast('Synchro partielle : '+d+' code'+(d>1?'s':'')+' sur '+t+'. Relance-la pour finir.',4000)};
 
 /* ---------- démarrage ---------- */
-load();try{ecoMigrate()}catch(e){}try{cutMigrate()}catch(e){}
+load();try{ecoMigrate()}catch(e){}try{cutMigrate()}catch(e){}setTimeout(function(){try{plansQueue()}catch(e){}},9000);
 function fromHash(){
   if(location.hash.indexOf('#s=')!==0)return;
   var r=null;try{r=importFromUrl(location.href);island({fallback:1,icon:'check',pop:true,tone:'good',title:r.added?r.added+' trajet'+(r.added>1?'s':'')+' importé'+(r.added>1?'s':''):'Données mises à jour',sub:r.total>1?'Code '+r.page+' sur '+r.total:'Depuis l’appli, utilise plutôt le bouton Scanner',right:r.total>1?r.page+'/'+r.total:'',ms:4200})}catch(e){toast('Données illisibles.')}

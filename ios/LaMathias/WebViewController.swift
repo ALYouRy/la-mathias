@@ -21,7 +21,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         cfg.mediaTypesRequiringUserActionForPlayback = []
         let ucc = WKUserContentController()
         ucc.add(WeakHandler(self), name: "lm")
-        ucc.addUserScript(WKUserScript(source: "window.LM_NATIVE={v:1,platform:'ios',sbar:1};", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        ucc.addUserScript(WKUserScript(source: "window.LM_NATIVE={v:1,platform:'ios',sbar:1,route:1,tmap:1};", injectionTime: .atDocumentStart, forMainFrameOnly: true))
         cfg.userContentController = ucc
         let w = WKWebView(frame: .zero, configuration: cfg)
         w.navigationDelegate = self
@@ -110,6 +110,21 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         case "gps":
             let vc = GPSViewController()
             vc.range = (m["range"] as? NSNumber)?.doubleValue
+            vc.modalPresentationStyle = .fullScreen
+            if presentedViewController == nil { present(vc, animated: true) }
+        case "route":
+            // 2.87 : itinéraire Plans entre deux points du trajet (recalage sur les routes)
+            let id = (m["id"] as? String) ?? ""
+            let a = (m["a"] as? [NSNumber])?.map { $0.doubleValue } ?? []
+            let b = (m["b"] as? [NSNumber])?.map { $0.doubleValue } ?? []
+            PlansRoute.run(id: id, a: a, b: b) { js in
+                DispatchQueue.main.async { Core.shared.js("window.LMN&&LMN.route&&LMN.route(" + js + ")") }
+            }
+        case "tripMap":
+            let vc = TripMapViewController()
+            vc.pts = ((m["pts"] as? [[NSNumber]]) ?? []).map { $0.map { $0.doubleValue } }
+            vc.titleText = (m["title"] as? String) ?? ""
+            vc.subText = (m["sub"] as? String) ?? ""
             vc.modalPresentationStyle = .fullScreen
             if presentedViewController == nil { present(vc, animated: true) }
         case "settings":
