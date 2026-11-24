@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.89",
+  "date": "2026-11-24",
+  "title": "Trajets 100 % sur la route",
+  "notes": [
+   "Chaque point du trajet est placé sur une route Plans, même sous un tunnel ou quand le GPS saute",
+   "Si tu prends une autre route, l’appli la retrouve grâce à la distance du compteur",
+   "Tous les anciens trajets sont refaits automatiquement"
+  ]
+ },
+ {
   "v": "2.88",
   "date": "2026-11-24",
   "title": "CarPlay plus complet",
