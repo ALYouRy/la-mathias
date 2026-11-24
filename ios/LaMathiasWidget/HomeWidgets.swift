@@ -26,6 +26,13 @@ private let wSub = Color.white.opacity(0.6)
 
 private func n1(_ v: Double) -> String { String(format: "%.1f", v).replacingOccurrences(of: ".", with: ",") }
 private func eur(_ v: Double) -> String { String(format: "%.2f €", v).replacingOccurrences(of: ".", with: ",") }
+private func costEco(_ l: WData.Last, cut: Bool) -> String {
+    var a: [String] = []
+    if let c = l.cost { a.append(eur(c)) }
+    if let e = l.eco { a.append("éco \(e)") }
+    if cut, let k = l.cutKm { a.append(n1(k) + " km à 0 L") }
+    return a.joined(separator: " · ")
+}
 private func fuelCol(_ p: Double?) -> Color { guard let p = p else { return wGreen }; return p < 0.15 ? .red : p < 0.3 ? wAmber : wGreen }
 
 private struct Bar: View {
@@ -160,7 +167,7 @@ struct LastTripView: View {
                     }
                     Text(n1(l.km) + " km · \(l.min) min").font(.system(size: 13, weight: .bold, design: .rounded))
                     if let sp = l.spark, sp.count > 2 { Spark(v: sp, c: wCyan).frame(height: 22).padding(.vertical, 4) }
-                    Text([l.cost.map { eur($0) }, l.eco.map { "éco \($0)" }].compactMap { $0 }.joined(separator: " · ")).font(.system(size: 11, weight: .semibold)).foregroundColor(wSub)
+                    Text(costEco(l, cut: false)).font(.system(size: 11, weight: .semibold)).foregroundColor(wSub)
                 }.frame(maxWidth: .infinity, alignment: .leading)
             } else { Empty() }
         }.foregroundColor(.white).widgetURL(URL(string: "lamathias://trajets")).wBackground()
@@ -203,7 +210,7 @@ struct DashView: View {
                                 Text("L/100").font(.system(size: 11, weight: .semibold)).foregroundColor(wSub)
                             }
                             if let sp = l.spark, sp.count > 2 { Spark(v: sp, c: wCyan).frame(height: 20) }
-                            Text([l.cost.map { eur($0) }, l.eco.map { "éco \($0)" }, l.cutKm.map { n1($0) + " km à 0 L" }].compactMap { $0 }.joined(separator: " · "))
+                            Text(costEco(l, cut: true))
                                 .font(.system(size: 11, weight: .semibold)).foregroundColor(wSub).lineLimit(1).minimumScaleFactor(0.7)
                         } else { Text("Aucun trajet").font(.system(size: 13)).foregroundColor(wSub).padding(.top, 6) }
                     }.frame(maxWidth: .infinity, alignment: .leading)
@@ -296,7 +303,7 @@ struct AllView: View {
                                 Text(d.range.map { "\($0)" } ?? "–").font(.system(size: 40, weight: .heavy, design: .rounded)).foregroundColor(fuelCol(d.pct))
                                 Text("km").font(.system(size: 13, weight: .semibold)).foregroundColor(wSub)
                             }
-                            Text([d.left.map { n1($0) + " L" }, d.nextFill.flatMap { $0.isEmpty ? nil : "plein " + $0 }].compactMap { $0 }.joined(separator: " · "))
+                            Text(fuelLine(d))
                                 .font(.system(size: 12, weight: .semibold)).foregroundColor(wSub)
                         }
                         Spacer()
@@ -304,7 +311,7 @@ struct AllView: View {
                     }.padding(.top, 8)
                     Rectangle().fill(wTrack).frame(height: 1).padding(.vertical, 10)
                     if let l = d.last {
-                        Text("Dernier trajet" + ([l.day, l.time].compactMap { $0 }.isEmpty ? "" : " · " + [l.day, l.time].compactMap { $0 }.joined(separator: " "))).font(.system(size: 11, weight: .semibold)).foregroundColor(wSub)
+                        Text(lastHead(l)).font(.system(size: 11, weight: .semibold)).foregroundColor(wSub)
                         HStack {
                             Text(n1(l.km) + " km"); Spacer()
                             Text(l.cons.map { n1($0) + " L/100" } ?? "–").foregroundColor(wCyan); Spacer()
@@ -331,6 +338,18 @@ struct AllView: View {
             } else { Empty() }
         }.foregroundColor(.white).widgetURL(URL(string: "lamathias://voiture")).wBackground()
     }
+    private func fuelLine(_ d: WData) -> String {
+        var a: [String] = []
+        if let l = d.left { a.append(n1(l) + " L") }
+        if let nf = d.nextFill, !nf.isEmpty { a.append("plein " + nf) }
+        return a.joined(separator: " · ")
+    }
+    private func lastHead(_ l: WData.Last) -> String {
+        var a: [String] = []
+        if let x = l.day { a.append(x) }
+        if let x = l.time { a.append(x) }
+        return a.isEmpty ? "Dernier trajet" : "Dernier trajet · " + a.joined(separator: " ")
+    }
     private func chip(_ t: String, _ i: String, _ c: Color) -> some View {
         Label(t, systemImage: i).font(.system(size: 13, weight: .bold)).foregroundColor(c)
             .frame(maxWidth: .infinity).padding(.vertical, 9).background(RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.11, green: 0.10, blue: 0.23)))
@@ -350,25 +369,51 @@ struct AllWidget: Widget {
 struct LockView: View {
     let e: WEntry
     @Environment(\.widgetFamily) var family
+    private var rangeTxt: String {
+        guard let r = e.d?.range else { return "–" }
+        return "\(r)"
+    }
+    private var line1: String {
+        var t: String = e.d?.range.map { "\($0) km" } ?? "La Mathias"
+        if let l = e.d?.left { t += " · " + n1(l) + " L" }
+        return t
+    }
+    private var line2: String? {
+        guard let l = e.d?.last else { return nil }
+        var t: String = "Dernier trajet "
+        if let c = l.cons { t += n1(c) + " L/100" } else { t += n1(l.km) + " km" }
+        if let c = l.cost { t += " · " + eur(c) }
+        return t
+    }
+    private var pct: Double { e.d?.pct ?? 0 }
     var body: some View {
-        let d = e.d
-        Group {
-            switch family {
-            case .accessoryCircular:
-                Gauge(value: d?.pct ?? 0) { Image(systemName: "fuelpump.fill") } currentValueLabel: { Text(d?.range.map { "\($0)" } ?? "–").font(.system(size: 15, weight: .bold, design: .rounded)) }
-                    .gaugeStyle(.accessoryCircular)
-            case .accessoryInline:
-                Text(Image(systemName: "fuelpump.fill")) + Text(" " + (d?.range.map { "\($0) km" } ?? "La Mathias") + (d?.left.map { " · " + n1($0) + " L" } ?? ""))
-            default:
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(Image(systemName: "fuelpump.fill")) + Text(" " + (d?.range.map { "\($0) km" } ?? "–") + (d?.left.map { " · " + n1($0) + " L" } ?? "")).font(.system(size: 15, weight: .bold, design: .rounded))
-                    if let l = d?.last {
-                        Text("Dernier trajet " + (l.cons.map { n1($0) + " L/100" } ?? n1(l.km) + " km") + (l.cost.map { " · " + eur($0) } ?? "")).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
-                    }
-                    if let p = d?.pct { Gauge(value: p) { EmptyView() }.gaugeStyle(.accessoryLinearCapacity) }
-                }
+        content.widgetURL(URL(string: "lamathias://voiture")).wLockBackground()
+    }
+    @ViewBuilder private var content: some View {
+        switch family {
+        case .accessoryCircular:
+            circular
+        case .accessoryInline:
+            Label(line1, systemImage: "fuelpump.fill")
+        default:
+            rect
+        }
+    }
+    private var circular: some View {
+        Gauge(value: pct) {
+            Image(systemName: "fuelpump.fill")
+        } currentValueLabel: {
+            Text(rangeTxt).font(.system(size: 15, weight: .bold, design: .rounded))
+        }.gaugeStyle(.accessoryCircular)
+    }
+    private var rect: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Label(line1, systemImage: "fuelpump.fill").font(.system(size: 15, weight: .bold, design: .rounded))
+            if let l2 = line2 {
+                Text(l2).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
             }
-        }.widgetURL(URL(string: "lamathias://voiture")).wLockBackground()
+            Gauge(value: pct) { EmptyView() }.gaugeStyle(.accessoryLinearCapacity)
+        }
     }
 }
 
