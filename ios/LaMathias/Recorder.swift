@@ -66,6 +66,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     }
     func setSettings(_ m: [String: Any]) {
         for k in ["disp", "k", "redline", "endMin", "price", "fuelL", "rangeC"] { if let v = (m[k] as? NSNumber)?.doubleValue, v > 0 { UserDefaults.standard.set(v, forKey: k) } }
+        if let b = m["keepAct"] as? Bool { UserDefaults.standard.set(b, forKey: "keepAct"); if !b, trip == nil { LiveAct.shared.end(nil) } else if b, trip == nil { LiveAct.shared.ensureStandby(standbyState()) } }
+        if trip == nil, LiveAct.shared.keep, LiveAct.shared.running, m["fuelL"] != nil { LiveAct.shared.park(standbyState(), final: nil) }
     }
 
     func setup() {
@@ -135,7 +137,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     }
 
     /// Appli à l'écran : GPS au maximum de précision, même sans trajet. En arrière-plan : seulement ce qu'il faut.
-    @objc private func appActive() { foreground = true; applyLoc() }
+    @objc private func appActive() { foreground = true; applyLoc(); if trip == nil { LiveAct.shared.ensureStandby(standbyState()) } }
     @objc private func appBackground() { foreground = false; applyLoc() }
     private var foreground = false
     private func applyLoc() {
@@ -407,6 +409,16 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             vmax: R.vmax > 0 ? Int(R.vmax.rounded()) : nil)
     }
 
+    /// widget « prêt » : autonomie, essence et dernier trajet
+    func standbyState() -> TripAttributes.ContentState {
+        let ud = UserDefaults.standard
+        let f = ud.double(forKey: "fuelL"), c = ud.double(forKey: "rangeC")
+        return TripAttributes.ContentState(speed: 0, cons: nil, lph: nil,
+            avg: ud.object(forKey: "lastAvg") as? Double, km: ud.double(forKey: "lastKm"), minutes: Int(ud.double(forKey: "lastMin")), cut: false, gear: nil,
+            cost: ud.object(forKey: "lastCost") as? Double, rpm: nil,
+            range: f > 0 && c > 2 ? Int((f / c * 100).rounded()) : nil, left: f > 0 ? f : nil, cutKm: nil, vmax: nil, standby: true)
+    }
+
     /// litres restants = niveau envoyé par l'appli au début, moins ce que ce trajet a consommé
     private func fuelLeft(_ R: Trip) -> Double? {
         let f = UserDefaults.standard.double(forKey: "fuelL")
@@ -422,8 +434,9 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     private func liveTick() {
         guard let st = activityState() else { return }
         let la = LiveAct.shared
-        if !la.running, UIApplication.shared.applicationState == .active, let R = trip {
-            la.start(st, since: Date(timeIntervalSince1970: R.t0 / 1000))
+        if !la.running, let R = trip {
+            if UIApplication.shared.applicationState == .active { la.start(st, since: Date(timeIntervalSince1970: R.t0 / 1000)) }
+            else { la.tryStart(st, since: Date(timeIntervalSince1970: R.t0 / 1000)) }
         }
         la.update(st)
     }
@@ -508,7 +521,13 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
 
     func endTrip() {
         guard let R = trip else { return }
-        LiveAct.shared.end(activityState())
+        let fin = activityState()
+        // 2.90 : on retient le dernier trajet et le niveau d'essence pour le widget « prêt »
+        let ud = UserDefaults.standard
+        if let l = fuelLeft(R) { ud.set(max(0.01, l), forKey: "fuelL") }
+        if R.dist >= 0.2 { ud.set(R.dist, forKey: "lastKm"); ud.set(R.dur / 60, forKey: "lastMin"); if let c = fin?.cost { ud.set(c, forKey: "lastCost") } else { ud.removeObject(forKey: "lastCost") }
+            if let a = fin?.avg { ud.set(a, forKey: "lastAvg") } else { ud.removeObject(forKey: "lastAvg") } }
+        LiveAct.shared.park(standbyState(), final: fin)
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["trip-start"])
         trip = nil
         UserDefaults.standard.removeObject(forKey: "activeTrip")

@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.89';
+var APP_V='2.90';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1033,7 +1033,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)updC
 var HARM={neon:['Néon','#00e5ff','255,0,170','0,229,255','neon'],synth:['Synthwave','#ff3fd0','255,120,40','150,60,255','neon'],ocean:['Océan','#3ad6ff','40,110,255','0,210,190','sombre'],
   aurore:['Aurore boréale','#34d17a','120,80,255','20,220,150','neon'],lavande:['Lavande','#c4a1ff','255,110,200','150,100,255','neon'],braise:['Braise','#ff6a3c','255,50,40','255,160,0','or'],
   ornuit:['Or de nuit','#ffc46b','255,170,60','40,90,200','or'],glacier:['Glacier','#9fd8ff','120,180,255','220,235,255','sombre'],menthe:['Menthe','#3ae0b0','0,190,170','60,140,255','sombre'],minuit:['Minuit','#a9a1d6','90,70,160','40,60,120','sombre']};
-var SETK='sandero-phone-set',SDEF={nisl:true,harm:'',accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon',routeMode:'conso',map3d:false,fuel:'e10',priceSrc:'radio'};
+var SETK='sandero-phone-set',SDEF={nisl:true,keepAct:true,harm:'',accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon',routeMode:'conso',map3d:false,fuel:'e10',priceSrc:'radio'};
 var SET=Object.assign({},SDEF);try{Object.assign(SET,JSON.parse(localStorage.getItem(SETK)||'{}'))}catch(e){}
 if(!SET.work||typeof SET.work!=='object')SET.work={};
 if(!SET.islOffMig){SET.islOffMig=1;SET.isl=false;try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
@@ -4350,6 +4350,7 @@ function setHtml(D,L){
     segRow('splash','Style','',[['3d','Voiture 3D'],['neon','Néon'],['off','Aucune']])+
     segRow('flash','Appel de phares à la fin','',ONOFF)+'</div>';
   h+='<div class="card sgc"><h2>Dynamic Island</h2>'+
+    (typeof NAT!=='undefined'&&NAT?segRow('keepAct','Widget toujours prêt','Le widget reste sur l’écran verrouillé entre deux trajets (autonomie, dernier trajet) : comme ça il s’affiche sur CarPlay dès que tu démarres, même sans ouvrir l’appli.',ONOFF):'')+
     (typeof NAT!=='undefined'&&NAT?segRow('nisl','Messages','Réservoir et autonomie au démarrage, dernier trajet, trajets enregistrés, OBD, alertes : dans la vraie Dynamic Island de l’iPhone.',ONOFF):segRow('isl','Animations','Les messages qui sortent de la Dynamic Island.',ONOFF))+
     segRow('welcome','Message de bienvenue',typeof NAT!=='undefined'&&NAT?'Essence qui reste, autonomie et dernier trajet à l’ouverture.':'Nom de la voiture, dernière synchro et autonomie.',ONOFF)+
     segRow('alerts','Alertes','Réservoir bas, voyant moteur et entretien en retard.',ONOFF)+
@@ -4381,6 +4382,7 @@ function setWire(){var it=$('#isltest');if(it)it.onclick=function(){NATIT=0;natP
     var k=b.getAttribute('data-k'),v=b.getAttribute('data-v'),d=SDEF[k];
     SET[k]=typeof d==='boolean'?v==='true':typeof d==='number'?+v:v;if(k==='accent')SET.harm='';setSave();
     var y=window.scrollY;render();window.scrollTo(0,y);
+    if(k==='keepAct'&&typeof NAT!=='undefined'&&NAT)natPost({op:'set',keepAct:!!SET.keepAct});
     if((k==='isl'&&SET.isl)||(k==='nisl'&&SET.nisl))island({icon:'check',pop:true,tone:'good',title:'Animations activées',sub:'Dynamic Island',ms:1600});
   }});
   var pr=$('#sprice');if(pr)pr.onchange=function(){var v=parseFloat(String(pr.value).replace(',','.'));SET.price=v>0&&v<10?Math.round(v*1000)/1000:0;setSave();toast(SET.price?'Prix : '+f2(SET.price)+' €/L':'Prix de l’autoradio utilisé')};
@@ -5172,7 +5174,7 @@ function natPickDraw(){
   el.innerHTML=h;var r=$('#natre');if(r)r.onclick=natScan;
   Array.prototype.forEach.call(el.querySelectorAll('[data-id]'),function(b){b.onclick=function(){natPost({op:'pick',id:b.getAttribute('data-id')});sheetClose();island({icon:'check',tone:'good',title:'Connexion…',sub:b.querySelector('b').textContent,ms:2500,fallback:1})}});
 }
-if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500);setTimeout(natFuel,2500)}
+if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500);setTimeout(natFuel,2500);setTimeout(function(){natPost({op:'set',keepAct:SET.keepAct!==false})},2700)}
 
 
 /* ---------- 2.61 : écran GPS en direct, avec toute la conso ---------- */

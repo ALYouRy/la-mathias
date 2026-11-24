@@ -28,6 +28,29 @@ final class LiveAct {
         act = try? Activity.request(attributes: TripAttributes(start: since), content: .init(state: s, staleDate: nil), pushType: nil)
     }
 
+    private var lastTry = Date.distantPast
+    /// 2.90 : essaie de lancer l'activité même appli en arrière-plan (au plus toutes les 20 s) ; iOS peut refuser.
+    func tryStart(_ s: TripAttributes.ContentState, since: Date) {
+        if running || !enabled { return }
+        if Date().timeIntervalSince(lastTry) < 20 { return }
+        lastTry = Date()
+        start(s, since: since)
+    }
+    /// option « widget toujours prêt » (réglage de l'appli, activée par défaut)
+    var keep: Bool { UserDefaults.standard.object(forKey: "keepAct") as? Bool ?? true }
+    /// à l'ouverture de l'appli : s'il n'y a pas d'activité, on lance le widget « prêt »
+    func ensureStandby(_ s: TripAttributes.ContentState) {
+        if !keep || running || !enabled { return }
+        start(s, since: Date())
+    }
+    /// fin de trajet : au lieu de fermer, le widget passe en « prêt » (garée) et reste pour le prochain départ
+    func park(_ s: TripAttributes.ContentState, final f: TripAttributes.ContentState?) {
+        if !keep { end(f); return }
+        guard let a = act ?? Activity<TripAttributes>.activities.first else { return }
+        act = a; lastState = s; last = Date()
+        Task { await a.update(.init(state: s, staleDate: nil)) }
+    }
+
     func update(_ s: TripAttributes.ContentState) {
         guard let a = act else { return }
         if s == lastState { return }

@@ -23,6 +23,7 @@ struct TripLiveActivity: Widget {
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { ctx in
             let s = ctx.state
+            if s.standby == true { return standbyIsland(s) }
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -79,7 +80,55 @@ struct TripStateView: View {
     let s: TripAttributes.ContentState
     @Environment(\.activityFamily) var family
     var body: some View {
-        if family == .small { CarPlayView(s: s) } else { LockScreenView(s: s) }
+        if s.standby == true { StandbyView(s: s, small: family == .small) }
+        else if family == .small { CarPlayView(s: s) } else { LockScreenView(s: s) }
+    }
+}
+
+/// 2.90 : widget « prêt » entre deux trajets (reste en place pour s'afficher sur CarPlay dès le départ)
+private func standbyIsland(_ s: TripAttributes.ContentState) -> DynamicIsland {
+    DynamicIsland {
+        DynamicIslandExpandedRegion(.leading) {
+            Label(s.left != nil ? LMFmt.n1(s.left!) + " L" : "La Mathias", systemImage: "fuelpump.fill").font(.system(size: 15, weight: .bold, design: .rounded)).foregroundColor(green).padding(.leading, 4)
+        }
+        DynamicIslandExpandedRegion(.trailing) {
+            Text(s.range != nil ? "\(s.range!) km" : "prête").font(.system(size: 20, weight: .heavy, design: .rounded)).monospacedDigit().foregroundColor(green).padding(.trailing, 4)
+        }
+        DynamicIslandExpandedRegion(.bottom) {
+            Text(s.km > 0 ? "Dernier trajet " + LMFmt.n1(s.km) + " km" + (s.avg != nil ? " · " + LMFmt.n1(s.avg!) + " L/100" : "") : "Prête pour le prochain trajet")
+                .font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundColor(.white.opacity(0.7))
+        }
+    } compactLeading: {
+        Image(systemName: "fuelpump.fill").foregroundColor(green)
+    } compactTrailing: {
+        Text(s.range != nil ? "\(s.range!)" : "OK").font(.system(size: 14, weight: .bold, design: .rounded)).monospacedDigit().foregroundColor(green)
+    } minimal: {
+        Image(systemName: "fuelpump.fill").foregroundColor(green)
+    }
+}
+
+struct StandbyView: View {
+    let s: TripAttributes.ContentState
+    let small: Bool
+    var body: some View {
+        VStack(alignment: .leading, spacing: small ? 3 : 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Label("La Mathias", systemImage: "car.fill").font(.system(size: small ? 14 : 16, weight: .heavy, design: .rounded))
+                Spacer()
+                Text("prête").font(.system(size: small ? 11 : 13, weight: .bold)).foregroundColor(green)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                if let r = s.range { Text("\(r)").font(.system(size: small ? 26 : 32, weight: .heavy, design: .rounded)).monospacedDigit().foregroundColor(green); Text("km d’autonomie").font(.system(size: 11, weight: .semibold)).foregroundColor(.secondary) }
+                Spacer(minLength: 4)
+                if let l = s.left { Label(LMFmt.n1(l) + " L", systemImage: "fuelpump.fill").font(.system(size: 13, weight: .bold, design: .rounded)) }
+            }.lineLimit(1).minimumScaleFactor(0.6)
+            if s.km > 0 {
+                Text("Dernier trajet · " + LMFmt.n1(s.km) + " km · \(s.minutes) min" + (s.avg != nil ? " · " + LMFmt.n1(s.avg!) + " L/100" : "") + (s.cost != nil ? " · " + euro(s.cost!) : ""))
+                    .font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundColor(.white.opacity(0.7)).lineLimit(1).minimumScaleFactor(0.6)
+            }
+        }
+        .padding(.horizontal, small ? 10 : 16).padding(.vertical, small ? 8 : 14)
+        .foregroundColor(.white)
     }
 }
 

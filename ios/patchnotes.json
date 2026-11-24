@@ -1,5 +1,16 @@
 [
  {
+  "v": "2.90",
+  "date": "2026-11-24",
+  "title": "Widget CarPlay toujours là",
+  "notes": [
+   "Le widget reste prêt entre deux trajets (autonomie, dernier trajet) et passe en direct dès que tu démarres",
+   "Plus besoin d’ouvrir l’appli pour l’avoir sur CarPlay",
+   "Réglable dans Réglages › Dynamic Island",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.89",
   "date": "2026-11-24",
   "title": "Trajets 100 % sur la route",

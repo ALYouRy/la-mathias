@@ -19,6 +19,8 @@ struct TripAttributes: ActivityAttributes {
         var left: Double? = nil    // litres restants estimés
         var cutKm: Double? = nil   // km roulés à 0 L/100 sur ce trajet
         var vmax: Int? = nil
+        // 2.90 : widget « prêt » entre deux trajets (reste affiché pour que CarPlay l'ait dès le départ)
+        var standby: Bool? = nil
     }
     var start: Date
 }
