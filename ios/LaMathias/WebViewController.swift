@@ -1,4 +1,5 @@
 import UIKit
+import WidgetKit
 import WebKit
 
 /// Affiche La Mathias (le site, toujours à jour) et fait le lien avec la partie native (OBD, GPS en arrière-plan).
@@ -127,6 +128,14 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             vc.subText = (m["sub"] as? String) ?? ""
             vc.modalPresentationStyle = .fullScreen
             if presentedViewController == nil { present(vc, animated: true) }
+        case "widget":
+            // 2.91 : données des widgets d'accueil → zone partagée, puis on redessine les widgets
+            var ok = false
+            if let d = m["data"], let j = try? JSONSerialization.data(withJSONObject: d), let str = String(data: j, encoding: .utf8), let ud = LMGroup.defaults {
+                ud.set(str, forKey: "wdata"); ok = true
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+            Core.shared.js("window.LMN&&LMN.widgetRes&&LMN.widgetRes({ok:\(ok ? "true" : "false"),grp:'\(LMGroup.id)'})")
         case "settings":
             if let u = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(u) }
         default:

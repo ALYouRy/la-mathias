@@ -35,9 +35,13 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSSupportsLiveActivities: true
         NSSupportsLiveActivitiesFrequentUpdates: true
+        CFBundleURLTypes:
+          - CFBundleURLName: fr.lamathias.app
+            CFBundleURLSchemes: [lamathias]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: fr.lamathias.app
+        CODE_SIGN_ENTITLEMENTS: LaMathias/LaMathias.entitlements
         PRODUCT_NAME: LaMathias
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
@@ -63,6 +67,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: fr.lamathias.app.widget
+        CODE_SIGN_ENTITLEMENTS: LaMathiasWidget/LaMathiasWidget.entitlements
         IPHONEOS_DEPLOYMENT_TARGET: "18.0"
         PRODUCT_NAME: LaMathiasWidget
         SWIFT_VERSION: "5.0"

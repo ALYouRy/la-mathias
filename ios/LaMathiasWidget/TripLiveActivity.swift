@@ -7,6 +7,13 @@ struct LaMathiasWidgets: WidgetBundle {
     var body: some Widget {
         TripLiveActivity()
         InfoLiveActivity()
+        FuelBarWidget()
+        FuelRingWidget()
+        LastTripWidget()
+        DashWidget()
+        WeekWidget()
+        AllWidget()
+        LockWidget()
     }
 }
 

@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.91",
+  "date": "2026-11-24",
+  "title": "Widgets iPhone",
+  "notes": [
+   "7 widgets : réservoir (barre ou anneau), dernier trajet, tableau de bord, ma semaine, tout-en-un, écran verrouillé",
+   "Touche un widget pour ouvrir l’appli au bon endroit",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.90",
   "date": "2026-11-24",
   "title": "Widget CarPlay toujours là",

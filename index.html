@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.90';
+var APP_V='2.91';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1071,7 +1071,7 @@ function fuelCard(){
 
 if(SET.startTab!=='last')TAB=SET.startTab;
 function load(){try{var o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)db=Object.assign({trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}},o)}catch(e){}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(db));SAVEERR=0}catch(e){if(!SAVEERR){SAVEERR=1;setTimeout(function(){toast('Mémoire de l’appli pleine : fais une sauvegarde (Réglages › Données).',6000)},500)}}}
+function save(){try{widgetSync()}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(db));SAVEERR=0}catch(e){if(!SAVEERR){SAVEERR=1;setTimeout(function(){toast('Mémoire de l’appli pleine : fais une sauvegarde (Réglages › Données).',6000)},500)}}}
 var SAVEERR=0;
 function $(s){return document.querySelector(s)}
 function n36(x){return x?parseInt(x,36):0}
@@ -4350,6 +4350,7 @@ function setHtml(D,L){
     segRow('splash','Style','',[['3d','Voiture 3D'],['neon','Néon'],['off','Aucune']])+
     segRow('flash','Appel de phares à la fin','',ONOFF)+'</div>';
   h+='<div class="card sgc"><h2>Dynamic Island</h2>'+
+    (typeof NAT!=='undefined'&&NAT?'<p class="note">Widgets de l’écran d’accueil : '+(WGT.ok===true?'✓ prêts, appuie longuement sur l’écran d’accueil › + › La Mathias':WGT.ok===false?'✗ indisponibles (SideStore n’a pas créé la zone partagée)':'vérification…')+'</p>':'')+
     (typeof NAT!=='undefined'&&NAT?segRow('keepAct','Widget toujours prêt','Le widget reste sur l’écran verrouillé entre deux trajets (autonomie, dernier trajet) : comme ça il s’affiche sur CarPlay dès que tu démarres, même sans ouvrir l’appli.',ONOFF):'')+
     (typeof NAT!=='undefined'&&NAT?segRow('nisl','Messages','Réservoir et autonomie au démarrage, dernier trajet, trajets enregistrés, OBD, alertes : dans la vraie Dynamic Island de l’iPhone.',ONOFF):segRow('isl','Animations','Les messages qui sortent de la Dynamic Island.',ONOFF))+
     segRow('welcome','Message de bienvenue',typeof NAT!=='undefined'&&NAT?'Essence qui reste, autonomie et dernier trajet à l’ouverture.':'Nom de la voiture, dernière synchro et autonomie.',ONOFF)+
@@ -4625,6 +4626,24 @@ var OBD={dev:null,w:null,n:null,buf:'',wait:null,q:Promise.resolve(),ok:false,su
   DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0,hist:[],tab:'gps',cm:'l100',sig:'',trail:[],trT:0,acc:{t0:0,idle:0,cutS:0,cutKm:0},g3d:true},
   ACTK='sandero-actif',OBDK='sandero-obd-dev',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
 function drvSet(){var s={};try{s=JSON.parse(localStorage.getItem('sandero-drv')||'{}')}catch(e){}if(!s.disp)s.disp=1.2;if(!s.k)s.k=1;if(!s.redline)s.redline=5000;if(!s.endMin)s.endMin=5;if(s.auto==null)s.auto=true;return s}
+/* ---------- 2.91 : widgets de l'écran d'accueil (données préparées ici, affichées par l'appli native) ---------- */
+var WGT={ok:null,grp:''};
+function widgetData(){if(sample)return null;var D=data(),FI=fuelInfo(),S=D.snap||{},L=realList();
+  var rem=S.rem!=null?S.rem:FI.rem,rg=S.range!=null?S.range:FI.range,tank=S.tank||FI.tank||50,pct=rem!=null?Math.max(0,Math.min(1,rem/tank)):null;
+  var nf='';try{var since=Date.now()-28*864e5,km28=0;L.forEach(function(r){if(r.t0>=since)km28+=r.dist});var day=km28/28;
+    if(rg!=null&&day>=2){var dd=Math.max(0,rg-50)/day,w=new Date(Date.now()+dd*864e5);nf=dd<1?'aujourd’hui':dd<2?'demain':'vers le '+w.getDate()+' '+['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'][w.getMonth()]}}catch(e){}
+  var o={name:S.name||'La Mathias',range:rg!=null?Math.round(rg):null,left:rem!=null?Math.round(rem*10)/10:null,pct:pct!=null?Math.round(pct*100)/100:null,meas:!!FI.meas,nextFill:nf,t:Date.now()};
+  try{o.lock=lockState()}catch(e){}
+  var l=L[0];if(l){var P0=priceOf(D.snap),dt=new Date(l.t0),td=new Date();td.setHours(0,0,0,0);var dy=Math.floor((td-new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()))/864e5);
+    var sp=null;try{sp=tripSpark(l)}catch(e){}
+    o.last={day:dy<=0?'Aujourd’hui':dy===1?'Hier':dt.getDate()+'/'+(dt.getMonth()+1),time:('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2),km:Math.round(l.dist*10)/10,min:Math.round((l.dur||0)/60),
+      cons:l.fuel>0&&l.dist>.3?Math.round(l.fuel/l.dist*1000)/10:null,cost:l.fuel>0?Math.round(l.fuel*(tPrice(l,P0)||0)*100)/100:null,eco:l.eco!=null?l.eco:null,cutKm:l.cutKm>0?l.cutKm:null,
+      spark:sp?sp.map(function(x){return Math.round(x*10)/10}):null}}
+  var mon=new Date();mon.setHours(0,0,0,0);var wd=(mon.getDay()+6)%7;mon.setDate(mon.getDate()-wd);var W={km:0,n:0,eur:0,L:0,cutKm:0,days:[0,0,0,0,0,0,0],today:wd},P1=priceOf(D.snap);
+  L.forEach(function(r){if(r.t0<mon.getTime())return;W.km+=r.dist;W.n++;W.L+=r.fuel||0;W.eur+=(r.fuel||0)*(tPrice(r,P1)||0);W.cutKm+=r.cutKm||0;var i=(new Date(r.t0).getDay()+6)%7;W.days[i]+=r.dist});
+  W.km=Math.round(W.km*10)/10;W.eur=Math.round(W.eur*100)/100;W.L=Math.round(W.L*10)/10;W.cutKm=Math.round(W.cutKm*10)/10;W.days=W.days.map(function(x){return Math.round(x*10)/10});o.week=W;
+  return o}
+function widgetSync(){if(typeof NAT==='undefined'||!NAT)return;clearTimeout(widgetSync.t);widgetSync.t=setTimeout(function(){try{var w=widgetData();if(w)natPost({op:'widget',data:w})}catch(e){}},1500)}
 /* 2.88 : niveau d'essence et conso de référence envoyés à l'appli native (autonomie en direct sur CarPlay / écran verrouillé) */
 function natFuel(){if(typeof NAT==='undefined'||!NAT)return;try{var F=fuelInfo();if(F&&F.rem!=null)natPost({op:'set',fuelL:Math.max(.01,F.rem),rangeC:F.cons||0})}catch(e){}}
 function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}if(NAT)natPost({op:'set',disp:s.disp,k:s.k,redline:s.redline,endMin:s.endMin,price:priceOf(db.snap)||0})}
@@ -5111,6 +5130,9 @@ function tyreSheet(){
 var NATIT=0,NAT=!!(window.LM_NATIVE&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lm),NATL=null,NATCB={},NATID=0,NATF=null,NATB=0;
 function natPost(o){try{window.webkit.messageHandlers.lm.postMessage(o)}catch(e){}}
 window.LMN={
+  widgetRes:function(o){WGT.ok=!!(o&&o.ok);WGT.grp=(o&&o.grp)||''},
+  open:function(p){p=String(p||'');try{if(/conduite/.test(p)){openDrive();return}var t=/trajets/.test(p)?'trips':/bilan/.test(p)?'bilan':/vie/.test(p)?'vie':'car';
+    if(!$('#mapv').classList.contains('hide'))closeMap();TAB=t;try{localStorage.setItem('sandero-phone-tab',t)}catch(e){}window.scrollTo(0,0);ANIM=true;render()}catch(e){}},
   route:function(o){var f=o&&SNP.cb[o.id];if(f){delete SNP.cb[o.id];f(o)}},
   live:function(o){NATL=o;natLive(o)},
   found:function(list,fin,err){NATF={list:list||[],fin:fin,err:err&&err[0]};natPickDraw()},
@@ -5174,7 +5196,7 @@ function natPickDraw(){
   el.innerHTML=h;var r=$('#natre');if(r)r.onclick=natScan;
   Array.prototype.forEach.call(el.querySelectorAll('[data-id]'),function(b){b.onclick=function(){natPost({op:'pick',id:b.getAttribute('data-id')});sheetClose();island({icon:'check',tone:'good',title:'Connexion…',sub:b.querySelector('b').textContent,ms:2500,fallback:1})}});
 }
-if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500);setTimeout(natFuel,2500);setTimeout(function(){natPost({op:'set',keepAct:SET.keepAct!==false})},2700)}
+if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500);setTimeout(natFuel,2500);setTimeout(function(){natPost({op:'set',keepAct:SET.keepAct!==false})},2700);setTimeout(widgetSync,3200)}
 
 
 /* ---------- 2.61 : écran GPS en direct, avec toute la conso ---------- */

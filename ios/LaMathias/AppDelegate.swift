@@ -17,6 +17,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return true
     }
 
+    /// 2.91 : liens des widgets (lamathias://conduite, lamathias://trajets, …)
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        let p = (url.host ?? "") + url.path
+        Core.shared.js("window.LMN&&LMN.open&&LMN.open('\(p.replacingOccurrences(of: "'", with: ""))')")
+        return true
+    }
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound])
     }
