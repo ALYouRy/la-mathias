@@ -13,6 +13,12 @@ struct TripAttributes: ActivityAttributes {
         var cut: Bool
         var gear: Int?
         var cost: Double?
+        // 2.88 : plus de détails (CarPlay, écran verrouillé)
+        var rpm: Int? = nil
+        var range: Int? = nil      // autonomie estimée (km)
+        var left: Double? = nil    // litres restants estimés
+        var cutKm: Double? = nil   // km roulés à 0 L/100 sur ce trajet
+        var vmax: Int? = nil
     }
     var start: Date
 }

@@ -1,5 +1,16 @@
 [
  {
+  "v": "2.88",
+  "date": "2026-11-24",
+  "title": "CarPlay plus complet",
+  "notes": [
+   "Widget CarPlay : vitesse, conso, rapport, régime, moyenne, km, autonomie, km à 0 L/100 et coût",
+   "Mise à jour toutes les secondes, au rythme du boîtier OBD",
+   "Écran verrouillé et Dynamic Island plus détaillés",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.87",
   "date": "2026-11-24",
   "title": "Trajets recalés sur Plans",

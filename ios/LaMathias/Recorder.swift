@@ -65,7 +65,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         return s
     }
     func setSettings(_ m: [String: Any]) {
-        for k in ["disp", "k", "redline", "endMin", "price"] { if let v = (m[k] as? NSNumber)?.doubleValue, v > 0 { UserDefaults.standard.set(v, forKey: k) } }
+        for k in ["disp", "k", "redline", "endMin", "price", "fuelL", "rangeC"] { if let v = (m[k] as? NSNumber)?.doubleValue, v > 0 { UserDefaults.standard.set(v, forKey: k) } }
     }
 
     func setup() {
@@ -267,7 +267,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             let k = L[i]; i += 1
             read(k) { ok in
                 if ok && (k == "rpm" || k == "speed") { self.dataT = Date().timeIntervalSince1970 }
-                if i == core { self.derive(); self.pushFast() }
+                if i == core { self.derive(); self.pushFast(); self.liveTick() }
                 step()
             }
         }
@@ -399,7 +399,24 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             cons: cut ? 0 : d["cons"], lph: d["lph"],
             avg: R.dist > 0.3 ? R.fuel * k / R.dist * 100 : nil,
             km: R.dist, minutes: Int(R.dur / 60), cut: cut, gear: gear,
-            cost: price > 0 ? R.fuel * k * price : nil)
+            cost: price > 0 ? R.fuel * k * price : nil,
+            rpm: d["rpm"].map { Int($0.rounded()) },
+            range: rangeLeft(R).map { Int($0.rounded()) },
+            left: fuelLeft(R),
+            cutKm: R.cutKm > 0.01 ? R.cutKm : nil,
+            vmax: R.vmax > 0 ? Int(R.vmax.rounded()) : nil)
+    }
+
+    /// litres restants = niveau envoyé par l'appli au début, moins ce que ce trajet a consommé
+    private func fuelLeft(_ R: Trip) -> Double? {
+        let f = UserDefaults.standard.double(forKey: "fuelL")
+        guard f > 0 else { return nil }
+        return max(0, f - R.fuel * settings.k)
+    }
+    private func rangeLeft(_ R: Trip) -> Double? {
+        let c = UserDefaults.standard.double(forKey: "rangeC")
+        guard let l = fuelLeft(R), c > 2 else { return nil }
+        return l / c * 100
     }
 
     private func liveTick() {

@@ -31,7 +31,7 @@ final class LiveAct {
     func update(_ s: TripAttributes.ContentState) {
         guard let a = act else { return }
         if s == lastState { return }
-        if Date().timeIntervalSince(last) < 1.5 { return }
+        if Date().timeIntervalSince(last) < 0.9 { return }
         last = Date()
         lastState = s
         Task { await a.update(.init(state: s, staleDate: Date().addingTimeInterval(180))) }

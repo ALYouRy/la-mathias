@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.87';
+var APP_V='2.88';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4601,6 +4601,8 @@ var OBD={dev:null,w:null,n:null,buf:'',wait:null,q:Promise.resolve(),ok:false,su
   DRV={on:false,mode:'',d:{},rec:null,gps:null,gw:null,last:0,loop:false,wl:null,tick:0,ui:0,hist:[],tab:'gps',cm:'l100',sig:'',trail:[],trT:0,acc:{t0:0,idle:0,cutS:0,cutKm:0},g3d:true},
   ACTK='sandero-actif',OBDK='sandero-obd-dev',BLESV=[0xfff0,0xffe0,0x18f0,0xffb0,'e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455'];
 function drvSet(){var s={};try{s=JSON.parse(localStorage.getItem('sandero-drv')||'{}')}catch(e){}if(!s.disp)s.disp=1.2;if(!s.k)s.k=1;if(!s.redline)s.redline=5000;if(!s.endMin)s.endMin=5;if(s.auto==null)s.auto=true;return s}
+/* 2.88 : niveau d'essence et conso de référence envoyés à l'appli native (autonomie en direct sur CarPlay / écran verrouillé) */
+function natFuel(){if(typeof NAT==='undefined'||!NAT)return;try{var F=fuelInfo();if(F&&F.rem!=null)natPost({op:'set',fuelL:Math.max(.01,F.rem),rangeC:F.cons||0})}catch(e){}}
 function drvSave(s){try{localStorage.setItem('sandero-drv',JSON.stringify(s))}catch(e){}if(NAT)natPost({op:'set',disp:s.disp,k:s.k,redline:s.redline,endMin:s.endMin,price:priceOf(db.snap)||0})}
 /* --- liaison Bluetooth LE (Web Bluetooth : Bluefy sur iPhone, Chrome sur ordinateur) --- */
 OBD.knownName=function(){try{var o=JSON.parse(localStorage.getItem(OBDK)||'null');return o&&navigator.bluetooth&&navigator.bluetooth.getDevices?(o.name||'l’adaptateur'):''}catch(e){return ''}};
@@ -4891,7 +4893,7 @@ function winAvg(n){var a=DRV.hist.slice(-n),L=0,D=0;a.forEach(function(p){if(p.h
 /* réservoir : depuis le dernier plein, on retranche le carburant calculé ; si la voiture donne son niveau, on le prend */
 var FSK='sandero-fuel-phone';
 function fsLoad(){var f={fillT:0,used:0,dist:0,level:1,added:0,lastCons:null};try{Object.assign(f,JSON.parse(localStorage.getItem(FSK)||'{}'))}catch(e){}return f}
-var FS=fsLoad();function fsSave(){try{localStorage.setItem(FSK,JSON.stringify(FS))}catch(e){}}
+var FS=fsLoad();function fsSave(){try{localStorage.setItem(FSK,JSON.stringify(FS))}catch(e){}clearTimeout(fsSave.t);fsSave.t=setTimeout(natFuel,800)}
 function tankL(){return (db.snap&&db.snap.tank)||50}
 function fuelInfo(){
   var tank=tankL(),rem=null,meas=false;
@@ -5126,7 +5128,7 @@ function natImport(L){
   L.forEach(function(R){if(!R||!R.t0)return;ids.push(R.t0);var key=Math.round(R.t0/1000)*1000;if(db.trips[key])return;
     FS.used+=(R.fuel||0)*k;FS.dist+=R.dist||0;if(recSave(R,true))n++});
   if(ids.length)natPost({op:'ack',ids:ids});
-  if(n){ANIM=true;render();setTimeout(tripReveal,300);tripEndIsland(NEWT.slice(-n));setTimeout(function(){try{plansQueue(NEWT[NEWT.length-1])}catch(e){}},2500)}
+  if(n){ANIM=true;render();setTimeout(natFuel,600);setTimeout(tripReveal,300);tripEndIsland(NEWT.slice(-n));setTimeout(function(){try{plansQueue(NEWT[NEWT.length-1])}catch(e){}},2500)}
 }
 function natStart(){
   var L=NATL||{},st=L.st,h='';
@@ -5148,7 +5150,7 @@ function natPickDraw(){
   el.innerHTML=h;var r=$('#natre');if(r)r.onclick=natScan;
   Array.prototype.forEach.call(el.querySelectorAll('[data-id]'),function(b){b.onclick=function(){natPost({op:'pick',id:b.getAttribute('data-id')});sheetClose();island({icon:'check',tone:'good',title:'Connexion…',sub:b.querySelector('b').textContent,ms:2500,fallback:1})}});
 }
-if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500)}
+if(NAT){var s0=drvSet();natPost({op:'hello',set:{disp:s0.disp,k:s0.k,redline:s0.redline,endMin:s0.endMin,price:(function(){try{return priceOf(db.snap)||0}catch(e){return 0}})()}});setTimeout(function(){natPost({op:'trips'})},1500);setTimeout(natFuel,2500)}
 
 
 /* ---------- 2.61 : écran GPS en direct, avec toute la conso ---------- */
