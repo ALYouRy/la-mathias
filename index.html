@@ -188,6 +188,7 @@ button{font:inherit;color:inherit}
    icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
 .isl .nl,.isl .nr{display:none}
 .eco[data-t]{cursor:pointer}
+.plansl{display:flex;flex-direction:column;gap:10px;margin:4px 0 14px}.plansl .btn{width:100%}
 .trv-z{margin:10px 0 0;font-size:14px;color:#34d17a;display:flex;align-items:center;justify-content:center;gap:6px}.trv-z b{font-weight:800}.trv-z .ecoi{width:16px;height:16px}
 .zc-b{display:flex;align-items:baseline;gap:6px;margin:4px 0 2px}.zc-b b{font-size:44px;font-weight:800;color:#34d17a;letter-spacing:-.02em}.zc-b u{text-decoration:none;opacity:.6;font-size:17px}
 .isl[data-tone^="t-"] .ic{background:rgba(255,255,255,.1)}
@@ -1016,7 +1017,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.94';
+var APP_V='2.95';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1504,6 +1505,15 @@ function plansMap(r,P){var De=null;try{De=detOf(r)}catch(e){}var al=De&&De.c&&De
   var day=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});day=day.charAt(0).toUpperCase()+day.slice(1);
   natPost({op:'tripMap',t0:r.t0,title:day+' · '+('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2),sub:f1(r.dist)+' km · '+dur(r.dur)+(r.cutKm>=.05?' · '+f1(r.cutKm)+' km à 0 L':''),
     stats:{cons:cons,cost:cost,eco:r.eco!=null?String(r.eco):null,vmax:r.vmax?String(Math.round(r.vmax)):null},pts:pts})}
+/* 2.95 : toutes les cartes sur Apple Plans dans l'appli iPhone (Dévoilé, Passages, Zones) */
+function natPlans(){return typeof NAT!=='undefined'&&NAT&&!!(window.LM_NATIVE&&LM_NATIVE.atlas)&&SET.tripMap!=='neon'&&!sample}
+function atlasTraces(){var T=[],C=[];comTrips().forEach(function(r){var P=rawTrack(r);if(!P||P.length<2)return;if(P.length>400)P=dpSimp(P,.004);
+  T.push(P.map(function(p){return [Math.round(p[0]*1e5)/1e5,Math.round(p[1]*1e5)/1e5]}));C.push(1)});return {T:T,C:C}}
+function plansAtlas(mode){var A=atlasTraces();if(!A.T.length){toast('Pas encore de tracé GPS.');return false}
+  var km='';try{var F=fogData();km=(F.km>=.5?fi(F.km)+' km de routes découvertes · ':'')+A.T.length+' trajet'+(A.T.length>1?'s':'')}catch(e){}
+  natPost({op:'atlas',mode:mode||'fog',fogKm:km,traces:A.T,counts:A.C});return true}
+function plansSpots(kind){var S=spotsData(kind||'conso');if(!S.top.length)return false;
+  natPost({op:'atlas',mode:'spots',title:kind==='wait'?'Où j’attends le plus':'Où je consomme le plus',spots:S.top.map(function(x){return {lat:x.lat,lon:x.lon,col:x.col,lab:x.lab+(x.trips>1?' · '+x.trips+' trajets':''),rank:x.rank}})});return true}
 /* file d'attente : le trajet demandé d'abord, puis les plus récents */
 function plansQueue(first){return;/* 2.94 : désactivé — le tracé GPS de l'iPhone est affiché tel quel */if(!plansCan())return;if(first!=null)SNP.want=first;if(SNP.busy)return;SNP.busy=true;
   (async function(){try{for(var guard=0;guard<400;guard++){var D=db,r=null;
@@ -2310,6 +2320,7 @@ function openMap(t0,noSnap){
   showMap(function(ml){return bnds(ml,P)});
 }
 function openSpots(kind){
+  if(natPlans()&&plansSpots(kind))return;
   kind=kind||'conso';SPOTS=spotsData(kind);if(!SPOTS.top.length)return;rpStop();
   MODE='spots';MAPC=null;MAPM=null;CUR=-1;$('#mapv').classList.add('spotm');
   $('#mapt').textContent=kind==='wait'?'Où j’attends le plus':'Où je consomme le plus';
@@ -2456,6 +2467,7 @@ function tmLayers(m){
 function tmBounds(ml){var f=freqData(),b=new ml.LngLatBounds();f.fc.features.forEach(function(x){x.geometry.coordinates.forEach(function(c){b.extend(c)})});return b}
 function tmSize(){var el=$('#tabmap');if(el.classList.contains('tmfull')){el.style.height='';if(TM)TM.resize();return}var r=el.getBoundingClientRect(),tb=$('#tabs').offsetHeight||70;el.style.height=Math.max(320,window.innerHeight-r.top-window.scrollY-tb-14+window.scrollY)+'px';if(TM)TM.resize()}
 function tabMapShow(){
+  if(natPlans()){$('#tabmap').classList.add('hide');if(PASS.on){PASS.on=false;plansAtlas('pass')}return}
   var el=$('#tabmap'),f=freqData();$('#tminfo').classList.add('hide');
   if(!f.trips){if(PASS.on){el.classList.remove('hide');return}el.classList.add('hide');return}
   el.classList.remove('hide');tmSize();$('#tm3d').setAttribute('aria-pressed',!!SET.map3d);
@@ -4077,17 +4089,17 @@ function fogStart(box,inline){
 function fogBtns(root){Array.prototype.forEach.call((root||document).querySelectorAll('[data-fga]'),function(b){b.onclick=function(){if(!FOG.map)return;var a=b.getAttribute('data-fga');if(a==='all')fogFit(false);else if(a==='last')fogFit(true);else{fogFit(false);setTimeout(fogPlay,750)}}})}
 function fogUnmount(){cancelAnimationFrame(FOG.raf);cancelAnimationFrame(FOG.anim);if(FOG.map){try{FOG.map.remove()}catch(e){}}FOG.map=null;FOG.cv=null;FOG.inline=false}
 function fogTabSize(){var el=$('#fogtab'),r=el.getBoundingClientRect(),tb=$('#tabs').offsetHeight||70;el.style.height=Math.max(340,window.innerHeight-r.top-tb-14)+'px';if(FOG.map&&FOG.inline)FOG.map.resize()}
-function fogTabShow(){var el=$('#fogtab');if(PASS.on||!comTrips().length){el.classList.add('hide');return}
+function fogTabShow(){var el=$('#fogtab');if(natPlans()){fogUnmount();el.classList.remove('hide');el.innerHTML='<div class="plansl"><button type="button" class="btn" id="pl-fog">Carte dévoilée · Plans</button><button type="button" class="btn ghost" id="pl-pass">Tous mes passages · Plans</button></div>';$('#pl-fog').onclick=function(){plansAtlas('fog')};$('#pl-pass').onclick=function(){plansAtlas('pass')};return}if(PASS.on||!comTrips().length){el.classList.add('hide');return}
   el.classList.remove('hide');fogTabSize();if(FOG.map&&FOG.inline&&$('#fogmap')&&el.contains($('#fogmap')))return;
   if(FOG.map&&!FOG.inline)return; /* la version plein écran est ouverte */
   fogUnmount();fogStart(el,true)}
-function openFog(){if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}var box=$('#fog');if(!fogStart(box,false)){toast('Pas encore de tracé GPS.');return}box.classList.remove('hide');document.body.style.overflow='hidden'}
+function openFog(){if(natPlans()){plansAtlas('fog');return}if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}var box=$('#fog');if(!fogStart(box,false)){toast('Pas encore de tracé GPS.');return}box.classList.remove('hide');document.body.style.overflow='hidden'}
 function closeFog(){fogUnmount();var b=$('#fog');b.classList.add('hide');b.innerHTML='';document.body.style.overflow='';if(TAB==='map')fogTabShow()}
 /* carte des passages en plein écran */
 var PASS={on:false};
 function passBar(){var f=freqData(),chips=[['all','Tout'],['year','Cette année'],['month','Ce mois']].map(function(x){return '<button type="button" data-tmf2="'+x[0]+'" aria-pressed="'+(TMF===x[0])+'">'+x[1]+'</button>'}).join('');
   return '<div class="pbh"><div><small>Carte des passages</small><b>'+(f.trips?f.trips+' trajet'+(f.trips>1?'s':'')+' · '+fi(f.km)+' km · record '+f.max+' passage'+(f.max>1?'s':''):'Aucun tracé sur cette période')+'</b></div><button type="button" class="wx" id="passx" aria-label="Fermer">✕</button></div><div class="seg">'+chips+'</div>'}
-function openPass(){PASS.on=true;if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}$('#fogtab').classList.add('hide');
+function openPass(){if(natPlans()){plansAtlas('pass');return}PASS.on=true;if(FOG.map&&FOG.inline){fogUnmount();$('#fogtab').innerHTML=''}$('#fogtab').classList.add('hide');
   var el=$('#tabmap');el.classList.add('tmfull');var bar=$('#passbar');if(!bar){bar=document.createElement('div');bar.id='passbar';bar.className='passbar';el.appendChild(bar)}
   var draw=function(){bar.innerHTML=passBar();$('#passx').onclick=closePass;Array.prototype.forEach.call(bar.querySelectorAll('[data-tmf2]'),function(b){b.onclick=function(){TMF=b.getAttribute('data-tmf2');draw();tabMapShow()}})};
   draw();document.body.style.overflow='hidden';tabMapShow()}
@@ -4370,7 +4382,7 @@ function setHtml(D,L){
     harmRow()+'<div class="srow"><div class="sl">Couleur de l’appli</div>'+(SET.harm?'<p class="sh">Choisir une couleur remplace l’harmonie.</p>':'')+'<div class="seg">'+sw+'</div></div>'+
     segRow('txt','Taille du texte','',[['s','Petit'],['m','Normal'],['l','Grand'],['xl','Très grand']])+
     segRow('car3d','Voiture en 3D','Dans l’onglet Voiture, avec le bouton du verrou.',ONOFF)+
-    (typeof NAT!=='undefined'&&NAT?segRow('tripMap','Carte des trajets','Plans : la carte Apple avec ton GPS tel quel (comme Been). Néon : la carte de l’appli, avec rejouer et styles.',[['plans','Plans'],['neon','Néon']]):'')+
+    (typeof NAT!=='undefined'&&NAT?segRow('tripMap','Carte des trajets','Plans : toutes les cartes (trajets, carte dévoilée, passages, zones) sur la carte Apple, avec ton GPS tel quel. Néon : les cartes de l’appli, avec rejouer et styles.',[['plans','Plans'],['neon','Néon']]):'')+
     segRow('mapStyle','Style de la carte','Pour la carte des trajets. Tu peux aussi le changer directement sur la carte.',MAPSTYLES)+
     segRow('anim','Animations des onglets','Les chiffres défilent, la jauge et le graphique se remplissent.',ONOFF)+
     segRow('startTab','Onglet à l’ouverture','',[['last','Dernier utilisé'],['car','Voiture'],['bilan','Bilan'],['trips','Trajets'],['map','Carte']])+'</div>';
@@ -5347,6 +5359,7 @@ $('#lvc').onclick=function(){TAB='vie';try{localStorage.setItem('sandero-phone-t
 Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){
   var t=b.getAttribute('data-t');if(t===TAB){window.scrollTo({top:0,behavior:'smooth'});return}
   TAB=t;try{localStorage.setItem('sandero-phone-tab',t)}catch(e){}window.scrollTo(0,0);ANIM=true;render();
+  if(t==='map'&&natPlans())plansAtlas('fog');
 }});
 $('#mapx').onclick=closeMap;
 $('#rpl').onclick=function(){rpStart()};

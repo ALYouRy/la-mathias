@@ -1,4 +1,5 @@
 import UIKit
+import MapKit
 import WidgetKit
 import WebKit
 
@@ -22,7 +23,7 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         cfg.mediaTypesRequiringUserActionForPlayback = []
         let ucc = WKUserContentController()
         ucc.add(WeakHandler(self), name: "lm")
-        ucc.addUserScript(WKUserScript(source: "window.LM_NATIVE={v:1,platform:'ios',sbar:1,route:1,tmap:1};", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        ucc.addUserScript(WKUserScript(source: "window.LM_NATIVE={v:1,platform:'ios',sbar:1,route:1,tmap:1,atlas:1};", injectionTime: .atDocumentStart, forMainFrameOnly: true))
         cfg.userContentController = ucc
         let w = WKWebView(frame: .zero, configuration: cfg)
         w.navigationDelegate = self
@@ -121,6 +122,21 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             PlansRoute.run(id: id, a: a, b: b) { js in
                 DispatchQueue.main.async { Core.shared.js("window.LMN&&LMN.route&&LMN.route(" + js + ")") }
             }
+        case "atlas":
+            // 2.95 : cartes « Dévoilé », « Passages » et « Zones » sur Apple Plans
+            let vc = AtlasViewController()
+            vc.mode = (m["mode"] as? String) ?? "fog"
+            vc.fogKm = (m["fogKm"] as? String) ?? ""
+            vc.spotTitle = (m["title"] as? String) ?? ""
+            vc.traces = ((m["traces"] as? [[[NSNumber]]]) ?? []).map { $0.compactMap { $0.count >= 2 ? CLLocationCoordinate2D(latitude: $0[0].doubleValue, longitude: $0[1].doubleValue) : nil } }
+            vc.counts = ((m["counts"] as? [NSNumber]) ?? []).map { $0.intValue }
+            vc.spots = ((m["spots"] as? [[String: Any]]) ?? []).compactMap { d in
+                guard let la = (d["lat"] as? NSNumber)?.doubleValue, let lo = (d["lon"] as? NSNumber)?.doubleValue else { return nil }
+                let hex = (d["col"] as? String) ?? "#ff8a3d"
+                return AtlasViewController.Spot(c: CLLocationCoordinate2D(latitude: la, longitude: lo), col: UIColor(hexString: hex), lab: (d["lab"] as? String) ?? "", rank: (d["rank"] as? NSNumber)?.intValue ?? 0)
+            }
+            vc.modalPresentationStyle = .fullScreen
+            if presentedViewController == nil { present(vc, animated: true) }
         case "tripMap":
             let vc = TripMapViewController()
             vc.pts = ((m["pts"] as? [[NSNumber]]) ?? []).map { $0.map { $0.doubleValue } }
@@ -241,5 +257,21 @@ final class WeakHandler: NSObject, WKScriptMessageHandler {
     init(_ t: WKScriptMessageHandler) { target = t }
     func userContentController(_ ucc: WKUserContentController, didReceive message: WKScriptMessage) {
         target?.userContentController(ucc, didReceive: message)
+    }
+}
+
+
+extension UIColor {
+    /// « #rrggbb » ou « rgb(r,g,b) » venant de la page
+    convenience init(hexString s: String) {
+        var r = 1.0, g = 0.54, b = 0.24
+        let t = s.trimmingCharacters(in: .whitespaces)
+        if t.hasPrefix("#"), t.count >= 7, let v = UInt32(t.dropFirst().prefix(6), radix: 16) {
+            r = Double((v >> 16) & 255) / 255; g = Double((v >> 8) & 255) / 255; b = Double(v & 255) / 255
+        } else if t.hasPrefix("rgb") {
+            let n = t.components(separatedBy: CharacterSet(charactersIn: "0123456789.").inverted).compactMap { Double($0) }
+            if n.count >= 3 { r = n[0] / 255; g = n[1] / 255; b = n[2] / 255 }
+        }
+        self.init(red: r, green: g, blue: b, alpha: 1)
     }
 }
