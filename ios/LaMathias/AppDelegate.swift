@@ -8,6 +8,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Le Bluetooth doit être prêt dès le lancement : iOS relance l'appli en arrière-plan quand le boîtier OBD se réveille.
         Core.shared.start()
+        LMHook.start = { Core.shared.rec.forceStart() }
         UNUserNotificationCenter.current().delegate = self
         let w = UIWindow(frame: UIScreen.main.bounds)
         w.backgroundColor = UIColor(red: 0.03, green: 0.02, blue: 0.08, alpha: 1)

@@ -441,6 +441,19 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         la.update(st)
     }
 
+    /// 2.92 : démarrage forcé depuis le widget : on relance le boîtier et on démarre dès que le moteur tourne (3 min max)
+    private var forceUntil: Date?
+    func forceStart() {
+        if trip != nil { return }
+        forceUntil = Date().addingTimeInterval(180)
+        if !obd.ready { obd.reconnectSaved() }
+        setLoc("best")
+        var st = standbyState(); st.starting = true
+        if LiveAct.shared.running { LiveAct.shared.park(st, final: nil) } else { LiveAct.shared.tryStart(st, since: Date()) }
+        let fresh = dataT > 0 && Date().timeIntervalSince1970 - dataT < 5
+        if obd.ready && fresh && (d["rpm"] ?? 0) > 200 { recTick(0) }
+    }
+
     private func notifyStart() {
         if UIApplication.shared.applicationState == .active || LiveAct.shared.running || !LiveAct.shared.enabled { return }
         let c = UNMutableNotificationContent()
@@ -456,7 +469,9 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         let fresh = dataT > 0 && Date().timeIntervalSince1970 - dataT < 5
         let run = obd.ready && fresh && (rpm ?? 0) > 200
         guard let R = trip else {
-            if run && speed >= 5 {
+            if let f = forceUntil, f < Date() { forceUntil = nil; LiveAct.shared.park(standbyState(), final: nil) }
+            if run && (speed >= 5 || forceUntil != nil) {
+                forceUntil = nil
                 trip = Trip()
                 setLoc("best")
                 pushLive()

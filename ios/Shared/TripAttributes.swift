@@ -21,6 +21,7 @@ struct TripAttributes: ActivityAttributes {
         var vmax: Int? = nil
         // 2.90 : widget « prêt » entre deux trajets (reste affiché pour que CarPlay l'ait dès le départ)
         var standby: Bool? = nil
+        var starting: Bool? = nil   // 2.92 : démarrage demandé depuis le widget, en attente du boîtier
     }
     var start: Date
 }

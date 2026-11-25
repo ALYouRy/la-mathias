@@ -109,6 +109,7 @@ private func standbyIsland(_ s: TripAttributes.ContentState) -> DynamicIsland {
             Text(s.range != nil ? "\(s.range!) km" : "prête").font(.system(size: 20, weight: .heavy, design: .rounded)).monospacedDigit().foregroundColor(green).padding(.trailing, 4)
         }
         DynamicIslandExpandedRegion(.bottom) {
+            StartRow(s: s, small: true)
             Text(standbyLine(s))
                 .font(.system(size: 13, weight: .semibold, design: .rounded)).foregroundColor(.white.opacity(0.7))
         }
@@ -118,6 +119,29 @@ private func standbyIsland(_ s: TripAttributes.ContentState) -> DynamicIsland {
         Text(s.range != nil ? "\(s.range!)" : "OK").font(.system(size: 14, weight: .bold, design: .rounded)).monospacedDigit().foregroundColor(green)
     } minimal: {
         Image(systemName: "fuelpump.fill").foregroundColor(green)
+    }
+}
+
+/// 2.92 : bouton « Démarrer » (ou « connexion au boîtier… » une fois touché)
+struct StartRow: View {
+    let s: TripAttributes.ContentState
+    let small: Bool
+    var body: some View {
+        if s.starting == true {
+            HStack(spacing: 6) {
+                ProgressView().tint(green).scaleEffect(0.7)
+                Text("Démarrage… connexion au boîtier").font(.system(size: small ? 12 : 13, weight: .bold, design: .rounded)).foregroundColor(green).lineLimit(1).minimumScaleFactor(0.7)
+            }
+        } else {
+            Button(intent: StartTripIntent()) {
+                Label("Démarrer le trajet", systemImage: "play.fill")
+                    .font(.system(size: small ? 13 : 15, weight: .heavy, design: .rounded))
+                    .frame(maxWidth: .infinity).padding(.vertical, small ? 5 : 8)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.black)
+            .background(Capsule().fill(green))
+        }
     }
 }
 
@@ -143,7 +167,8 @@ struct StandbyView: View {
                 Spacer(minLength: 4)
                 if let l = s.left { Label(LMFmt.n1(l) + " L", systemImage: "fuelpump.fill").font(.system(size: 13, weight: .bold, design: .rounded)) }
             }.lineLimit(1).minimumScaleFactor(0.6)
-            if s.km > 0 {
+            StartRow(s: s, small: small)
+            if s.km > 0 && !small {
                 Text(lastTxt)
                     .font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundColor(.white.opacity(0.7)).lineLimit(1).minimumScaleFactor(0.6)
             }

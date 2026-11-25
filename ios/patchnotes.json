@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.92",
+  "date": "2026-11-25",
+  "title": "Démarrer depuis le widget",
+  "notes": [
+   "Bouton « Démarrer le trajet » sur le widget prêt (CarPlay, écran verrouillé, Dynamic Island)",
+   "L’appli relance le boîtier OBD et enregistre dès que le moteur tourne",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.91",
   "date": "2026-11-24",
   "title": "Widgets iPhone",
