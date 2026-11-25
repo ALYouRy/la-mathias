@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.93';
+var APP_V='2.94';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1033,7 +1033,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)updC
 var HARM={neon:['Néon','#00e5ff','255,0,170','0,229,255','neon'],synth:['Synthwave','#ff3fd0','255,120,40','150,60,255','neon'],ocean:['Océan','#3ad6ff','40,110,255','0,210,190','sombre'],
   aurore:['Aurore boréale','#34d17a','120,80,255','20,220,150','neon'],lavande:['Lavande','#c4a1ff','255,110,200','150,100,255','neon'],braise:['Braise','#ff6a3c','255,50,40','255,160,0','or'],
   ornuit:['Or de nuit','#ffc46b','255,170,60','40,90,200','or'],glacier:['Glacier','#9fd8ff','120,180,255','220,235,255','sombre'],menthe:['Menthe','#3ae0b0','0,190,170','60,140,255','sombre'],minuit:['Minuit','#a9a1d6','90,70,160','40,60,120','sombre']};
-var SETK='sandero-phone-set',SDEF={nisl:true,keepAct:true,harm:'',accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon',routeMode:'conso',map3d:false,fuel:'e10',priceSrc:'radio'};
+var SETK='sandero-phone-set',SDEF={tripMap:'plans',nisl:true,keepAct:true,harm:'',accent:'cyan',txt:'m',car3d:true,splash:'3d',flash:true,isl:false,welcome:true,alerts:true,islDur:'m',islPos:'glue',price:0,low:15,nTrips:40,startTab:'last',anim:true,cv:4,mapStyle:'neon',routeMode:'conso',map3d:false,fuel:'e10',priceSrc:'radio'};
 var SET=Object.assign({},SDEF);try{Object.assign(SET,JSON.parse(localStorage.getItem(SETK)||'{}'))}catch(e){}
 if(!SET.work||typeof SET.work!=='object')SET.work={};
 if(!SET.islOffMig){SET.islOffMig=1;SET.isl=false;try{localStorage.setItem(SETK,JSON.stringify(SET))}catch(e){}}
@@ -1497,16 +1497,23 @@ async function plansSnap(r){
   var Lq=trkLen(Q),ref=r.dist||O[O.length-1];r.snapV=3;D.trkS=D.trkS||{};
   if(ref>.3&&(Lq<ref*.85||Lq>ref*1.15)){delete D.trkS[r.t0];delete DSPK['s'+r.t0];save();return false}
   D.trkS[r.t0]=mmEnc(Q);delete DSPK['s'+r.t0];save();return true}
+/* 2.94 : revue du trajet sur la carte Apple Plans (méthode « Been » : le GPS de l'iPhone tel quel, sur les routes d'Apple) */
+function plansMap(r,P){var De=null;try{De=detOf(r)}catch(e){}var al=De&&De.c&&De.c.length===P.length,P0=priceOf(data().snap),dt=new Date(r.t0);
+  var pts=P.map(function(p,i){var c=al?De.c[i]:null,v=al&&De.v?De.v[i]:null;return [Math.round(p[0]*1e6)/1e6,Math.round(p[1]*1e6)/1e6,c==null?-1:c,v==null?-1:v]});
+  var cons=r.fuel>0&&r.dist>.3?f1(r.fuel/r.dist*100):null,cost=r.fuel>0?f2(r.fuel*(tPrice(r,P0)||0))+' €':null;
+  var day=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});day=day.charAt(0).toUpperCase()+day.slice(1);
+  natPost({op:'tripMap',t0:r.t0,title:day+' · '+('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2),sub:f1(r.dist)+' km · '+dur(r.dur)+(r.cutKm>=.05?' · '+f1(r.cutKm)+' km à 0 L':''),
+    stats:{cons:cons,cost:cost,eco:r.eco!=null?String(r.eco):null,vmax:r.vmax?String(Math.round(r.vmax)):null},pts:pts})}
 /* file d'attente : le trajet demandé d'abord, puis les plus récents */
-function plansQueue(first){if(!plansCan())return;if(first!=null)SNP.want=first;if(SNP.busy)return;SNP.busy=true;
+function plansQueue(first){return;/* 2.94 : désactivé — le tracé GPS de l'iPhone est affiché tel quel */if(!plansCan())return;if(first!=null)SNP.want=first;if(SNP.busy)return;SNP.busy=true;
   (async function(){try{for(var guard=0;guard<400;guard++){var D=db,r=null;
       if(SNP.want!=null){r=D.trips[SNP.want];SNP.want=null;if(r&&(r.snapV||0)>=3)r=null}
       if(!r){var L=realList().filter(function(x){return x.src==='iphone'&&(x.snapV||0)<3&&D.trk5&&D.trk5[x.t0]});r=L[0]||null}
       if(!r)break;var ok=false;try{ok=await plansSnap(r);if(!ok){r.snapV=3;save()}}catch(e){r.snapV=3;save()}
       if(ok&&MAPR&&MAPR.t0===r.t0&&!$('#mapv').classList.contains('hide')&&MODE==='trip'){try{openMap(r.t0,1)}catch(e){}}}}
     finally{SNP.busy=false}})()}
-function rawTrack(r){var D=data();if(!r)return null;if(D.trkS&&D.trkS[r.t0]&&(r.snapV||0)>=3&&D.trk5&&D.trk5[r.t0]){var ks=D.trkS[r.t0];if(DSPK['s'+r.t0]&&DSPK['s'+r.t0].k===ks)return DSPK['s'+r.t0].P;var Qs=mmDec(ks);if(Qs){DSPK['s'+r.t0]={k:ks,P:Qs};return Qs}}return rawTrack0(r)}
-function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q);try{var De=detOf(r);if(De&&De.v&&De.v.length===Q.length)Q=gpsClean(Q,De.v,De.t)}catch(e){}DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
+function rawTrack(r){var D=data();if(!r)return null;if(false&&D.trkS&&D.trkS[r.t0]){var ks=D.trkS[r.t0];if(DSPK['s'+r.t0]&&DSPK['s'+r.t0].k===ks)return DSPK['s'+r.t0].P;var Qs=mmDec(ks);if(Qs){DSPK['s'+r.t0]={k:ks,P:Qs};return Qs}}return rawTrack0(r)}
+function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q,15);DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
 function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
 function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
 /* tracé fiable ? (recalé sur les routes, ou GPS assez dense) — sinon les grands sauts en ligne droite ne comptent pas pour la carte à dévoiler */
@@ -2287,11 +2294,12 @@ function showMap(bfn){
 }
 function openMap(t0,noSnap){
   var r=data().trips[t0],P=trackOf(r);if(!P)return;
+  if(noSnap!=='web'&&typeof NAT!=='undefined'&&NAT&&window.LM_NATIVE&&LM_NATIVE.tmap&&SET.tripMap!=='neon'&&!sample){try{plansMap(r,P);return}catch(e){}}
   if(!noSnap&&!sample&&sparse(rawTrack(r),r)&&!mmOf(r)&&(!snapLoad()[t0]||snapBad(snapLoad()[t0]))){toast('Recalage du tracé sur les routes…');snapOne(r).then(function(){openMap(t0,1)},function(){openMap(t0,1)});return}
   rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');if(r.src==='iphone'&&(r.snapV||0)<3&&plansCan())plansQueue(r.t0);
   var dt=new Date(r.t0);
   $('#mapt').textContent=dayLabel(dt)+' · '+HF.format(dt);
-  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(data().trkS&&data().trkS[r.t0]&&(r.snapV||0)>=3?' · tracé recalé sur les routes Plans':r.src==='iphone'&&(r.snapV||0)>=3?' · GPS nettoyé':r.src==='iphone'&&(r.snapV||0)<3&&plansCan()?' · recalage Plans en cours…':snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
+  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(r.src==='iphone'?'':snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
   var mpb=$('#mapplan');if(mpb){var tm=typeof NAT!=='undefined'&&NAT&&window.LM_NATIVE&&LM_NATIVE.tmap;mpb.classList.toggle('hide',!tm);$('#mapapple').classList.toggle('hide',!!tm);
     mpb.onclick=function(){var M=MAPM,PP=M&&M.P||P;natPost({op:'tripMap',title:$('#mapt').textContent,sub:f1(r.dist)+' km · '+dur(r.dur),pts:PP.map(function(p,i){var c=M&&M.c?M.c[i]:null;return [p[0],p[1],c==null?-1:c]})})}}
   $('#mapapple').href='https://maps.apple.com/?saddr='+P[0].join(',')+'&daddr='+P[P.length-1].join(',')+'&dirflg=d';
@@ -4362,6 +4370,7 @@ function setHtml(D,L){
     harmRow()+'<div class="srow"><div class="sl">Couleur de l’appli</div>'+(SET.harm?'<p class="sh">Choisir une couleur remplace l’harmonie.</p>':'')+'<div class="seg">'+sw+'</div></div>'+
     segRow('txt','Taille du texte','',[['s','Petit'],['m','Normal'],['l','Grand'],['xl','Très grand']])+
     segRow('car3d','Voiture en 3D','Dans l’onglet Voiture, avec le bouton du verrou.',ONOFF)+
+    (typeof NAT!=='undefined'&&NAT?segRow('tripMap','Carte des trajets','Plans : la carte Apple avec ton GPS tel quel (comme Been). Néon : la carte de l’appli, avec rejouer et styles.',[['plans','Plans'],['neon','Néon']]):'')+
     segRow('mapStyle','Style de la carte','Pour la carte des trajets. Tu peux aussi le changer directement sur la carte.',MAPSTYLES)+
     segRow('anim','Animations des onglets','Les chiffres défilent, la jauge et le graphique se remplissent.',ONOFF)+
     segRow('startTab','Onglet à l’ouverture','',[['last','Dernier utilisé'],['car','Voiture'],['bilan','Bilan'],['trips','Trajets'],['map','Carte']])+'</div>';
@@ -5149,6 +5158,7 @@ function tyreSheet(){
 var NATIT=0,NAT=!!(window.LM_NATIVE&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lm),NATL=null,NATCB={},NATID=0,NATF=null,NATB=0;
 function natPost(o){try{window.webkit.messageHandlers.lm.postMessage(o)}catch(e){}}
 window.LMN={
+  webMap:function(t0){try{openMap(+t0,'web')}catch(e){}},
   widgetRes:function(o){WGT.ok=!!(o&&o.ok);WGT.grp=(o&&o.grp)||''},
   open:function(p){p=String(p||'');try{if(/conduite/.test(p)){openDrive();return}var t=/trajets/.test(p)?'trips':/bilan/.test(p)?'bilan':/vie/.test(p)?'vie':'car';
     if(!$('#mapv').classList.contains('hide'))closeMap();TAB=t;try{localStorage.setItem('sandero-phone-tab',t)}catch(e){}window.scrollTo(0,0);ANIM=true;render()}catch(e){}},

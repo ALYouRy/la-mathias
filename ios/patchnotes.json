@@ -1,5 +1,16 @@
 [
  {
+  "v": "2.94",
+  "date": "2026-11-25",
+  "title": "Trajets sur la carte Plans",
+  "notes": [
+   "Les trajets s’ouvrent sur la carte Apple Plans, avec le GPS de l’iPhone tel quel (comme Been)",
+   "Graphe vitesse / conso : glisse le doigt pour suivre le trajet sur la carte",
+   "Fini les recalages qui déformaient les trajets",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.93",
   "date": "2026-11-25",
   "title": "Tracés propres, sans allers-retours",

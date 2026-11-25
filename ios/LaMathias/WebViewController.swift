@@ -126,6 +126,8 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
             vc.pts = ((m["pts"] as? [[NSNumber]]) ?? []).map { $0.map { $0.doubleValue } }
             vc.titleText = (m["title"] as? String) ?? ""
             vc.subText = (m["sub"] as? String) ?? ""
+            vc.stats = (m["stats"] as? [String: Any]) ?? [:]
+            vc.t0 = (m["t0"] as? NSNumber)?.doubleValue ?? 0
             vc.modalPresentationStyle = .fullScreen
             if presentedViewController == nil { present(vc, animated: true) }
         case "widget":
