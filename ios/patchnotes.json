@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.93",
+  "date": "2026-11-25",
+  "title": "Tracés propres, sans allers-retours",
+  "notes": [
+   "Les points GPS faux (tunnel, immeubles) sont écartés grâce à la distance du compteur",
+   "Le recalage Plans n’est gardé que s’il colle à la distance réellement roulée",
+   "Tous les trajets sont refaits automatiquement"
+  ]
+ },
+ {
   "v": "2.92",
   "date": "2026-11-25",
   "title": "Démarrer depuis le widget",

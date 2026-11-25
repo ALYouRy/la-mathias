@@ -1016,7 +1016,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.92';
+var APP_V='2.93';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1435,6 +1435,22 @@ function xyOf(o){var k=Math.cos(o[0]*Math.PI/180);return function(p){return [(p[
 function plProj(R,xy,p,from,maxS){var q=xy(p),best=null;for(var i=from;i<R.length-1;i++){if(maxS!=null&&R[i].s>maxS)break;var a=R[i].xy,b=R[i+1].xy,dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy,t=L2?Math.max(0,Math.min(1,((q[0]-a[0])*dx+(q[1]-a[1])*dy)/L2)):0,
   x=a[0]+dx*t,y=a[1]+dy*t,d=Math.hypot(q[0]-x,q[1]-y);if(!best||d<best.d)best={d:d,i:i,t:t,s:R[i].s+Math.sqrt(L2)*t}}return best}
 function plBuild(pts,xy){var R=[],s=0;for(var i=0;i<pts.length;i++){var c=xy(pts[i]);if(i)s+=Math.hypot(c[0]-R[i-1].xy[0],c[1]-R[i-1].xy[1]);R.push({p:pts[i],xy:c,s:s})}return R}
+/* ---- 2.93 : nettoyage GPS (comme les applis de trajets) ----
+   La vitesse du boîtier donne la vraie distance parcourue entre deux points. Un point GPS dont le déplacement
+   ne colle pas avec cette distance (tunnel, immeubles) est écarté, puis remplacé en ligne droite entre les bons points
+   voisins, à la bonne distance. Passe aller + passe retour : un point n'est gardé que s'il est cohérent dans les deux sens. */
+function gpsClean(P,V,T){var n=P.length;if(n<4)return P;var O=[0];
+  for(var k=1;k<n;k++){var g=hav(P[k-1],P[k]),v0=V[k-1],v1=V[k],dt=T?T[k]:0,d=g;if(v0!=null&&v1!=null&&dt>0&&dt<60)d=(v0+v1)/2*dt/3600;O.push(O[k-1]+d)}
+  function pass(order){var ok=new Array(n).fill(false),g=order[0],bad=0;ok[g]=true;
+    for(var q=1;q<order.length;q++){var k=order[q],d=hav(P[g],P[k])*1000,od=Math.abs(O[k]-O[g])*1000,tol=22+.25*od;
+      if(Math.abs(d-od)<=tol){ok[k]=true;g=k;bad=0}else{bad++;if(Math.abs(O[k]-O[g])*1000>1500){ok[k]=true;g=k;bad=0}}}return ok}
+  var idx=[];for(var i=0;i<n;i++)idx.push(i);var F=pass(idx),B=pass(idx.slice().reverse()),G=[];for(i=0;i<n;i++)G.push(F[i]&&B[i]);
+  G[0]=G[0]||F[0];G[n-1]=G[n-1]||B[n-1];var Q=P.map(function(p){return p.slice()}),a=-1;
+  for(i=0;i<n;i++){if(!G[i])continue;if(a>=0&&i-a>1){var od=Math.max(1e-6,O[i]-O[a]);for(var k=a+1;k<i;k++){var t=(O[k]-O[a])/od;Q[k][0]=P[a][0]+(P[i][0]-P[a][0])*t;Q[k][1]=P[a][1]+(P[i][1]-P[a][1])*t}}a=i}
+  /* bouts sans bon point au début / à la fin : collés au premier / dernier bon point */
+  var f=G.indexOf(true),l=G.lastIndexOf(true);if(f>0)for(k=0;k<f;k++){Q[k][0]=P[f][0];Q[k][1]=P[f][1]}if(l>=0&&l<n-1)for(k=l+1;k<n;k++){Q[k][0]=P[l][0];Q[k][1]=P[l][1]}
+  return Q}
+function trkLen(P){var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);return t}
 /* ---- 2.89 : recalage v2 — le tracé final est TOUJOURS sur une route Plans ----
    - distance « compteur » entre deux points = vitesse OBD × temps (fiable même sous un tunnel, quand le GPS se perd)
    - point GPS fiable = son déplacement GPS colle à la distance compteur autour de lui
@@ -1458,7 +1474,7 @@ async function plansSeg(P,O,G,i,j,xy,depth){
   var best=null;((o&&o.routes)||[]).forEach(function(rt){if(!rt||rt.length<2)return;var e=routeEval(rt,P,O,G,i,j,xy);if(!best||(e.ok&&!best.ok)||(e.ok===best.ok&&e.score<best.score))best=e});
   if(best&&best.ok)return [{i:i,j:j,R:best.R}];
   if(depth<4&&j-i>=4&&(O[j]-O[i])*1000>60){var m=bestSplit(G,i,j);return (await plansSeg(P,O,G,i,m,xy,depth+1)).concat(await plansSeg(P,O,G,m,j,xy,depth+1))}
-  return [{i:i,j:j,R:best?best.R:null}]}
+  return [{i:i,j:j,R:null}]}
 function plAt(R,s){if(s<=0)return R[0].p.slice(0,2);for(var q=1;q<R.length;q++)if(R[q].s>=s){var a=R[q-1],b=R[q],t=(s-a.s)/Math.max(1e-6,b.s-a.s);return [a.p[0]+(b.p[0]-a.p[0])*t,a.p[1]+(b.p[1]-a.p[1])*t]}return R[R.length-1].p.slice(0,2)}
 async function plansSnap(r){
   var D=db;if(!r||!D.trk5||!D.trk5[r.t0])return false;var P=rawTrack0(r);if(!P||P.length<3)return false;
@@ -1469,25 +1485,28 @@ async function plansSnap(r){
   var an=[0],nx=.25;for(var k=1;k<P.length-1;k++){if(O[k]>=nx){var b=k,bv=G[k];for(var q=k;q<P.length-1&&O[q]<=O[k]+.06;q++)if(G[q]>bv+.05){bv=G[q];b=q}an.push(b);nx=O[b]+.25;k=b}}
   an.push(P.length-1);
   var segs=[];for(var a=0;a<an.length-1;a++){if(an[a+1]<=an[a])continue;segs=segs.concat(await plansSeg(P,O,G,an[a],an[a+1],xy,0))}
-  if(!segs.some(function(g){return g.R}))return false;
+  if(!segs.some(function(g){return g.R})){r.snapV=3;if(D.trkS)delete D.trkS[r.t0];delete DSPK['s'+r.t0];save();return false}
   /* placement : chaque point sur la route, à la distance réellement parcourue */
   var Q=new Array(P.length),last=null;
-  segs.forEach(function(g){if(!g.R){for(var k=g.i;k<=g.j;k++)if(!Q[k])Q[k]=last?last.slice():null;return}
+  segs.forEach(function(g){if(!g.R){for(var k=g.i;k<=g.j;k++)if(!Q[k])Q[k]=g.still&&last?last.slice():P[k].slice(0,2);return}
     var R=g.R,L=R[R.length-1].s,od=Math.max(1e-6,O[g.j]-O[g.i]);
     for(var k=g.i;k<=g.j;k++){Q[k]=plAt(R,(O[k]-O[g.i])/od*L)}last=Q[g.j]});
   /* morceaux sans route (rare) : on reprend la position route la plus proche avant/après */
   for(var k=0;k<Q.length;k++)if(!Q[k]){var f=null;for(var q=k+1;q<Q.length;q++)if(Q[q]){f=Q[q];break}Q[k]=f?f.slice():P[k].slice(0,2)}
-  r.snapV=2;D.trkS=D.trkS||{};D.trkS[r.t0]=mmEnc(Q);delete DSPK['s'+r.t0];save();return true}
+  /* contrôle final : la longueur du tracé recalé doit coller à la distance du compteur, sinon on garde le GPS nettoyé */
+  var Lq=trkLen(Q),ref=r.dist||O[O.length-1];r.snapV=3;D.trkS=D.trkS||{};
+  if(ref>.3&&(Lq<ref*.85||Lq>ref*1.15)){delete D.trkS[r.t0];delete DSPK['s'+r.t0];save();return false}
+  D.trkS[r.t0]=mmEnc(Q);delete DSPK['s'+r.t0];save();return true}
 /* file d'attente : le trajet demandé d'abord, puis les plus récents */
 function plansQueue(first){if(!plansCan())return;if(first!=null)SNP.want=first;if(SNP.busy)return;SNP.busy=true;
   (async function(){try{for(var guard=0;guard<400;guard++){var D=db,r=null;
-      if(SNP.want!=null){r=D.trips[SNP.want];SNP.want=null;if(r&&(r.snapV||0)>=2)r=null}
-      if(!r){var L=realList().filter(function(x){return x.src==='iphone'&&(x.snapV||0)<2&&D.trk5&&D.trk5[x.t0]});r=L[0]||null}
-      if(!r)break;var ok=false;try{ok=await plansSnap(r);if(!ok){r.snapV=2;save()}}catch(e){r.snapV=2;save()}
+      if(SNP.want!=null){r=D.trips[SNP.want];SNP.want=null;if(r&&(r.snapV||0)>=3)r=null}
+      if(!r){var L=realList().filter(function(x){return x.src==='iphone'&&(x.snapV||0)<3&&D.trk5&&D.trk5[x.t0]});r=L[0]||null}
+      if(!r)break;var ok=false;try{ok=await plansSnap(r);if(!ok){r.snapV=3;save()}}catch(e){r.snapV=3;save()}
       if(ok&&MAPR&&MAPR.t0===r.t0&&!$('#mapv').classList.contains('hide')&&MODE==='trip'){try{openMap(r.t0,1)}catch(e){}}}}
     finally{SNP.busy=false}})()}
-function rawTrack(r){var D=data();if(!r)return null;if(D.trkS&&D.trkS[r.t0]&&D.trk5&&D.trk5[r.t0]){var ks=D.trkS[r.t0];if(DSPK['s'+r.t0]&&DSPK['s'+r.t0].k===ks)return DSPK['s'+r.t0].P;var Qs=mmDec(ks);if(Qs){DSPK['s'+r.t0]={k:ks,P:Qs};return Qs}}return rawTrack0(r)}
-function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q);DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
+function rawTrack(r){var D=data();if(!r)return null;if(D.trkS&&D.trkS[r.t0]&&(r.snapV||0)>=3&&D.trk5&&D.trk5[r.t0]){var ks=D.trkS[r.t0];if(DSPK['s'+r.t0]&&DSPK['s'+r.t0].k===ks)return DSPK['s'+r.t0].P;var Qs=mmDec(ks);if(Qs){DSPK['s'+r.t0]={k:ks,P:Qs};return Qs}}return rawTrack0(r)}
+function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q);try{var De=detOf(r);if(De&&De.v&&De.v.length===Q.length)Q=gpsClean(Q,De.v,De.t)}catch(e){}DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
 function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
 function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
 /* tracé fiable ? (recalé sur les routes, ou GPS assez dense) — sinon les grands sauts en ligne droite ne comptent pas pour la carte à dévoiler */
@@ -2269,10 +2288,10 @@ function showMap(bfn){
 function openMap(t0,noSnap){
   var r=data().trips[t0],P=trackOf(r);if(!P)return;
   if(!noSnap&&!sample&&sparse(rawTrack(r),r)&&!mmOf(r)&&(!snapLoad()[t0]||snapBad(snapLoad()[t0]))){toast('Recalage du tracé sur les routes…');snapOne(r).then(function(){openMap(t0,1)},function(){openMap(t0,1)});return}
-  rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');if(r.src==='iphone'&&(r.snapV||0)<2&&plansCan())plansQueue(r.t0);
+  rpStop();RP.dur=r.dur;MAPR=r;MODE='trip';$('#mapv').classList.remove('spotm');if(r.src==='iphone'&&(r.snapV||0)<3&&plansCan())plansQueue(r.t0);
   var dt=new Date(r.t0);
   $('#mapt').textContent=dayLabel(dt)+' · '+HF.format(dt);
-  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(data().trkS&&data().trkS[r.t0]&&(r.snapV||0)>=2?' · tracé recalé sur les routes Plans':r.src==='iphone'&&(r.snapV||0)<2&&plansCan()?' · recalage Plans en cours…':snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
+  $('#maps').textContent=f1(r.dist)+' km · '+dur(r.dur)+(r.fav!=null&&data().favs&&data().favs[r.fav]?' · ★ '+data().favs[r.fav]:'')+(data().trkS&&data().trkS[r.t0]&&(r.snapV||0)>=3?' · tracé recalé sur les routes Plans':r.src==='iphone'&&(r.snapV||0)>=3?' · GPS nettoyé':r.src==='iphone'&&(r.snapV||0)<3&&plansCan()?' · recalage Plans en cours…':snapped(r)?' · tracé recalé sur les routes (OSRM)':'');
   var mpb=$('#mapplan');if(mpb){var tm=typeof NAT!=='undefined'&&NAT&&window.LM_NATIVE&&LM_NATIVE.tmap;mpb.classList.toggle('hide',!tm);$('#mapapple').classList.toggle('hide',!!tm);
     mpb.onclick=function(){var M=MAPM,PP=M&&M.P||P;natPost({op:'tripMap',title:$('#mapt').textContent,sub:f1(r.dist)+' km · '+dur(r.dur),pts:PP.map(function(p,i){var c=M&&M.c?M.c[i]:null;return [p[0],p[1],c==null?-1:c]})})}}
   $('#mapapple').href='https://maps.apple.com/?saddr='+P[0].join(',')+'&daddr='+P[P.length-1].join(',')+'&dirflg=d';
