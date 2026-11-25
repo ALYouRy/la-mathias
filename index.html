@@ -1017,7 +1017,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.95';
+var APP_V='2.96';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -1506,7 +1506,7 @@ function plansMap(r,P){var De=null;try{De=detOf(r)}catch(e){}var al=De&&De.c&&De
   natPost({op:'tripMap',t0:r.t0,title:day+' · '+('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2),sub:f1(r.dist)+' km · '+dur(r.dur)+(r.cutKm>=.05?' · '+f1(r.cutKm)+' km à 0 L':''),
     stats:{cons:cons,cost:cost,eco:r.eco!=null?String(r.eco):null,vmax:r.vmax?String(Math.round(r.vmax)):null},pts:pts})}
 /* 2.95 : toutes les cartes sur Apple Plans dans l'appli iPhone (Dévoilé, Passages, Zones) */
-function natPlans(){return typeof NAT!=='undefined'&&NAT&&!!(window.LM_NATIVE&&LM_NATIVE.atlas)&&SET.tripMap!=='neon'&&!sample}
+function natPlans(){return false/* 2.96 : retour aux cartes de l'appli (dévoilée, passages, zones) — seuls les trajets s'ouvrent sur Plans */}
 function atlasTraces(){var T=[],C=[];comTrips().forEach(function(r){var P=rawTrack(r);if(!P||P.length<2)return;if(P.length>400)P=dpSimp(P,.004);
   T.push(P.map(function(p){return [Math.round(p[0]*1e5)/1e5,Math.round(p[1]*1e5)/1e5]}));C.push(1)});return {T:T,C:C}}
 function plansAtlas(mode){var A=atlasTraces();if(!A.T.length){toast('Pas encore de tracé GPS.');return false}
@@ -1523,12 +1523,23 @@ function plansQueue(first){return;/* 2.94 : désactivé — le tracé GPS de l'i
       if(ok&&MAPR&&MAPR.t0===r.t0&&!$('#mapv').classList.contains('hide')&&MODE==='trip'){try{openMap(r.t0,1)}catch(e){}}}}
     finally{SNP.busy=false}})()}
 function rawTrack(r){var D=data();if(!r)return null;if(false&&D.trkS&&D.trkS[r.t0]){var ks=D.trkS[r.t0];if(DSPK['s'+r.t0]&&DSPK['s'+r.t0].k===ks)return DSPK['s'+r.t0].P;var Qs=mmDec(ks);if(Qs){DSPK['s'+r.t0]={k:ks,P:Qs};return Qs}}return rawTrack0(r)}
-function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q,15);DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
+function rawTrack0(r){var D=data();if(!r)return null;if(D.trk5&&D.trk5[r.t0]){var k=D.trk5[r.t0];if(DSPK[r.t0]&&DSPK[r.t0].k===k)return DSPK[r.t0].P;var Q=mmDec(k);if(Q){Q=deSpike(Q,15);try{Q._gb=gapBad(r,Q)}catch(e){}DSPK[r.t0]={k:k,P:Q};return Q}}return D.tracks?trackPts(D.tracks[r.t0]):null}
 function sparse(P,r){if(!P||P.length<2)return false;var t=0;for(var i=1;i<P.length;i++)t+=hav(P[i-1],P[i]);var km=Math.max(t,r&&r.dist||0);return km>=.3&&km/(P.length-1)>.15}
 function snapped(r){if(sample||!r)return null;var S=snapLoad()[r.t0];return S&&S.c?S.c:null}
 /* tracé fiable ? (recalé sur les routes, ou GPS assez dense) — sinon les grands sauts en ligne droite ne comptent pas pour la carte à dévoiler */
 function trackSure(r){var P=rawTrack(r);if(!P)return false;return !!(mmOf(r)||snapped(r)||!sparse(P,r))}
-function trackPieces(r){var P=trackOf(r)||rawTrack(r);if(!P||P.length<2)return [];if(trackSure(r))return [P];var out=[],cur=[P[0]];for(var i=1;i<P.length;i++){if(hav(P[i-1],P[i])>.15){if(cur.length>1)out.push(cur);cur=[P[i]]}else cur.push(P[i])}if(cur.length>1)out.push(cur);return out}
+/* 2.96 : sauts GPS (tunnel, perte de signal, appli endormie) : le segment entre deux points ne correspond pas
+   à la distance roulée (vitesse × temps) → on ne le dessine pas, au lieu de tirer un trait à travers les immeubles */
+var GAPC={};
+function gapBad(r,P){if(!r||!P)return null;var k=r.t0+':'+P.length;if(GAPC[k])return GAPC[k];var B=new Uint8Array(P.length),De=null;try{De=detOf(r)}catch(e){}
+  var al=De&&De.v&&De.t&&De.v.length===P.length;
+  for(var i=1;i<P.length;i++){var g=hav(P[i-1],P[i])*1000;if(g<40)continue;
+    if(al){var v0=De.v[i-1],v1=De.v[i],dt=De.t[i];if(v0==null||v1==null||!dt){if(g>250)B[i]=1;continue}var vm=Math.min(v0,v1);
+      if(g>Math.max(v0,v1,50)/3.6*dt*1.3+60||(vm>=25&&dt>=8&&g<vm/3.6*dt*.5))B[i]=1}
+    else if(g>250)B[i]=1}
+  GAPC[k]=B;return B}
+function splitBad(P,B){var out=[],cur=[P[0]];for(var i=1;i<P.length;i++){if(B&&B[i]){if(cur.length>1)out.push(cur);cur=[P[i]]}else cur.push(P[i])}if(cur.length>1)out.push(cur);return out}
+function trackPieces(r){var P=trackOf(r)||rawTrack(r);if(!P||P.length<2)return [];if(trkPrecise(r))return splitBad(P,gapBad(r,P));if(trackSure(r))return [P];var out=[],cur=[P[0]];for(var i=1;i<P.length;i++){if(hav(P[i-1],P[i])>.15){if(cur.length>1)out.push(cur);cur=[P[i]]}else cur.push(P[i])}if(cur.length>1)out.push(cur);return out}
 /* 2.68 : un tracé GPS précis enregistré par l'iPhone est déjà sur les routes : on l'affiche tel quel (pas de recalage) */
 function trkPrecise(r){var D=data();return !!(r&&D.trk5&&D.trk5[r.t0])}
 function trackOf(r){var P=rawTrack(r);if(!P)return null;if(trkPrecise(r))return P;var M=mmOf(r);if(M)return M;if(sparse(P,r)){var S=snapped(r);if(S)return S}return P}
@@ -1937,6 +1948,8 @@ function glyphOk(st){
 function accent(){return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#00e5ff'}
 function routeColors(){var C=PAL[SET.mapStyle];if(C)return [C.route,C.rglow];var a=accent();return SET.mapStyle==='clair'?['#6d28ff','#6d28ff']:[a,a]}
 function lnglat(P){return P.map(function(p){return [p[1],p[0]]})}
+/* 2.96 : tracé coupé aux sauts GPS (pas de trait à travers les immeubles) */
+function lineGeom(P){if(P&&P._gb&&P._gb.indexOf(1)>=0){var pc=splitBad(P,P._gb).map(lnglat);return pc.length===1?{type:'LineString',coordinates:pc[0]}:{type:'MultiLineString',coordinates:pc}}return {type:'LineString',coordinates:lnglat(P)}}
 function bnds(ml,P){var b=new ml.LngLatBounds();lnglat(P).forEach(function(c){b.extend(c)});return b}
 /* ---------- 2.10 : détail de chaque point (conso, vitesse, temps) ---------- */
 var CSTOPS=[[4.5,[52,209,122]],[6,[255,214,10]],[8,[255,159,10]],[10,[255,59,48]]],MAPM=null,CUR=-1;
@@ -2420,10 +2433,10 @@ function freqData(F){
   if(TMCACHE[F]&&TMCACHE[F].key===key)return TMCACHE[F];
   var cells={},segs={},km=0,cell=function(la,lo){var k=Math.round(la/.00035)+':'+Math.round(lo/.00048),c=cells[k]||(cells[k]={a:0,o:0,n:0});c.a+=la;c.o+=lo;c.n++;return k};
   L.forEach(function(r,ti){
-    var P=trackOf(r);if(!P)return;var prev=null;km+=r.dist||0;
+    var P=trackOf(r);if(!P)return;var prev=null;km+=r.dist||0;var GB=trkPrecise(r)?gapBad(r,P):null;
     for(var i=0;i<P.length;i++){
-      var pts=[P[i]];
-      if(i>0){var a=P[i-1],b=P[i],d=hav(a,b);var st=Math.min(60,Math.ceil(d/.04));pts=[];for(var s=1;s<=st;s++)pts.push([a[0]+(b[0]-a[0])*s/st,a[1]+(b[1]-a[1])*s/st])}
+      var pts=[P[i]];if(GB&&GB[i])prev=null;
+      if(i>0&&!(GB&&GB[i])){var a=P[i-1],b=P[i],d=hav(a,b);var st=Math.min(60,Math.ceil(d/.04));pts=[];for(var s=1;s<=st;s++)pts.push([a[0]+(b[0]-a[0])*s/st,a[1]+(b[1]-a[1])*s/st])}
       pts.forEach(function(p){var k=cell(p[0],p[1]);if(prev&&prev!==k){var sk=prev<k?prev+'|'+k:k+'|'+prev,S=segs[sk]||(segs[sk]={n:0,ti:-1,last:0});if(S.ti!==ti){S.ti=ti;S.n++;S.last=r.t0}}prev=k});
     }
   });
@@ -3216,7 +3229,7 @@ function monthMapCard(y,m){
 function mmapMount(){
   var el=$('#mmap');if(!el)return;var y=+el.getAttribute('data-y'),m=+el.getAttribute('data-m');
   var L=realList().filter(function(r){var d=new Date(r.t0);return d.getFullYear()===y&&d.getMonth()===m&&trackOf(r)});if(!L.length)return;
-  var F=L.map(function(r,i){var P=trackOf(r);return {type:'Feature',properties:{t:r.t0,c:RCOL[i%RCOL.length]},geometry:{type:'LineString',coordinates:P.map(function(p){return [p[1],p[0]]})}}}),all=[];L.forEach(function(r){all=all.concat(trackOf(r))});
+  var F=L.map(function(r,i){var P=trackOf(r);return {type:'Feature',properties:{t:r.t0,c:RCOL[i%RCOL.length]},geometry:lineGeom(P)}}),all=[];L.forEach(function(r){all=all.concat(trackOf(r))});
   Promise.all([maplibre(),styleFor(SET.mapStyle)]).then(function(res){
     var ml=res[0];if(!document.body.contains(el))return;
     var d=document.createElement('div');d.className='mm';el.insertBefore(d,el.firstChild);
@@ -3527,7 +3540,7 @@ var FRN=34875, /* communes en France au 1er janvier 2026 (Insee / DGCL) */
 function comLoad(){if(COM)return COM;try{COM=JSON.parse(localStorage.getItem(COMK)||'{}')}catch(e){COM={}}['cells','c','deps','done','arr','a','regs'].forEach(function(k){COM[k]=COM[k]||{}});Object.keys(COM.deps).forEach(function(d){if(COM.deps[d])delete COM.deps[d].busy});return COM}
 function comSave(){try{localStorage.setItem(COMK,JSON.stringify(COM))}catch(e){}}
 /* points tous les ~step km le long du tracé */
-function densify(P,step){var out=[P[0]];for(var i=1;i<P.length;i++){var a=P[i-1],b=P[i],d=hav(a,b),n=Math.min(400,Math.ceil(d/step));for(var k=1;k<=n;k++)out.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n])}return out}
+function densify(P,step){var out=[P[0]],GB=P._gb;for(var i=1;i<P.length;i++){var a=P[i-1],b=P[i];if(GB&&GB[i]){out.push(b);continue}var d=hav(a,b),n=Math.min(400,Math.ceil(d/step));for(var k=1;k<=n;k++)out.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n])}return out}
 function cellOf(p){return Math.round(p[0]*COMG)+','+Math.round(p[1]*COMG)}
 function comCells(P){var o={};densify(P,.25).forEach(function(p){var k=cellOf(p);if(!o[k])o[k]=p});return o}
 function comTrips(){return sample?[]:realList().filter(function(r){return rawTrack(r)}).sort(function(a,b){return a.t0-b.t0})}
@@ -3744,7 +3757,7 @@ function monSheet(code){
     m2.once('style.load',function(){var circ=[];for(var i=0;i<=48;i++){var a=i/48*2*Math.PI;circ.push([m[4]+m[5]/1000/111.2/Math.cos(m[3]*Math.PI/180)*Math.cos(a),m[3]+m[5]/1000/111.2*Math.sin(a)])}
       m2.addSource('mc',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[circ]}}});
       m2.addLayer({id:'mc',type:'fill',source:'mc',paint:{'fill-color':'#ffd24a','fill-opacity':.15}});m2.addLayer({id:'mc-l',type:'line',source:'mc',paint:{'line-color':'#ffd24a','line-width':2,'line-dasharray':[2,2]}});
-      var TR=comTrips().filter(function(r){return (s.T||[]).indexOf(r.t0)>=0}).slice(-20).map(function(r){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:lnglat(trackOf(r)||rawTrack(r))}}});
+      var TR=comTrips().filter(function(r){return (s.T||[]).indexOf(r.t0)>=0}).slice(-20).map(function(r){return {type:'Feature',properties:{},geometry:lineGeom(trackOf(r)||rawTrack(r))}});
       m2.addSource('ft',{type:'geojson',data:{type:'FeatureCollection',features:TR}});m2.addLayer({id:'ft',type:'line',source:'ft',paint:{'line-color':'#ff3fd0','line-width':2.4,'line-opacity':.85}});
       var el=document.createElement('div');el.className='monpin';el.textContent=m[2];new ml.Marker({element:el}).setLngLat([m[4],m[3]]).addTo(m2);box.classList.add('live')})}).catch(function(){});
 }
@@ -3767,7 +3780,7 @@ function comSheet(code){
       m.addLayer({id:'fc',type:'fill',source:'fc',paint:{'fill-color':'#2de2e6','fill-opacity':.22}});
       m.addLayer({id:'fc-g',type:'line',source:'fc',paint:{'line-color':'#2de2e6','line-width':10,'line-blur':8,'line-opacity':.55}});
       m.addLayer({id:'fc-l',type:'line',source:'fc',paint:{'line-color':'#bff9ff','line-width':2.2}});
-      var TR=comTrips().filter(function(r){return S.T&&S.T[r.t0]}).slice(-30).map(function(r){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:lnglat(trackOf(r)||rawTrack(r))}}});
+      var TR=comTrips().filter(function(r){return S.T&&S.T[r.t0]}).slice(-30).map(function(r){return {type:'Feature',properties:{},geometry:lineGeom(trackOf(r)||rawTrack(r))}});
       m.addSource('ft',{type:'geojson',data:{type:'FeatureCollection',features:TR}});
       m.addLayer({id:'ft',type:'line',source:'ft',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ff3fd0','line-width':2,'line-opacity':.8}});
       box.classList.add('live')});

@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.96",
+  "date": "2026-11-25",
+  "title": "Retour de la carte à dévoiler",
+  "notes": [
+   "L’onglet Carte revient comme avant (carte dévoilée, passages, zones)",
+   "Plus de traits à travers les immeubles : les sauts du GPS ne sont plus dessinés",
+   "Les trajets restent sur la carte Plans"
+  ]
+ },
+ {
   "v": "2.95",
   "date": "2026-11-25",
   "title": "Toutes les cartes sur Plans",
