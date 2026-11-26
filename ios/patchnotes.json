@@ -1,5 +1,16 @@
 [
  {
+  "v": "2.99",
+  "date": "2026-11-26",
+  "title": "Connexion au boîtier plus rapide",
+  "notes": [
+   "L’appli retient le protocole de la Sandero : plus de recherche lente à chaque démarrage",
+   "Quand le boîtier attend le contact, il réessaie toutes les 3 s sans tout redémarrer",
+   "Branché sur CarPlay : le boîtier est relancé et le trajet démarre dès que le moteur tourne",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.98",
   "date": "2026-11-26",
   "title": "CarPlay plus réactif",

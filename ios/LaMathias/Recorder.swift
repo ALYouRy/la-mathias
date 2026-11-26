@@ -144,6 +144,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         DispatchQueue.main.async {
             guard CarLink.connected else { return }
             LiveAct.shared.carConnected(self.trip != nil ? (self.activityState() ?? self.standbyState()) : self.standbyState())
+            // 2.99 : branché sur CarPlay = on part : relance du boîtier et démarrage dès que le moteur tourne
+            if self.trip == nil { self.forceStart() }
         }
     }
 

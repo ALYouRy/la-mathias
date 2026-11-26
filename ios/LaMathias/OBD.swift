@@ -295,40 +295,55 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
     }
 
+    /// 2.99 : protocole de la voiture retenu après la 1re connexion (ATDPN) → plus de recherche automatique lente au démarrage
+    private var savedProto: String? {
+        get { UserDefaults.standard.string(forKey: "elmProto") }
+        set { UserDefaults.standard.set(newValue, forKey: "elmProto") }
+    }
+    private var protoFails = 0
+
     private func elmInit() {
         initToken += 1
         let tok = initToken
         state = "init"
-        let seq: [(String, Double)] = [("ATZ", 4), ("ATE0", 2.5), ("ATL0", 2.5), ("ATS0", 2.5), ("ATH0", 2.5), ("ATAT2", 2.5), ("ATSP0", 2.5)]
+        let sp = savedProto.map { "ATSP" + $0 } ?? "ATSP0"
+        let seq: [(String, Double)] = [("ATZ", 3), ("ATE0", 2), ("ATL0", 2), ("ATS0", 2), ("ATH0", 2), ("ATAT2", 2), (sp, 2)]
         func step(_ i: Int) {
             if tok != initToken { return }
             if i < seq.count { send(seq[i].0, timeout: seq[i].1) { _ in step(i + 1) }; return }
-            send("0100", timeout: 15) { [weak self] r in
-                guard let self = self, tok == self.initToken else { return }
-                guard let b = OBD.bytes(r, "4100"), b.count >= 4 else {
-                    self.err = "L’adaptateur répond mais pas la voiture : contact mis ?"
-                    self.state = "noecu"
-                    // on réessaie tant que l'adaptateur reste connecté (voiture pas encore démarrée)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
-                        guard let self = self, tok == self.initToken, self.writeChar != nil else { return }
-                        self.elmInit()
-                    }
-                    return
+            probe(tok, tries: 0)
+        }
+        step(0)
+    }
+
+    /// demande 0100 jusqu'à ce que la voiture réponde (contact mis), sans tout réinitialiser à chaque fois
+    private func probe(_ tok: Int, tries: Int) {
+        send("0100", timeout: savedProto != nil ? 6 : 15) { [weak self] r in
+            guard let self = self, tok == self.initToken else { return }
+            guard let b = OBD.bytes(r, "4100"), b.count >= 4 else {
+                self.err = "L’adaptateur répond mais pas la voiture : contact mis ?"
+                self.state = "noecu"
+                // protocole retenu qui ne marche plus (2 réinitialisations complètes ratées) → on repasse en recherche auto
+                if tries >= 4 { self.protoFails += 1; if self.protoFails >= 2 { self.savedProto = nil; self.protoFails = 0 } }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                    guard let self = self, tok == self.initToken, self.writeChar != nil else { return }
+                    if tries >= 4 { self.elmInit() } else { self.probe(tok, tries: tries + 1) }
                 }
-                var s = Set<Int>()
-                for i in 0..<4 { for k in 0..<8 where b[i] & (128 >> k) != 0 { s.insert(i * 8 + k + 1) } }
-                self.sup = s
-                self.moreSup(0x20) {
+                return
+            }
+            self.protoFails = 0
+            var s = Set<Int>()
+            for i in 0..<4 { for k in 0..<8 where b[i] & (128 >> k) != 0 { s.insert(i * 8 + k + 1) } }
+            self.sup = s
+            self.moreSup(0x20) {
                 self.send("ATDPN") { p in
                     let hex = (p ?? "").uppercased().filter { "0123456789ABCDEF".contains($0) }
-                    if let last = hex.last { self.can = "6789AB".contains(last) }
+                    if let last = hex.last { self.can = "6789AB".contains(last); self.savedProto = String(last) }
                     self.err = ""
                     self.state = "ok"
                     self.onReady?()
                 }
-                }
             }
         }
-        step(0)
     }
 }
