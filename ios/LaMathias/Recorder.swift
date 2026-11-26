@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import CoreLocation
 import UIKit
 import UserNotifications
@@ -83,6 +84,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         restoreActive()
         NotificationCenter.default.addObserver(self, selector: #selector(appActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(routeChanged), name: AVAudioSession.routeChangeNotification, object: nil)
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
         RunLoop.main.add(timer!, forMode: .common)
     }
@@ -137,6 +139,14 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     }
 
     /// Appli à l'écran : GPS au maximum de précision, même sans trajet. En arrière-plan : seulement ce qu'il faut.
+    /// 2.97 : branchement CarPlay → widget du trajet en avant (et plus de messages sur l'écran de la voiture)
+    @objc private func routeChanged() {
+        DispatchQueue.main.async {
+            guard CarLink.connected else { return }
+            LiveAct.shared.carConnected(self.trip != nil ? (self.activityState() ?? self.standbyState()) : self.standbyState())
+        }
+    }
+
     @objc private func appActive() { foreground = true; applyLoc(); if trip == nil { LiveAct.shared.ensureStandby(standbyState()) } }
     @objc private func appBackground() { foreground = false; applyLoc() }
     private var foreground = false

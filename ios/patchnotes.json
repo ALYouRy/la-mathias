@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.97",
+  "date": "2026-11-26",
+  "title": "CarPlay : juste le widget",
+  "notes": [
+   "Plus de messages de la Dynamic Island sur l’écran de la voiture",
+   "Le widget du trajet passe en priorité sur CarPlay et revient dès que l’iPhone s’y branche",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.96",
   "date": "2026-11-25",
   "title": "Retour de la carte à dévoiler",

@@ -1,4 +1,5 @@
 import ActivityKit
+import AVFoundation
 import Foundation
 import UIKit
 
@@ -25,7 +26,7 @@ final class LiveAct {
     func start(_ s: TripAttributes.ContentState, since: Date) {
         if act != nil || !enabled { return }
         if let a = Activity<TripAttributes>.activities.first { act = a; return }
-        act = try? Activity.request(attributes: TripAttributes(start: since), content: .init(state: s, staleDate: nil), pushType: nil)
+        act = try? Activity.request(attributes: TripAttributes(start: since), content: .init(state: s, staleDate: nil, relevanceScore: 100), pushType: nil)
     }
 
     private var lastTry = Date.distantPast
@@ -48,7 +49,7 @@ final class LiveAct {
         if !keep { end(f); return }
         guard let a = act ?? Activity<TripAttributes>.activities.first else { return }
         act = a; lastState = s; last = Date()
-        Task { await a.update(.init(state: s, staleDate: nil)) }
+        Task { await a.update(.init(state: s, staleDate: nil, relevanceScore: 100)) }
     }
 
     func update(_ s: TripAttributes.ContentState) {
@@ -57,7 +58,7 @@ final class LiveAct {
         if Date().timeIntervalSince(last) < 0.9 { return }
         last = Date()
         lastState = s
-        Task { await a.update(.init(state: s, staleDate: Date().addingTimeInterval(180))) }
+        Task { await a.update(.init(state: s, staleDate: Date().addingTimeInterval(180), relevanceScore: 100)) }
     }
 
     func end(_ s: TripAttributes.ContentState?) {
@@ -78,6 +79,8 @@ final class LiveAct {
 
     func info(_ s: InfoAttributes.ContentState, seconds: Double) {
         if !enabled { return }
+        // 2.97 : pas de messages sur l'écran de la voiture (CarPlay) : là, seul le widget du trajet s'affiche
+        if CarLink.connected { return }
         infoQueue.append((s, max(3, min(12, seconds))))
         if !infoBusy { nextInfo() }
     }
@@ -87,7 +90,7 @@ final class LiveAct {
         infoBusy = true
         let (s, sec) = infoQueue.removeFirst()
         for a in Activity<InfoAttributes>.activities { Task { await a.end(nil, dismissalPolicy: .immediate) } }
-        do { infoAct = try Activity.request(attributes: InfoAttributes(kind: s.icon), content: .init(state: s, staleDate: nil), pushType: nil); lastErr = "" }
+        do { infoAct = try Activity.request(attributes: InfoAttributes(kind: s.icon), content: .init(state: s, staleDate: nil, relevanceScore: 1), pushType: nil); lastErr = "" }
         catch { infoAct = nil; lastErr = String(describing: error) }
         // si on quitte l'appli pendant le message, iOS laisse un peu de temps pour le refermer à l'heure
         var bg = UIBackgroundTaskIdentifier.invalid
@@ -99,6 +102,17 @@ final class LiveAct {
             self.infoAct = nil
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.nextInfo() }
         }
+    }
+
+    /// 2.97 : CarPlay vient de se connecter → on retire les messages et on (re)met le widget du trajet en avant
+    func carConnected(_ s: TripAttributes.ContentState) {
+        infoQueue.removeAll()
+        for a in Activity<InfoAttributes>.activities { Task { await a.end(nil, dismissalPolicy: .immediate) } }
+        infoAct = nil
+        if let a = act ?? Activity<TripAttributes>.activities.first {
+            act = a; lastState = s; last = Date()
+            Task { await a.update(.init(state: s, staleDate: nil, relevanceScore: 100)) }
+        } else { tryStart(s, since: Date()) }
     }
 
     // MARK: - Diagnostic (bouton « Tester » dans Réglages)
@@ -126,5 +140,13 @@ final class LiveAct {
             o["err"] = String(describing: error)
         }
         return o
+    }
+}
+
+
+/// 2.97 : l'iPhone est-il branché sur CarPlay ? (sortie audio « voiture »)
+enum CarLink {
+    static var connected: Bool {
+        AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .carAudio }
     }
 }
