@@ -52,13 +52,45 @@ final class LiveAct {
         Task { await a.update(.init(state: s, staleDate: nil, relevanceScore: 100)) }
     }
 
+    // 2.98 : envoi plus malin vers iOS (CarPlay redessine peu souvent) :
+    // - un seul envoi à la fois, et toujours la valeur la plus récente (pas de file de vieux chiffres en retard)
+    // - envoi immédiat (≥ 1 s) si la vitesse bouge de 2 km/h, la conso de 0,3, le rapport ou la coupure d'injection ;
+    //   sinon au plus toutes les 3 s, pour ne pas user le quota de mises à jour qu'iOS accorde
+    private var inFlight = false
+    private var pending: TripAttributes.ContentState?
+    private var flushQueued = false
+
+    private func big(_ s: TripAttributes.ContentState, _ o: TripAttributes.ContentState?) -> Bool {
+        guard let o = o else { return true }
+        if abs(s.speed - o.speed) >= 2 || s.cut != o.cut || s.gear != o.gear || s.standby != o.standby || s.starting != o.starting { return true }
+        switch (s.cons, o.cons) {
+        case let (x?, y?): return abs(x - y) >= 0.3
+        case (nil, nil): return false
+        default: return true
+        }
+    }
+
     func update(_ s: TripAttributes.ContentState) {
-        guard let a = act else { return }
+        guard act != nil else { return }
         if s == lastState { return }
-        if Date().timeIntervalSince(last) < 0.9 { return }
-        last = Date()
-        lastState = s
-        Task { await a.update(.init(state: s, staleDate: Date().addingTimeInterval(180), relevanceScore: 100)) }
+        pending = s
+        flush()
+    }
+
+    private func flush() {
+        guard let s = pending, let a = act else { return }
+        if inFlight { return }
+        let dt = Date().timeIntervalSince(last)
+        let wait = (big(s, lastState) ? 1.0 : 3.0) - dt
+        if wait > 0 {
+            if !flushQueued { flushQueued = true; DispatchQueue.main.asyncAfter(deadline: .now() + wait) { self.flushQueued = false; self.flush() } }
+            return
+        }
+        pending = nil; inFlight = true; last = Date(); lastState = s
+        Task(priority: .userInitiated) {
+            await a.update(.init(state: s, staleDate: Date().addingTimeInterval(180), relevanceScore: 100))
+            await MainActor.run { self.inFlight = false; if self.pending != nil { self.flush() } }
+        }
     }
 
     func end(_ s: TripAttributes.ContentState?) {

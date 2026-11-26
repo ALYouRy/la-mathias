@@ -1,5 +1,15 @@
 [
  {
+  "v": "2.98",
+  "date": "2026-11-26",
+  "title": "CarPlay plus réactif",
+  "notes": [
+   "Le widget reçoit toujours la valeur la plus récente, sans retard",
+   "Mise à jour immédiate quand la vitesse ou la conso change vraiment",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.97",
   "date": "2026-11-26",
   "title": "CarPlay : juste le widget",
