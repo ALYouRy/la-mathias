@@ -247,6 +247,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         }
     }
 
+    private var noData = 0
+
     private func loop() {
         if loopOn { return }
         loopOn = true
@@ -274,6 +276,19 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             self.derive()
             // voiture coupée (pas de régime) : on interroge moins souvent
             let idle = self.d["rpm"] == nil && self.trip == nil
+            // 3.1 : voiture coupée depuis ~20 s → on arrête d'interroger dans le vide et on remet le boîtier à zéro ;
+            // il attend ensuite que la voiture réponde (contact mis) et tout repart tout seul.
+            // Avant, le boîtier restait « prêt » mais coincé après le 1er trajet, et plus rien ne démarrait.
+            self.noData = idle ? self.noData + 1 : 0
+            if self.noData >= 6 {
+                self.noData = 0
+                self.loopOn = false
+                self.d = [:]; self.dataT = 0
+                LMLog.add("Voiture coupée : remise à zéro du boîtier, en attente du contact")
+                self.obd.restartProbe()
+                self.applyLoc(); self.pushLive()
+                return
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + (idle ? 3 : 0.01)) { self.next() }
         }
         func extra() {

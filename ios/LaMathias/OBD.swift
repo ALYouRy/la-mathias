@@ -333,6 +333,12 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
     private var protoFails = 0
 
+    /// 3.1 : remise à zéro complète (ATZ…) puis attente de la voiture
+    func restartProbe() {
+        guard writeChar != nil else { reconnectSaved(); return }
+        elmInit()
+    }
+
     private func elmInit() {
         initToken += 1
         let tok = initToken
