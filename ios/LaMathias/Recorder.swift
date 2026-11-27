@@ -248,6 +248,14 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     }
 
     private var noData = 0
+    /// 3.2 : mode garage (écran « Mode garage » ouvert)
+    var garage = false { didSet { if !garage { g = [:] } } }
+    private var gIdx = 0
+    private var g: [String: String] = [:]
+    private func garageList() -> [Int] {
+        let core = Set(pids.values.compactMap { Int($0.0.suffix(2), radix: 16) })
+        return obd.sup.sorted().filter { $0 % 0x20 != 0 && !core.contains($0) && $0 != 0x03 && $0 != 0x01 && $0 != 0x02 && $0 <= 0x9F }
+    }
 
     private func loop() {
         if loopOn { return }
@@ -295,6 +303,8 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
             var ex: [String] = []
             if n % 3 == 0 { ex.append("0103") }
             if n % 30 == 0 { ex.append("ATRV") }
+            // 3.2 : mode garage → on lit en plus, à tour de rôle, tous les capteurs que la voiture déclare
+            if garage { let G = garageList(); if !G.isEmpty { for _ in 0..<min(3, G.count) { ex.append(String(format: "01%02X", G[gIdx % G.count])); gIdx += 1 } }; if n % 5 == 0 { ex.append("ATRV") } }
             var j = 0
             func one() {
                 if j >= ex.count { finish(); return }
@@ -302,6 +312,10 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
                 obd.send(c) { r in
                     if c == "0103", let b = OBD.bytes(r, "4103") { self.d["fss"] = Double(b[0]) }
                     if c == "ATRV", let v = Recorder.volt(r) { self.d["volt"] = v }
+                    if self.garage, c.count == 4, c.hasPrefix("01"), c != "0103" {
+                        let pid = String(c.suffix(2))
+                        if let b = OBD.bytes(r, "41" + pid) { self.g[pid] = b.map { String(format: "%02X", $0) }.joined() } else if r != nil { self.g[pid] = "" }
+                    }
                     one()
                 }
             }
@@ -636,6 +650,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         dd["cut"] = cut
         dd["src"] = src
         var o: [String: Any] = ["st": obd.state, "err": obd.err, "name": obd.savedName, "known": obd.savedId != nil, "can": obd.can, "d": dd, "loc": locAuth, "pending": Store.count(), "isl": LiveAct.shared.available]
+        if garage { o["g"] = g; o["sup"] = obd.sup.sorted() }
         if let R = trip { o["rec"] = ["t0": R.t0, "dist": R.dist, "dur": R.dur, "fuel": R.fuel, "cutKm": R.cutKm, "P": R.P.count] }
         if let g = gps { o["gps"] = ["la": g.coordinate.latitude, "lo": g.coordinate.longitude, "acc": g.horizontalAccuracy, "crs": g.course, "sp": g.speed >= 0 ? g.speed * 3.6 : -1, "t": g.timestamp.timeIntervalSince1970 * 1000] }
         return o

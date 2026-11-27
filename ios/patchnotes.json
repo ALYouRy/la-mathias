@@ -1,5 +1,16 @@
 [
  {
+  "v": "3.2",
+  "date": "2026-11-27",
+  "title": "Mode garage",
+  "notes": [
+   "Tous les capteurs que la Sandero donne, en direct, rangés par catégorie",
+   "Mini courbe, minimum et maximum pour chaque mesure",
+   "Bouton « Copier le rapport » à envoyer au garagiste (avec les codes défaut)",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "3.1",
   "date": "2026-11-27",
   "title": "Démarre à chaque trajet",

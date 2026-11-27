@@ -98,6 +98,9 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         case "sbar":
             let h = (m["hide"] as? Bool) ?? false
             if h != sbHidden { sbHidden = h; UIView.animate(withDuration: 0.25) { self.setNeedsStatusBarAppearanceUpdate() } }
+        case "garage":
+            Core.shared.rec.garage = (m["on"] as? Bool) ?? false
+            Core.shared.rec.pushLive()
         case "log":
             // 2.100 : journal de connexion
             if (m["clear"] as? Bool) == true { LMLog.clear() }

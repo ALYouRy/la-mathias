@@ -188,6 +188,14 @@ button{font:inherit;color:inherit}
    icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
 .isl .nl,.isl .nr{display:none}
 .eco[data-t]{cursor:pointer}
+.gar{position:fixed;inset:0;z-index:80;background:#07061a;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.gar-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 8px}.gar-hd b{font-size:22px;font-weight:800;display:block}.gar-hd small{font-size:12.5px;opacity:.75}
+.gar-hd .ok{color:#34d17a}.gar-hd .ko{color:#ffb020}
+.gar-c{flex:1;overflow:auto;padding:0 16px calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.gar-c h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#a99bff;margin:18px 0 6px}
+.gar-r{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.gar-n{flex:1;min-width:0}.gar-n span{display:block;font-size:14px;font-weight:600}.gar-n small{font-size:11px;opacity:.55}
+.gar-r b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;min-width:74px;text-align:right}.gar-r b u{text-decoration:none;font-size:11px;opacity:.6;margin-left:3px;font-weight:600}
 .lmlog{white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:rgba(255,255,255,.05);border-radius:12px;padding:10px;max-height:52vh;overflow:auto;margin:8px 0}
 .plansl{display:flex;flex-direction:column;gap:10px;margin:4px 0 14px}.plansl .btn{width:100%}
 .trv-z{margin:10px 0 0;font-size:14px;color:#34d17a;display:flex;align-items:center;justify-content:center;gap:6px}.trv-z b{font-weight:800}.trv-z .ecoi{width:16px;height:16px}
@@ -1018,7 +1026,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='3.1';
+var APP_V='3.2';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -3331,7 +3339,7 @@ function ecoSheet(t0){var r=data().trips[t0];if(!r)return;var E=ecoCalc(r);
     (E.over?'<p class="ecs-n">−'+(E.over*4)+' : '+E.over+' passage'+(E.over>1?'s':'')+' dans la zone rouge</p>':'')+
     '<p class="ecs-n">Le score compare ta conso à ce qu’une Sandero consomme normalement au même rythme (ville, route…), donc un trajet en ville peut avoir un bon score.</p></div>';
   sheetOpen('Score éco',h);$('#sheet').classList.add('ecotop')}
-document.addEventListener('click',function(e){var p=e.target.closest&&e.target.closest('.eco[data-t]');if(!p)return;e.stopPropagation();e.preventDefault();ecoSheet(+p.getAttribute('data-t'))},true);
+document.addEventListener('click',function(e){var gb=e.target.closest&&e.target.closest('[data-gar]');if(gb){e.preventDefault();garOpen();return}var p=e.target.closest&&e.target.closest('.eco[data-t]');if(!p)return;e.stopPropagation();e.preventDefault();ecoSheet(+p.getAttribute('data-t'))},true);
 /* ---------- 2.85 : km roulés à 0 L/100 (injection coupée, pied levé en prise) ---------- */
 function cutFromP(P){var k=0;for(var i=1;i<P.length;i++){var p=P[i];if(p[2]===0&&p[3]>=8)k+=hav(P[i-1],p)}return k}
 /* anciens trajets : recalcul depuis le détail point par point (conso 0 et vitesse ≥ 8 km/h) */
@@ -5048,6 +5056,67 @@ function favAuto(r){var D=db,F=D.favs||{},best=null,bs=1e9,mn=function(t){var d=
   if(best!=null)r.fav=isNaN(+best)?best:+best;
 }
 /* tableau des capteurs */
+/* ---------- 3.2 : Mode garage — tous les capteurs de la voiture en direct, avec historique et rapport ---------- */
+var GAR={on:false,H:{},st:'',sup:[],dt:0};
+function u16(b){return (b[0]||0)*256+(b[1]||0)}
+var PIDT={
+ '08':['Correction court terme (banc 2)','%',function(b){return (b[0]-128)*100/128},'air'],'09':['Correction long terme (banc 2)','%',function(b){return (b[0]-128)*100/128},'air'],
+ '0A':['Pression carburant','kPa',function(b){return b[0]*3},'air'],'13':['Sondes lambda présentes','',function(b){var n=0;for(var i=0;i<8;i++)if(b[0]&(1<<i))n++;return n},'o2'],
+ '1C':['Norme OBD','',function(b){return b[0]},'cnt',function(v){return ({1:'OBD-II (US)',2:'OBD (EPA)',3:'OBD + OBD-II',6:'EOBD (Europe)',7:'EOBD + OBD-II',9:'EOBD + OBD',10:'EOBD + OBD + OBD-II',11:'JOBD',13:'JOBD + EOBD'})[v]||('type '+v)}],
+ '1F':['Temps depuis le démarrage','s',u16,'cnt'],'21':['Distance avec voyant allumé','km',u16,'cnt'],
+ '22':['Pression rampe (relative)','kPa',function(b){return u16(b)*0.079},'air'],'23':['Pression rampe','kPa',function(b){return u16(b)*10},'air'],
+ '2C':['Vanne EGR commandée','%',function(b){return b[0]*100/255},'air'],'2D':['Écart vanne EGR','%',function(b){return (b[0]-128)*100/128},'air'],
+ '2E':['Purge canister','%',function(b){return b[0]*100/255},'air'],'30':['Démarrages depuis effacement des codes','',function(b){return b[0]},'cnt'],
+ '31':['Distance depuis effacement des codes','km',u16,'cnt'],'32':['Pression vapeurs essence','Pa',function(b){var v=u16(b);if(v>32767)v-=65536;return v/4},'air'],
+ '33':['Pression atmosphérique','kPa',function(b){return b[0]},'air'],
+ '42':['Tension calculateur','V',function(b){return u16(b)/1000},'ele'],'43':['Charge absolue','%',function(b){return u16(b)*100/255},'mot'],
+ '45':['Papillon relatif','%',function(b){return b[0]*100/255},'mot'],'46':['Température extérieure','°C',function(b){return b[0]-40},'tmp'],
+ '47':['Papillon B','%',function(b){return b[0]*100/255},'mot'],'48':['Papillon C','%',function(b){return b[0]*100/255},'mot'],
+ '49':['Pédale d’accélérateur D','%',function(b){return b[0]*100/255},'mot'],'4A':['Pédale d’accélérateur E','%',function(b){return b[0]*100/255},'mot'],'4B':['Pédale d’accélérateur F','%',function(b){return b[0]*100/255},'mot'],
+ '4C':['Papillon commandé','%',function(b){return b[0]*100/255},'mot'],'4D':['Temps avec voyant allumé','min',u16,'cnt'],'4E':['Temps depuis effacement des codes','min',u16,'cnt'],
+ '51':['Carburant','',function(b){return b[0]},'cnt',function(v){return ({1:'Essence',2:'Méthanol',3:'Éthanol',4:'Diesel',5:'GPL',6:'GNV',8:'Électrique',9:'Bicarburation essence'})[v]||('type '+v)}],
+ '52':['Taux d’éthanol','%',function(b){return b[0]*100/255},'air'],'5A':['Pédale relative','%',function(b){return b[0]*100/255},'mot'],
+ '5C':['Température huile','°C',function(b){return b[0]-40},'tmp'],'5D':['Calage injection','°',function(b){return (u16(b)-26880)/128},'mot'],
+ '61':['Couple demandé','%',function(b){return b[0]-125},'mot'],'62':['Couple réel','%',function(b){return b[0]-125},'mot'],'63':['Couple de référence','Nm',u16,'mot']};
+(function(){for(var i=0;i<8;i++){var p=(0x14+i).toString(16).toUpperCase();PIDT[p]=['Sonde lambda '+(i<4?'banc 1':'banc 2')+' n°'+(i%4+1),'V',function(b){return b[0]/200},'o2']}
+  for(i=0;i<8;i++){p=(0x34+i).toString(16).toUpperCase();PIDT[p]=['Sonde large bande n°'+(i+1),'λ',function(b){return u16(b)*2/65536},'o2']}
+  [['3C','Catalyseur banc 1 avant'],['3D','Catalyseur banc 2 avant'],['3E','Catalyseur banc 1 arrière'],['3F','Catalyseur banc 2 arrière']].forEach(function(x){PIDT[x[0]]=['Température '+x[1].toLowerCase(),'°C',function(b){return u16(b)/10-40},'tmp']})})();
+var GCORE=[['rpm','Régime','tr/min','mot',0],['speed','Vitesse','km/h','mot',0],['load','Charge moteur','%','mot',0],['thr','Papillon','%','mot',0],['timing','Avance à l’allumage','°','mot',1],
+ ['coolant','Température eau','°C','tmp',0],['iat','Température air admission','°C','tmp',0],['map','Pression admission','kPa','air',0],['maf','Débit d’air','g/s','air',1],
+ ['stft','Correction court terme','%','air',1],['ltft','Correction long terme','%','air',1],['eq','Richesse demandée','λ','air',2],['fr','Débit carburant (calculateur)','L/h','air',2],
+ ['lph','Conso instantanée','L/h','air',2],['fuel','Niveau carburant','%','cnt',0],['volt','Tension batterie','V','ele',2]];
+var GCAT=[['mot','Moteur'],['air','Air et carburant'],['o2','Sondes lambda'],['tmp','Températures'],['ele','Électricité'],['cnt','Compteurs et infos']];
+function garOpen(){if(typeof NAT==='undefined'||!NAT){toast('Le mode garage marche dans l’appli iPhone, avec le boîtier OBD.');return}
+  GAR.on=true;GAR.H={};GAR.dt=0;natPost({op:'garage',on:true});var el=$('#garage');if(!el){el=document.createElement('div');el.id='garage';document.body.appendChild(el)}
+  el.className='gar';document.body.style.overflow='hidden';garDraw(true)}
+function garClose(){GAR.on=false;natPost({op:'garage',on:false});var el=$('#garage');if(el)el.remove();document.body.style.overflow=''}
+function garIngest(o){var t=Date.now(),d=o.d||{},put=function(k,v){if(v==null||!isFinite(v))return;var H=GAR.H[k]||(GAR.H[k]={v:[],mn:v,mx:v});H.v.push(v);if(H.v.length>120)H.v.shift();H.cur=v;H.t=t;if(v<H.mn)H.mn=v;if(v>H.mx)H.mx=v};
+  GCORE.forEach(function(c){put(c[0],d[c[0]])});
+  var g=o.g||{};Object.keys(g).forEach(function(p){var T=PIDT[p],hx=g[p];if(!hx){GAR.H['p'+p]=GAR.H['p'+p]||{v:[],none:true};return}var b=[];for(var i=0;i+1<hx.length;i+=2)b.push(parseInt(hx.substr(i,2),16));
+    if(T)put('p'+p,T[2](b));else{var H=GAR.H['x'+p]||(GAR.H['x'+p]={v:[]});H.raw=hx;H.t=t}});
+  GAR.st=o.st||'';GAR.sup=o.sup||GAR.sup;if(t-GAR.dt>900){GAR.dt=t;garDraw()}}
+function garFmt(v,dec){return v==null?'–':Math.abs(v)>=1000?fi(v):dec===2?String(Math.round(v*100)/100).replace('.',','):dec===1||Math.abs(v)<10?f1(v):fi(v)}
+function garRows(){var R=[];GCORE.forEach(function(c){var H=GAR.H[c[0]];if(H&&H.cur!=null)R.push({k:c[0],n:c[1],u:c[2],cat:c[3],dec:c[4],H:H})});
+  Object.keys(PIDT).forEach(function(p){var H=GAR.H['p'+p];if(H&&H.cur!=null){var T=PIDT[p];R.push({k:'p'+p,n:T[0],u:T[1],cat:T[3],dec:T[1]==='V'||T[1]==='λ'?2:(T[1]==='%'||T[1]==='°'?1:0),H:H,txt:T[4]?T[4](H.cur):null})}});
+  Object.keys(GAR.H).forEach(function(k){if(k[0]==='x'&&GAR.H[k].raw)R.push({k:k,n:'PID 01 '+k.slice(1)+' (brut)',u:'',cat:'cnt',H:GAR.H[k],txt:GAR.H[k].raw})});return R}
+function garSpark(v){if(!v||v.length<2)return '';var mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),rg=mx-mn||1,W=96,H=22;
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" aria-hidden="true"><polyline fill="none" stroke="#00e5ff" stroke-width="1.6" stroke-linejoin="round" points="'+v.map(function(x,i){return (i/(v.length-1)*W).toFixed(1)+','+(H-2-(x-mn)/rg*(H-4)).toFixed(1)}).join(' ')+'"/></svg>'}
+function garDraw(first){var el=$('#garage');if(!el)return;var R=garRows(),sc=el.querySelector('.gar-c')?el.querySelector('.gar-c').scrollTop:0;
+  var stt=GAR.st==='ok'?'<span class="ok">● Boîtier connecté</span>':'<span class="ko">● '+esc(({wait:'Boîtier en attente',init:'Initialisation du boîtier',noecu:'Contact coupé : la voiture ne répond pas',off:'Boîtier déconnecté',conn:'Connexion…'})[GAR.st]||'En attente du boîtier')+'</span>';
+  var h='<div class="gar-hd"><div><b>Mode garage</b><small>'+stt+' · '+R.length+' mesure'+(R.length>1?'s':'')+'</small></div><button type="button" class="mapx" id="garx" aria-label="Fermer">✕</button></div><div class="gar-c">';
+  if(!R.length)h+='<p class="note">'+(GAR.st==='ok'?'Lecture des capteurs…':'Mets le contact (moteur allumé ou non) : les capteurs arrivent dès que la voiture répond.')+'</p>';
+  GCAT.forEach(function(c){var L=R.filter(function(r){return r.cat===c[0]});if(!L.length)return;
+    h+='<h3>'+c[1]+'</h3>'+L.map(function(r){var H=r.H,val=r.txt!=null?esc(String(r.txt)):garFmt(H.cur,r.dec);
+      return '<div class="gar-r"><div class="gar-n"><span>'+esc(r.n)+'</span>'+(H.v&&H.v.length>1&&r.txt==null?'<small>min '+garFmt(H.mn,r.dec)+' · max '+garFmt(H.mx,r.dec)+'</small>':'')+'</div>'+(r.txt==null?garSpark(H.v):'')+'<b>'+val+'<u>'+esc(r.u)+'</u></b></div>'}).join('')});
+  h+='<p class="note">La voiture déclare '+GAR.sup.length+' mesures ; chacune est relue toutes les quelques secondes. Le mode garage s’arrête quand tu fermes cet écran.</p>';
+  h+='<div class="dvbtns"><button type="button" class="btn" id="garcp">Copier le rapport pour le garagiste</button></div></div>';
+  el.innerHTML=h;var c=el.querySelector('.gar-c');if(c&&!first)c.scrollTop=sc;
+  $('#garx').onclick=garClose;$('#garcp').onclick=function(){var txt=garReport();try{navigator.clipboard.writeText(txt);toast('Rapport copié : colle-le dans un message')}catch(e){sheetOpen('Rapport',''+'<pre class="lmlog">'+esc(txt)+'</pre>')}}}
+function garReport(){var d=new Date(),R=garRows(),S=data().snap||{},o=['La Mathias · Mode garage','Relevé du '+d.toLocaleDateString('fr-FR')+' à '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2),'Véhicule : '+(S.name||'Dacia Sandero')+(S.km?' · '+fi(S.km)+' km':''),''];
+  try{var D=DTCP;o.push('Codes défaut : '+(D.t?(D.codes.length?D.codes.map(function(c){return c+' ('+dtcDesc(c)+')'}).join(', '):'aucun')+(D.pend.length?' · en attente : '+D.pend.join(', '):''):'non lus'));o.push('')}catch(e){}
+  GCAT.forEach(function(c){var L=R.filter(function(r){return r.cat===c[0]});if(!L.length)return;o.push('— '+c[1]);
+    L.forEach(function(r){var H=r.H;o.push(r.n+' : '+(r.txt!=null?r.txt:garFmt(H.cur,r.dec)+' '+r.u+(H.v&&H.v.length>1?'  (min '+garFmt(H.mn,r.dec)+', max '+garFmt(H.mx,r.dec)+')':'')))});o.push('')});
+  return o.join('\n')}
 var SENS=[['rpm','Régime','tr/min',function(v){return Math.round(v/10)*10}],['speed','Vitesse','km/h',Math.round],['coolant','Eau moteur','°C',Math.round],['iat','Air admission','°C',Math.round],
   ['map','Pression collecteur','kPa',Math.round],['maf','Débit d’air','g/s',f1],['load','Charge moteur','%',Math.round],['thr','Papillon','%',Math.round],['timing','Avance allumage','°',f1],
   ['stft','Correction courte','%',f1],['ltft','Correction longue','%',f1],['fuel','Niveau carburant','%',Math.round],['volt','Batterie','V',f1],['lph','Débit carburant','L/h',f1],['fss','Boucle carburant','',function(v){return {1:'ouverte (froid)',2:'fermée',4:'ouverte (charge / coupure)',8:'ouverte (défaut)',16:'fermée (défaut)'}[v]||String(v)}]];
@@ -5065,7 +5134,7 @@ function drvBody(){
   }
   if(t==='sen'){
     var h='<div class="dvsen">'+SENS.map(function(s){return '<div data-sk="'+s[0]+'"><small>'+s[1]+'</small><b data-v="s_'+s[0]+'">–</b><u>'+s[2]+'</u></div>'}).join('')+'</div>';
-    return h+'<p class="note">'+(obd?'Valeurs lues en direct sur la prise OBD. « – » : la voiture ne donne pas cette mesure.':'Mode GPS seul : seule la vitesse est mesurée. Connecte l’OBD pour voir les capteurs du moteur.')+'</p>';
+    return h+(NAT?'<div class="dvbtns"><button type="button" class="btn" data-gar="1">🔧 Mode garage : tous les capteurs</button></div>':'')+'<p class="note">'+(obd?'Valeurs lues en direct sur la prise OBD. « – » : la voiture ne donne pas cette mesure.':'Mode GPS seul : seule la vitesse est mesurée. Connecte l’OBD pour voir les capteurs du moteur.')+'</p>';
   }
   if(t==='dia'){
     var D=DTCP,H=db.health||{},I=(db.info&&db.info.bat)||[],h2='';
@@ -5073,7 +5142,7 @@ function drvBody(){
     h2+='<div class="dvmil '+st[0]+'"><b>'+st[1]+'</b><small>'+st[2]+'</small></div>';
     var row=function(c,p){var a=dtcAdvice(c);return '<div class="dvdtc '+(p?'warn':a.sev)+'"><b>'+c+(p?' <i>en attente</i>':'')+'</b><span>'+esc(dtcDesc(c))+'</span><small>'+esc(a.adv)+'</small></div>'};
     h2+=D.codes.map(function(c){return row(c,false)}).join('')+D.pend.filter(function(c){return D.codes.indexOf(c)<0}).map(function(c){return row(c,true)}).join('');
-    h2+='<div class="dvbtns"><button type="button" class="btn" id="dtcr"'+(OBD.ok&&!D.busy?'':' disabled')+'>Lire les codes</button><button type="button" class="btn '+(D.arm?'danger':'ghost')+'" id="dtcc"'+(OBD.ok&&!D.busy?'':' disabled')+'>'+(D.arm?'Confirmer l’effacement':'Effacer les codes')+'</button></div>'+
+    h2+=(NAT?'<div class="dvbtns"><button type="button" class="btn ghost" data-gar="1">🔧 Mode garage</button></div>':'')+'<div class="dvbtns"><button type="button" class="btn" id="dtcr"'+(OBD.ok&&!D.busy?'':' disabled')+'>Lire les codes</button><button type="button" class="btn '+(D.arm?'danger':'ghost')+'" id="dtcc"'+(OBD.ok&&!D.busy?'':' disabled')+'>'+(D.arm?'Confirmer l’effacement':'Effacer les codes')+'</button></div>'+
       (D.msg?'<p class="note dvc">'+esc(D.msg)+'</p>':'')+(OBD.ok?'':'<p class="note">Connecte l’OBD pour lire ou effacer les codes.</p>')+
       '<p class="note">Effacer les codes éteint le voyant, mais remet aussi à zéro les autotests du calculateur. Évite de le faire juste avant un contrôle technique.</p>';
     var rs=H.rest!=null?(H.rest>=12.4?['ok','bonne charge']:H.rest>=12.1?['warn','à recharger']:['bad','faible']):null,ru=H.run!=null?(H.run>15?['bad','surcharge']:H.run>=13.3?['ok','charge bien']:H.run>=12.9?['warn','charge un peu faible']:['bad','ne charge pas']):null;
@@ -5200,6 +5269,7 @@ window.LMN={
   islTest:function(o){NATIT=1;var t=!o?'Pas de réponse de l’appli.':!o.enabled?'« Activités en direct » est désactivé pour La Mathias : Réglages › Apps › La Mathias › Activités en direct.':!o.ext?'Le module Dynamic Island n’est pas installé : SideStore l’a retiré. Réinstalle La Mathias dans SideStore en gardant les extensions (« Keep »).':o.ok?'Test envoyé ! Retourne tout de suite sur l’écran d’accueil (ou verrouille l’iPhone) : il s’affiche dans la Dynamic Island pendant 15 s. Tant que La Mathias est ouverte, iOS ne l’affiche pas.':'Refusé par iOS : '+(o.err||'?');sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">'+esc(t)+'</p><p class="note">Détails : activées '+(o&&o.enabled?'oui':'non')+' · module '+esc(o&&o.ext||'aucun')+' · demande '+(o&&o.ok?'acceptée':'refusée')+(o&&o.err?' · '+esc(o.err):'')+'</p>')}
 };
 function natLive(o){
+  if(GAR.on)try{garIngest(o)}catch(e){}
   var was=OBD.ok;OBD.ok=o.st==='ok';OBD.st=o.st;OBD.can=!!o.can;OBD.err=o.st==='ok'?'':(o.err||'');OBD.dev=o.name?{name:o.name}:null;
   if(OBD.ok&&DRV.mode==='gps'){if(DRV.rec&&DRV.rec.dist<1){DRV.rec=null;try{localStorage.removeItem(ACTK)}catch(e){}}else if(DRV.rec)recEnd();gpsStop();wakeOff();DRV.mode=''}
   if(DRV.mode!=='gps'){
