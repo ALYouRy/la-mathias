@@ -188,6 +188,7 @@ button{font:inherit;color:inherit}
    icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
 .isl .nl,.isl .nr{display:none}
 .eco[data-t]{cursor:pointer}
+.lmlog{white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:rgba(255,255,255,.05);border-radius:12px;padding:10px;max-height:52vh;overflow:auto;margin:8px 0}
 .plansl{display:flex;flex-direction:column;gap:10px;margin:4px 0 14px}.plansl .btn{width:100%}
 .trv-z{margin:10px 0 0;font-size:14px;color:#34d17a;display:flex;align-items:center;justify-content:center;gap:6px}.trv-z b{font-weight:800}.trv-z .ecoi{width:16px;height:16px}
 .zc-b{display:flex;align-items:baseline;gap:6px;margin:4px 0 2px}.zc-b b{font-size:44px;font-weight:800;color:#34d17a;letter-spacing:-.02em}.zc-b u{text-decoration:none;opacity:.6;font-size:17px}
@@ -1017,7 +1018,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='2.99';
+var APP_V='3.0';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4409,7 +4410,7 @@ function setHtml(D,L){
     segRow('welcome','Message de bienvenue',typeof NAT!=='undefined'&&NAT?'Essence qui reste, autonomie et dernier trajet à l’ouverture.':'Nom de la voiture, dernière synchro et autonomie.',ONOFF)+
     segRow('alerts','Alertes','Réservoir bas, voyant moteur et entretien en retard.',ONOFF)+
     (typeof NAT!=='undefined'&&NAT?'':segRow('islPos','Position','« Collée » s’ouvre depuis la Dynamic Island. « En dessous » la fait descendre sous l’heure et la batterie.',[['glue','Collée'],['below','En dessous']]))+
-    segRow('islDur','Durée d’affichage','',[['s','Courte'],['m','Normale'],['l','Longue']])+(typeof NAT!=='undefined'&&NAT?'<div class="sbtns"><button type="button" class="btn ghost" id="isltest">Tester la Dynamic Island</button></div>':'')+
+    segRow('islDur','Durée d’affichage','',[['s','Courte'],['m','Normale'],['l','Longue']])+(typeof NAT!=='undefined'&&NAT?'<div class="sbtns"><button type="button" class="btn ghost" id="isltest">Tester la Dynamic Island</button><button type="button" class="btn ghost" id="lmlog">Journal de connexion</button></div>':'')+
     (typeof NAT!=='undefined'&&NAT?'':'<div class="sbtns"><button type="button" class="btn ghost" id="islt">Tester l’animation</button></div>')+'</div>';
   h+='<div class="card sgc"><h2>Calculs</h2>'+
     '<div class="srow"><div class="sl">Prix du carburant</div><p class="sh">Laisse vide pour utiliser celui de l’autoradio'+(S&&S.price?' ('+f2(S.price)+' €/L)':'')+'.</p><div class="sin"><input id="sprice" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Auto" value="'+(SET.price>0?SET.price:'')+'"><span>€/L</span></div></div>'+
@@ -4431,7 +4432,7 @@ function setHtml(D,L){
     '<div class="sbtns"><button type="button" class="btn ghost" id="sreset">Remettre les réglages par défaut</button></div></div>';
   return h;
 }
-function setWire(){var it=$('#isltest');if(it)it.onclick=function(){NATIT=0;natPost({op:'islandTest'});setTimeout(function(){if(!NATIT)sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">La partie iPhone de La Mathias n’est pas à jour. Ouvre <b>SideStore</b> › <b>My Apps</b> et touche <b>Update</b> sur La Mathias (version 1.0.15 ou plus), en gardant les extensions si on te le demande. Puis réessaie.</p>')},2500)};
+function setWire(){var lg=$('#lmlog');if(lg)lg.onclick=function(){natPost({op:'log'})};var it=$('#isltest');if(it)it.onclick=function(){NATIT=0;natPost({op:'islandTest'});setTimeout(function(){if(!NATIT)sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">La partie iPhone de La Mathias n’est pas à jour. Ouvre <b>SideStore</b> › <b>My Apps</b> et touche <b>Update</b> sur La Mathias (version 1.0.15 ou plus), en gardant les extensions si on te le demande. Puis réessaie.</p>')},2500)};
   Array.prototype.forEach.call(document.querySelectorAll('.seg button[data-k]'),function(b){b.onclick=function(){
     var k=b.getAttribute('data-k'),v=b.getAttribute('data-v'),d=SDEF[k];
     SET[k]=typeof d==='boolean'?v==='true':typeof d==='number'?+v:v;if(k==='accent')SET.harm='';setSave();
@@ -5183,6 +5184,9 @@ function tyreSheet(){
 var NATIT=0,NAT=!!(window.LM_NATIVE&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lm),NATL=null,NATCB={},NATID=0,NATF=null,NATB=0;
 function natPost(o){try{window.webkit.messageHandlers.lm.postMessage(o)}catch(e){}}
 window.LMN={
+  log:function(o){var L=(o&&o.lines)||[],txt=L.slice().reverse().join('\n');
+    sheetOpen('Journal de connexion','<p class="note">Ce que l’appli a fait avec le boîtier, du plus récent au plus ancien. Si un trajet ne démarre pas, fais une capture de cette page juste après et envoie-la.</p><p class="note">'+esc((o&&o.st)||'')+'</p><pre class="lmlog">'+esc(txt||'Rien pour l’instant.')+'</pre><div class="sbtns"><button type="button" class="btn ghost" id="lmcopy">Copier</button><button type="button" class="btn ghost" id="lmclr">Effacer</button></div>');
+    var c=$('#lmcopy');if(c)c.onclick=function(){try{navigator.clipboard.writeText(txt);toast('Journal copié')}catch(e){}};var x=$('#lmclr');if(x)x.onclick=function(){natPost({op:'log',clear:true})}},
   webMap:function(t0){try{openMap(+t0,'web')}catch(e){}},
   widgetRes:function(o){WGT.ok=!!(o&&o.ok);WGT.grp=(o&&o.grp)||''},
   open:function(p){p=String(p||'');try{if(/conduite/.test(p)){openDrive();return}var t=/trajets/.test(p)?'trips':/bilan/.test(p)?'bilan':/vie/.test(p)?'vie':'car';

@@ -116,7 +116,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     private func setLoc(_ mode: String) {
         if mode == locMode { return }
         locMode = mode
-        if mode == "off" { loc.stopUpdatingLocation(); loc.allowsBackgroundLocationUpdates = false; return }
+        if mode == "off" { loc.stopUpdatingLocation(); loc.allowsBackgroundLocationUpdates = false; sigWatch(); return }
         let st = loc.authorizationStatus
         guard st == .authorizedAlways || st == .authorizedWhenInUse else { return }
         loc.allowsBackgroundLocationUpdates = true
@@ -126,8 +126,23 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     }
 
     private var lastPush = Date.distantPast
+    /// 2.100 : quand rien ne tourne, iOS réveille quand même l'appli si l'iPhone bouge d'environ 500 m
+    /// (changement de position important) → on relance le boîtier, au cas où iOS l'aurait raté
+    private func sigWatch() {
+        guard loc.authorizationStatus == .authorizedAlways, CLLocationManager.significantLocationChangeMonitoringAvailable() else { return }
+        loc.startMonitoringSignificantLocationChanges()
+    }
+    private var lastSig = Date.distantPast
+    private func sigWake() {
+        if trip != nil || obd.ready { return }
+        if Date().timeIntervalSince(lastSig) < 60 { return }
+        lastSig = Date()
+        LMLog.add("Réveil par la position (l'iPhone bouge) → relance du boîtier")
+        obd.reconnectSaved()
+    }
     func locationManager(_ m: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let l = locations.last else { return }
+        if locMode == "off" { sigWake(); return }
         // on ignore les mesures très imprécises si on en a une bonne récente
         if let g = gps, l.horizontalAccuracy > 50, g.horizontalAccuracy <= 20, l.timestamp.timeIntervalSince(g.timestamp) < 5 { return }
         gps = l
@@ -143,6 +158,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     @objc private func routeChanged() {
         DispatchQueue.main.async {
             guard CarLink.connected else { return }
+            LMLog.add("CarPlay branché")
             LiveAct.shared.carConnected(self.trip != nil ? (self.activityState() ?? self.standbyState()) : self.standbyState())
             // 2.99 : branché sur CarPlay = on part : relance du boîtier et démarrage dès que le moteur tourne
             if self.trip == nil { self.forceStart() }
@@ -458,6 +474,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     func forceStart() {
         if trip != nil { return }
         forceUntil = Date().addingTimeInterval(180)
+        LMLog.add("Démarrage demandé (widget / CarPlay) : boîtier " + OBD.stateTxt(obd.state))
         if !obd.ready { obd.reconnectSaved() }
         setLoc("best")
         var st = standbyState(); st.starting = true
@@ -483,8 +500,10 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
         guard let R = trip else {
             if let f = forceUntil, f < Date() { forceUntil = nil; LiveAct.shared.park(standbyState(), final: nil) }
             if run && (speed >= 5 || forceUntil != nil) {
+                let forced = forceUntil != nil && speed < 5
                 forceUntil = nil
                 trip = Trip()
+                LMLog.add("▶ Trajet démarré" + (forced ? " (démarrage forcé)" : ""))
                 setLoc("best")
                 pushLive()
                 notifyStart()
@@ -547,6 +566,7 @@ final class Recorder: NSObject, CLLocationManagerDelegate {
     }
 
     func endTrip() {
+        if let R = trip { LMLog.add(String(format: "■ Trajet terminé : %.1f km", R.dist)) }
         guard let R = trip else { return }
         let fin = activityState()
         // 2.90 : on retient le dernier trajet et le niveau d'essence pour le widget « prêt »

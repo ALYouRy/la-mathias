@@ -1,5 +1,16 @@
 [
  {
+  "v": "3.0",
+  "date": "2026-11-27",
+  "title": "Connexion plus fiable + journal",
+  "notes": [
+   "Chien de garde : si la connexion au boîtier reste bloquée, l’appli la relance toute seule",
+   "Quand l’iPhone bouge, l’appli se réveille et relance le boîtier si iOS l’a raté",
+   "Nouveau : Réglages › Journal de connexion, pour voir ce qui s’est passé",
+   "Mise à jour de l’appli à installer avec « Keep App Extensions »"
+  ]
+ },
+ {
   "v": "2.99",
   "date": "2026-11-26",
   "title": "Connexion au boîtier plus rapide",

@@ -13,6 +13,7 @@ final class Core {
         started = true
         rec.setup()
         obd.start()
+        obd.startWatchdog()
     }
 
     /// Envoie un appel JavaScript à la page (si elle est affichée).

@@ -7,6 +7,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Le Bluetooth doit être prêt dès le lancement : iOS relance l'appli en arrière-plan quand le boîtier OBD se réveille.
+        // 2.100 : pourquoi l'appli démarre (ouverte par toi, réveillée par le boîtier, par la position…)
+        var why = "ouverture"
+        if launchOptions?[.bluetoothCentrals] != nil { why = "réveil par le Bluetooth (boîtier)" }
+        else if launchOptions?[.location] != nil { why = "réveil par la position" }
+        else if application.applicationState == .background { why = "réveil en arrière-plan" }
+        LMLog.add("— Lancement de l'appli : " + why)
         Core.shared.start()
         LMHook.start = { Core.shared.rec.forceStart() }
         UNUserNotificationCenter.current().delegate = self

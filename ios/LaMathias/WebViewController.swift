@@ -1,4 +1,5 @@
 import UIKit
+import CoreLocation
 import MapKit
 import WidgetKit
 import WebKit
@@ -97,6 +98,11 @@ final class WebViewController: UIViewController, WKScriptMessageHandler, WKNavig
         case "sbar":
             let h = (m["hide"] as? Bool) ?? false
             if h != sbHidden { sbHidden = h; UIView.animate(withDuration: 0.25) { self.setNeedsStatusBarAppearanceUpdate() } }
+        case "log":
+            // 2.100 : journal de connexion
+            if (m["clear"] as? Bool) == true { LMLog.clear() }
+            let st = "Bluetooth " + (Core.shared.obd.state) + " · position " + (CLLocationManager().authorizationStatus == .authorizedAlways ? "toujours" : "pas « toujours »")
+            Core.shared.js("window.LMN&&LMN.log&&LMN.log(" + Core.json(["lines": LMLog.lines, "st": st]) + ")")
         case "islandTest":
             let r = LiveAct.shared.diagnose()
             core.js("window.LMN&&LMN.islTest(" + Core.json(r) + ")")

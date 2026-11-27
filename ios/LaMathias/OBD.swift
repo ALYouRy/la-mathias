@@ -13,7 +13,34 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private var pendingServices = 0
 
     /// off, scan, wait (attend le boîtier), conn, init, ok, lost
-    var state = "off" { didSet { if oldValue != state { onState?() } } }
+    var state = "off" { didSet { if oldValue != state { stateT = Date(); LMLog.add("Boîtier : " + OBD.stateTxt(state) + (err.isEmpty || state == "ok" ? "" : " (" + err + ")")); onState?() } } }
+    private var stateT = Date()
+    static func stateTxt(_ s: String) -> String {
+        ["off": "déconnecté", "wait": "en attente (iOS se connecte dès qu'il le voit)", "conn": "connexion…", "init": "initialisation", "noecu": "connecté, la voiture ne répond pas", "ok": "prêt ✓"][s] ?? s
+    }
+    /// 2.100 : chien de garde toutes les 10 s : relance si la connexion reste bloquée
+    private var dog: Timer?
+    func startWatchdog() {
+        dog?.invalidate()
+        dog = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in self?.watch() }
+    }
+    private func watch() {
+        guard central != nil, central.state == .poweredOn, let id = savedId else { return }
+        let stuck = Date().timeIntervalSince(stateT)
+        if let p = peripheral, p.identifier == id {
+            if p.state == .connected && (state == "init" || state == "conn") && stuck > 25 {
+                LMLog.add("Chien de garde : initialisation bloquée \(Int(stuck)) s → reconnexion")
+                initToken += 1
+                central.cancelPeripheralConnection(p)
+                return
+            }
+            if p.state == .connected && state == "wait" && writeChar == nil && stuck > 15 {
+                LMLog.add("Chien de garde : connecté sans canal → redécouverte")
+                state = "init"; p.discoverServices(nil); return
+            }
+            if p.state == .disconnected { LMLog.add("Chien de garde : boîtier déconnecté → reconnexion"); reconnectSaved() }
+        } else { reconnectSaved() }
+    }
     var err = ""
     var can = false
     var sup = Set<Int>()
@@ -53,6 +80,7 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     // MARK: - Central
 
     func centralManagerDidUpdateState(_ c: CBCentralManager) {
+        LMLog.add("Bluetooth de l'iPhone : " + ["inconnu","réinitialisation","non pris en charge","non autorisé","éteint","allumé"][min(5, c.state.rawValue)])
         if c.state == .poweredOn {
             err = ""
             reconnectSaved()
@@ -66,6 +94,7 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func centralManager(_ c: CBCentralManager, willRestoreState dict: [String: Any]) {
+        LMLog.add("iOS a restauré la connexion Bluetooth")
         if let ps = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral], let p = ps.first {
             peripheral = p
             p.delegate = self
@@ -158,11 +187,13 @@ final class OBD: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func centralManager(_ c: CBCentralManager, didFailToConnect p: CBPeripheral, error: Error?) {
+        LMLog.add("Connexion au boîtier ratée" + (error.map { " : " + $0.localizedDescription } ?? ""))
         state = "wait"
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in self?.reconnectSaved() }
     }
 
     func centralManager(_ c: CBCentralManager, didDisconnectPeripheral p: CBPeripheral, error: Error?) {
+        LMLog.add("Boîtier déconnecté" + (error.map { " : " + $0.localizedDescription } ?? ""))
         let was = state == "ok"
         clearLink()
         state = savedId == p.identifier ? "wait" : "off"
