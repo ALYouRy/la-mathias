@@ -1,5 +1,15 @@
 [
  {
+  "v": "3.3",
+  "date": "2026-11-28",
+  "title": "Conso calée sur la voiture",
+  "notes": [
+   "Nouveau bouton dans un trajet : « Comparer avec l’ordinateur de bord »",
+   "Tu recopies litres (ou L/100) et km de la voiture : l’appli se cale dessus",
+   "Les trajets déjà mesurés peuvent être corrigés d’un coup"
+  ]
+ },
+ {
   "v": "3.2",
   "date": "2026-11-27",
   "title": "Mode garage",

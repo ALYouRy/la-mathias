@@ -188,6 +188,7 @@ button{font:inherit;color:inherit}
    icône + petit texte à gauche de la caméra, libellé + grande valeur à droite, tout centré verticalement */
 .isl .nl,.isl .nr{display:none}
 .eco[data-t]{cursor:pointer}
+.calf{display:flex;flex-direction:column;gap:10px;margin:10px 0}.calf label{display:flex;flex-direction:column;gap:4px;font-size:13px;opacity:.9}.calf input[type=text]{font-size:18px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff}.calf .chk{flex-direction:row;align-items:center;gap:8px}
 .gar{position:fixed;inset:0;z-index:80;background:#07061a;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
 .gar-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 8px}.gar-hd b{font-size:22px;font-weight:800;display:block}.gar-hd small{font-size:12.5px;opacity:.75}
 .gar-hd .ok{color:#34d17a}.gar-hd .ko{color:#ffb020}
@@ -1026,7 +1027,7 @@ var KEY='sandero-phone-1';
 var db={trips:{},fills:{},snap:null,favs:{},tracks:{},details:{},tags:{}};
 var sample=false,mOff=0,TAB='car';
 try{TAB=localStorage.getItem('sandero-phone-tab')||'car'}catch(e){}
-var APP_V='3.2';
+var APP_V='3.3';
 /* mise à jour automatique : compare la version en ligne et recharge si elle a changé */
 function updCheck(){
   if(!window.fetch||location.protocol.indexOf('http')!==0)return;
@@ -4331,7 +4332,7 @@ function render(){
     var cons=r.dist>.5&&r.fuel>0?f1(r.fuel/r.dist*100)+' L/100':'–';
     var P=trackOf(r);
     h+='<div class="tr" role="button" tabindex="0" data-i="'+i+'"><div class="t1"><b>'+HF.format(dt)+' · '+f1(r.dist)+' km'+(r.fav!=null&&data().favs&&data().favs[r.fav]?'<span class="ftag">★ '+esc(data().favs[r.fav])+'</span>':'')+'</b>'+ecoPill(r.eco,r)+'</div><div class="t2"><span>'+dur(r.dur)+'</span><span>'+cons+(r.meas===true?'<i class="mb ok">mesurée</i>':r.meas===false?'<i class="mb">estimée</i>':'')+'</span><span>'+f2(r.fuel*tPrice(r,price))+' €</span>'+(r.demo?'<span class="ptag dm">DÉMO</span>':'')+(P?'<span class="tk-on">• tracé</span>':'')+(isPro(r)?'<span class="ptag">PRO</span>':tagOf(r)==='perso'?'<span class="ptag ps">PERSO</span>':'')+'</div>'+
-      '<div class="more det">'+(sample?'':'<div class="pps"><span>Type de trajet</span><span class="seg"><button type="button" data-pp="'+r.t0+'" data-v="perso" aria-pressed="'+!isPro(r)+'">Perso</button><button type="button" data-pp="'+r.t0+'" data-v="pro" aria-pressed="'+isPro(r)+'">Pro</button></span></div>')+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div><div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div>'+tripExtra(r,price)+'</div></div>';
+      '<div class="more det">'+(sample?'':'<div class="pps"><span>Type de trajet</span><span class="seg"><button type="button" data-pp="'+r.t0+'" data-v="perso" aria-pressed="'+!isPro(r)+'">Perso</button><button type="button" data-pp="'+r.t0+'" data-v="pro" aria-pressed="'+isPro(r)+'">Pro</button></span></div>')+(P?mapBtn(r.t0,P):'')+'<div><span>Vitesse moyenne</span><b>'+(r.dur>0?Math.round(r.dist/(r.dur/3600)):0)+' km/h</b></div><div><span>Vitesse max</span><b>'+r.vmax+' km/h</b></div><div><span>Carburant</span><b>'+f2(r.fuel)+' L</b></div>'+(r.carL?'<div><span>Ordinateur de bord</span><b>'+f2(r.carL)+' L · '+f1(r.carL/(r.carKm||r.dist)*100)+' L/100</b></div>':'')+(r.src==='iphone'&&r.meas===true&&!sample?'<div class="dvbtns"><button type="button" class="btn ghost" data-cal="'+r.t0+'">'+(r.carL?'Recaler encore avec l’ordinateur de bord':'Comparer avec l’ordinateur de bord')+'</button></div>':'')+'<div><span>Régime moyen</span><b>'+fi(r.rpm)+' tr/min</b></div><div><span>Temps à l’arrêt</span><b>'+dur(r.idle)+'</b></div>'+(function(){var w=metOf(r);return w?'<div><span>Météo au départ</span><b>'+f1(w[0])+' °C'+(w[1]>=.3?' · pluie':'')+'</b></div>':''})()+(function(){var o=stopsOf(r);return o?'<div><span>Arrêts détectés (GPS)</span><b>'+o.n+(o.n?' · '+durS(o.sec):'')+'</b></div>':''})()+'<div><span>Freinages brusques · accélérations vives</span><b>'+r.hard+' · '+r.accel+'</b></div>'+tripExtra(r,price)+'</div></div>';
   });
   if(L.length>SET.nTrips)h+='<p class="note" style="text-align:center">Les '+SET.nTrips+' derniers trajets sont affichés (modifiable dans Réglages).</p>';
   h+='<p class="note" style="text-align:center;margin-top:18px"><button type="button" class="btn ghost" id="wipe" style="font-size:13px;padding:8px 12px">'+(sample?'Quitter l’exemple':'Effacer les données de ce téléphone')+'</button></p>';
@@ -5268,6 +5269,31 @@ window.LMN={
   trips:function(L){natImport(L||[])},
   islTest:function(o){NATIT=1;var t=!o?'Pas de réponse de l’appli.':!o.enabled?'« Activités en direct » est désactivé pour La Mathias : Réglages › Apps › La Mathias › Activités en direct.':!o.ext?'Le module Dynamic Island n’est pas installé : SideStore l’a retiré. Réinstalle La Mathias dans SideStore en gardant les extensions (« Keep »).':o.ok?'Test envoyé ! Retourne tout de suite sur l’écran d’accueil (ou verrouille l’iPhone) : il s’affiche dans la Dynamic Island pendant 15 s. Tant que La Mathias est ouverte, iOS ne l’affiche pas.':'Refusé par iOS : '+(o.err||'?');sheetOpen('Test Dynamic Island','<p class="note" style="font-size:15px;line-height:1.5">'+esc(t)+'</p><p class="note">Détails : activées '+(o&&o.enabled?'oui':'non')+' · module '+esc(o&&o.ext||'aucun')+' · demande '+(o&&o.ok?'acceptée':'refusée')+(o&&o.err?' · '+esc(o.err):'')+'</p>')}
 };
+/* ---------- 3.3 : calage de la conso sur l'ordinateur de bord ----------
+   Tu recopies ce qu'affiche la voiture pour un trajet (litres ou L/100, et km) ; l'appli en déduit sa correction (×),
+   l'applique aux prochains trajets et peut corriger les trajets déjà mesurés. Plusieurs calages = moyenne pondérée par les km. */
+function calSheet(t0){var D=db,r=D.trips[t0];if(!r)return;var k=drvSet().k||1;
+  sheetOpen('Comparer avec l’ordinateur de bord','<p class="note">Remets à zéro le compteur partiel de la voiture au départ, puis recopie ici ce qu’il affiche à l’arrivée. L’appli a mesuré <b>'+f2(r.fuel)+' L</b> sur <b>'+f1(r.dist)+' km</b> ('+f1(r.fuel/Math.max(.1,r.dist)*100)+' L/100).</p>'+
+   '<div class="calf"><label>Km affichés par la voiture<input type="text" inputmode="decimal" id="calkm" value="'+(r.carKm?String(r.carKm).replace('.',','):'')+'" placeholder="'+f1(r.dist)+'"></label>'+
+   '<label>Litres consommés<input type="text" inputmode="decimal" id="call" value="'+(r.carL?String(r.carL).replace('.',','):'')+'" placeholder="ex. 2,6"></label>'+
+   '<label>ou conso moyenne (L/100)<input type="text" inputmode="decimal" id="calc" placeholder="ex. 5,2"></label>'+
+   '<label class="chk"><input type="checkbox" id="calall" checked> Corriger aussi mes trajets déjà mesurés</label></div><p class="note" id="calmsg"></p>'+
+   '<div class="dvbtns"><button type="button" class="btn" id="calok">Caler la conso</button></div>');
+  var num=function(id){var v=parseFloat(String(($('#'+id)||{}).value||'').replace(',','.'));return isFinite(v)&&v>0?v:null};
+  $('#calok').onclick=function(){var km=num('calkm')||r.dist,L=num('call'),c=num('calc');if(!L&&c)L=c*km/100;
+    if(!L){$('#calmsg').textContent='Indique les litres ou la conso moyenne affichés par la voiture.';return}
+    var appL=r.fuel*(km/Math.max(.1,r.dist)),f=L/appL;
+    if(!(f>.5&&f<1.8)){$('#calmsg').textContent='Écart trop grand ('+Math.round((f-1)*100)+' %) : vérifie les chiffres (compteur partiel remis à zéro au départ ?).';return}
+    /* moyenne pondérée par les km des calages précédents */
+    D.calib=(D.calib||[]).filter(function(x){return x.t0!==r.t0});D.calib.push({t0:r.t0,km:km,f:f,k0:k});
+    var sw=0,sf=0;D.calib.forEach(function(x){sw+=x.km;sf+=x.km*(x.f*x.k0)});var kn=Math.max(.6,Math.min(1.6,sf/sw)),ratio=kn/k;
+    var s0=drvSet();s0.k=Math.round(kn*1000)/1000;drvSave(s0);
+    r.carL=Math.round(L*100)/100;r.carKm=Math.round(km*10)/10;var nfix=0;
+    if($('#calall').checked){Object.keys(D.trips).forEach(function(key){var x=D.trips[key];if(!x||x.src!=='iphone'||x.meas!==true)return;
+      var d=x.fuel*(ratio-1);x.fuel=Math.round(x.fuel*ratio*100)/100;if(FS.fillT&&x.t0>FS.fillT){FS.used+=d}try{x.eco=ecoCalc(x).score}catch(e){}nfix++});fsSave()}
+    save();sheetClose();ANIM=true;render();
+    toast('Conso calée : correction ×'+String(s0.k).replace('.',',')+(nfix?' · '+nfix+' trajet'+(nfix>1?'s':'')+' corrigé'+(nfix>1?'s':''):''),4500)}}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cal]');if(!b)return;e.preventDefault();e.stopPropagation();calSheet(+b.getAttribute('data-cal'))},true);
 function natLive(o){
   if(GAR.on)try{garIngest(o)}catch(e){}
   var was=OBD.ok;OBD.ok=o.st==='ok';OBD.st=o.st;OBD.can=!!o.can;OBD.err=o.st==='ok'?'':(o.err||'');OBD.dev=o.name?{name:o.name}:null;
